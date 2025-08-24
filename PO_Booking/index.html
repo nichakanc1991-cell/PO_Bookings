@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ตารางคิวกรูมมิ่งของพีโอ</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#e8f1e6; --green:#0f5132; --cream:#f5e6c7; --brown:#7b5336; --brown-weak:#b58f74; --text:#263326; }
+    html,body,*,button,input,select,textarea{ font-family:'Mitr',sans-serif!important; }
+    body{ background:var(--bg); color:var(--text); }
+    .card{ border:3px solid var(--green); border-radius:24px; background:#fefefeE6; backdrop-filter:blur(2px); }
+    .ribbon{ background:var(--cream); color:var(--green); border:2px solid var(--green); border-radius:16px; }
+    .slot{ background:var(--brown); color:var(--cream); border:2px solid #0001; box-shadow:0 6px 0 #0002; transition:.12s; }
+    .slot:hover{ transform:translateY(-2px); box-shadow:0 8px 0 #0003; }
+    .slot.disabled{ background:var(--brown-weak); opacity:.7; text-decoration:line-through; cursor:not-allowed; box-shadow:none; }
+  </style>
+</head>
+<body>
+  <header class="max-w-4xl mx-auto px-4 pt-8 text-center">
+    <img src="logo-po.png" alt="PO Grooming Logo" class="mx-auto h-72 w-72 object-contain drop-shadow"/>
+    <div class="inline-block ribbon px-5 py-2 mt-4 text-2xl md:text-4xl">ตารางจองคิวพีโอกรูมมิ่ง</div>
+  </header>
+
+  <main class="max-w-4xl mx-auto mt-8 mb-16 px-4">
+    <section class="card p-5 md:p-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex-1">
+          <label class="block text-lg text-[color:var(--green)] mb-1">เลือกวันที่ต้องการจองคิว</label>
+          <input id="datePicker" type="date"
+                 class="w-full rounded-xl border-2 border-[color:var(--green)] px-3 py-2 focus:outline-none focus:ring-4 focus:ring-green-200"
+                 min="2025-09-01" max="2025-12-31"/>
+          <p class="text-sm text-[color:var(--green)]/80 mt-1">*ดูตารางได้เฉพาะ ก.ย.–ธ.ค. 2568</p>
+        </div>
+        <a href="https://lin.ee/n5KyWC5" target="_blank"
+           class="h-[42px] px-5 rounded-xl bg-[color:var(--cream)] text-[color:var(--green)] text-lg shadow border border-[color:var(--green)] hover:bg-[color:var(--green)] hover:text-[color:var(--cream)] flex items-center justify-center">
+          ติดต่อแอดมิน
+        </a>
+      </div>
+
+      <div class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4" id="slotGrid"></div>
+      <p id="empty" class="text-center text-[color:var(--green)]/70 mt-8 hidden">ยังไม่มีข้อมูลสำหรับวันนี้</p>
+      <p id="outOfRange" class="text-center text-red-700 mt-6 hidden">ดูตารางได้เฉพาะ ก.ย.–ธ.ค. 2568 เท่านั้น</p>
+    </section>
+  </main>
+
+  <script>
+    /* ===== ตั้งค่าเวลา/ช่วงวันที่ ===== */
+    const TIMES = ["14:00","15:00","16:00","17:00","18:00","19:00"];
+    const MIN_DATE = new Date("2025-09-01");
+    const MAX_DATE = new Date("2025-12-31");
+
+    /* ✅ ลิงก์ CSV (ต้องมีเครื่องหมาย " " ครอบ) */
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?output=csv";
+
+    /* fallback ถ้าโหลด CSV ไม่ได้ */
+    let AVAIL_MAP = {};
+
+    /* ===== DOM ===== */
+    const slotGrid = document.getElementById('slotGrid');
+    const emptyEl  = document.getElementById('empty');
+    const oorEl    = document.getElementById('outOfRange');
+    const dateEl   = document.getElementById('datePicker');
+
+    /* ===== utils: ทำให้วันที่/เวลาเป็นรูปแบบมาตรฐาน ===== */
+    function toYMD(dateStr){
+      // รับได้ทั้ง 2025-09-01, 1/9/2025, 9/1/2025 ฯลฯ → คืน 'YYYY-MM-DD'
+      const d = new Date(dateStr);
+      if (isNaN(d)) return ""; // แปลงไม่ได้
+      const iso = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString();
+      return iso.slice(0,10);
+    }
+    function toHHMM(timeStr){
+      // รองรับ '14:00', '14:00:00', '2:00 PM'
+      const t = timeStr.trim();
+      // 24h with seconds
+      const m1 = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+      if (m1){
+        const h = m1[1].padStart(2,"0");
+        const m = m1[2].padStart(2,"0");
+        return `${h}:${m}`;
+      }
+      // 12h AM/PM
+      const m2 = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (m2){
+        let h = parseInt(m2[1],10);
+        const m = m2[2];
+        const ampm = m2[3].toUpperCase();
+        if (ampm==="PM" && h<12) h+=12;
+        if (ampm==="AM" && h===12) h=0;
+        return `${String(h).padStart(2,"0")}:${m}`;
+      }
+      return t; // ส่งกลับตามเดิม เผื่อกรณีตรงฟอร์แมตอยู่แล้ว
+    }
+    function inRange(d){ const x = new Date(d); return x >= MIN_DATE && x <= MAX_DATE; }
+
+    /* ===== แปลง CSV → list ===== */
+    function parseCSV(text){
+      const rows = text.trim().split(/\r?\n/).map(r => r.split(","));
+      if (rows.length < 2) return [];
+      const head = rows[0].map(h => h.trim());
+      const norm = head.map(h => h.replace(/\s/g,'').toLowerCase());
+      const iDate = norm.findIndex(h => ["date","วันที่"].includes(h));
+      const iTime = norm.findIndex(h => ["time","เวลา"].includes(h));
+      const iStat = norm.findIndex(h => ["status","สถานะ"].includes(h));
+      const out = [];
+      for(let i=1;i<rows.length;i++){
+        const r = rows[i];
+        const rawDate = (r[iDate]||"").trim();
+        const rawTime = (r[iTime]||"").trim();
+        if (!rawDate || !rawTime) continue;
+        const date = toYMD(rawDate);
+        const time = toHHMM(rawTime);
+        if (!date || !time) continue;
+
+        const raw = ((iStat>=0? r[iStat] : "ว่าง")||"").trim().toLowerCase();
+        // แปลค่า: TRUE = ว่าง, FALSE = ไม่ว่าง, หรือใช้คำไทย 'ว่าง'/'ไม่ว่าง'
+        const isFree =
+          (raw==="true") || (raw==="ว่าง") || (raw==="1") || (raw==="yes"); // FALSE=ว่าง
+        out.push({date,time,isFree});
+      }
+      return out;
+    }
+
+    function buildAvailMap(list){
+      const map = {};
+      list.forEach(({date,time,isFree})=>{
+        if (!map[date]) map[date] = {};
+        map[date][time] = !!isFree;
+      });
+      return map;
+    }
+
+    async function loadData(){
+      try{
+        const res = await fetch(CSV_URL, {cache:"no-store"});
+        const text = await res.text();
+        const list = parseCSV(text);
+        AVAIL_MAP = buildAvailMap(list);
+        console.log("CSV rows:", list.length, list.slice(0,6));
+      }catch(e){
+        console.warn("โหลด CSV ไม่ได้ ใช้ fallback:", e);
+        // ถ้าโหลดไม่ได้ให้ว่างทุกช่อง (หรือจะตั้งเป็นตัวอย่างเองก็ได้)
+        AVAIL_MAP = {};
+      }finally{
+        renderSlots(dateEl.value);
+      }
+    }
+
+    /* ===== render ===== */
+    function renderSlots(dateStr){
+      slotGrid.innerHTML = "";
+      emptyEl.classList.add('hidden');
+
+      if(!inRange(dateStr)){ oorEl.classList.remove('hidden'); return; }
+      oorEl.classList.add('hidden');
+
+      const dayMap = AVAIL_MAP[dateStr] || null;
+      let hasAny = false;
+
+      TIMES.forEach(t=>{
+        const isFree = dayMap ? !!dayMap[t] : true; // ถ้าไม่มีข้อมูล = ยังไม่ล็อก (ว่าง)
+        const btn = document.createElement('button');
+        btn.className = "slot rounded-2xl px-4 py-5 text-center";
+        btn.innerHTML = `
+          <div class="text-base opacity-90 mb-1">${isFree ? 'ว่าง' : 'ไม่ว่าง'}</div>
+          <div class="font-medium text-2xl md:text-3xl">${t}</div>
+        `;
+        if(!isFree){ btn.classList.add('disabled'); btn.disabled = true; }
+        slotGrid.appendChild(btn);
+        hasAny = true;
+      });
+
+      if(!hasAny) emptyEl.classList.remove('hidden');
+    }
+
+    /* ===== init ===== */
+    (function setDefaultDate(){
+      const today = new Date();
+      const d = (today < MIN_DATE || today > MAX_DATE) ? MIN_DATE : today;
+      dateEl.value = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    })();
+
+    dateEl.addEventListener('change', ()=>{
+      const d = new Date(dateEl.value || "");
+      if(!inRange(d)){
+        alert("ดูตารางได้เฉพาะ ก.ย.–ธ.ค. 2568 เท่านั้น");
+        dateEl.value = new Date(MIN_DATE.getTime() - MIN_DATE.getTimezoneOffset()*60000).toISOString().slice(0,10);
+      }
+      renderSlots(dateEl.value);
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
