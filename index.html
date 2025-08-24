@@ -5,17 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ตารางคิวกรูมมิ่งของพีโอ</title>
 
+  <!-- Flatpickr (ปฏิทิน) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <!-- Tailwind + ฟอนต์ -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{ --bg:#e8f1e6; --green:#0f5132; --cream:#f5e6c7; --brown:#7b5336; --brown-weak:#b58f74; --text:#263326; }
     html,body,*,button,input,select,textarea{ font-family:'Mitr',sans-serif!important; }
     body{ background:var(--bg); color:var(--text); }
     .card{ border:3px solid var(--green); border-radius:24px; background:#fefefeE6; backdrop-filter:blur(2px); }
     .ribbon{ background:var(--cream); color:var(--green); border:2px solid var(--green); border-radius:16px; }
+
     .slot{ background:var(--brown); color:var(--cream); border:2px solid #0001; box-shadow:0 6px 0 #0002; transition:.12s; }
     .slot:hover{ transform:translateY(-2px); box-shadow:0 8px 0 #0003; }
     .slot.disabled{ background:var(--brown-weak); opacity:.7; text-decoration:line-through; cursor:not-allowed; box-shadow:none; }
+
+    /* จุดสถานะใต้เลขวันของ Flatpickr */
+    .flatpickr-day.has-dot{ position:relative; }
+    .flatpickr-day.has-dot::after{
+      content:""; width:6px; height:6px; position:absolute; left:50%; bottom:4px; transform:translateX(-50%); border-radius:9999px;
+    }
+    .flatpickr-day.dot-green::after  { background:#10b981; } /* ว่างทั้งวัน */
+    .flatpickr-day.dot-yellow::after { background:#f59e0b; } /* ว่างบางช่วง */
+    .flatpickr-day.dot-red::after    { background:#ef4444; } /* เต็มทั้งวัน */
   </style>
 </head>
 <body>
@@ -29,9 +45,9 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex-1">
           <label class="block text-lg text-[color:var(--green)] mb-1">เลือกวันที่ต้องการจองคิว</label>
-          <input id="datePicker" type="date"
-                 class="w-full rounded-xl border-2 border-[color:var(--green)] px-3 py-2 focus:outline-none focus:ring-4 focus:ring-green-200"
-                 min="2025-09-01" max="2025-12-31"/>
+          <!-- ใช้ type="text" เพราะเราใช้ flatpickr เป็นปฏิทิน -->
+          <input id="datePicker" type="text"
+                 class="w-full rounded-xl border-2 border-[color:var(--green)] px-3 py-2 focus:outline-none focus:ring-4 focus:ring-green-200"/>
           <p class="text-sm text-[color:var(--green)]/80 mt-1">*ดูตารางได้เฉพาะ ก.ย.–ธ.ค. 2568</p>
         </div>
         <a href="https://lin.ee/n5KyWC5" target="_blank"
@@ -47,54 +63,47 @@
   </main>
 
   <script>
-    /* ===== ตั้งค่าเวลา/ช่วงวันที่ ===== */
-    const TIMES = ["14:00","15:00","16:00","17:00","18:00","19:00"];
+    /* ===== ค่าคงที่ ===== */
+    const TIMES    = ["14:00","15:00","16:00","17:00","18:00","19:00"];
     const MIN_DATE = new Date("2025-09-01");
     const MAX_DATE = new Date("2025-12-31");
 
-    /* ✅ ลิงก์ CSV (ต้องมีเครื่องหมาย " " ครอบ) */
+    /* ✅ ลิงก์ CSV (Publish to web → CSV) */
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?output=csv";
 
-    /* fallback ถ้าโหลด CSV ไม่ได้ */
-    let AVAIL_MAP = {};
-
-    /* ===== DOM ===== */
+    /* ===== อ้างอิง DOM ===== */
     const slotGrid = document.getElementById('slotGrid');
     const emptyEl  = document.getElementById('empty');
     const oorEl    = document.getElementById('outOfRange');
     const dateEl   = document.getElementById('datePicker');
 
-    /* ===== utils: ทำให้วันที่/เวลาเป็นรูปแบบมาตรฐาน ===== */
+    /* ===== สถานะข้อมูล ===== */
+    let AVAIL_MAP  = {};  // {"YYYY-MM-DD": {"14:00": true/false, ...}}
+    let DAY_STATUS = {};  // {"YYYY-MM-DD": "green" | "yellow" | "red"}
+    let fp = null;        // flatpickr instance
+
+    /* ===== ฟังก์ชันช่วยเรื่องวันที่/เวลา ===== */
+    const toIsoDate = d => new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    const inRange   = d => (d >= MIN_DATE && d <= MAX_DATE);
+
     function toYMD(dateStr){
-      // รับได้ทั้ง 2025-09-01, 1/9/2025, 9/1/2025 ฯลฯ → คืน 'YYYY-MM-DD'
       const d = new Date(dateStr);
-      if (isNaN(d)) return ""; // แปลงไม่ได้
-      const iso = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString();
-      return iso.slice(0,10);
+      if (isNaN(d)) return "";
+      return toIsoDate(d);
     }
     function toHHMM(timeStr){
-      // รองรับ '14:00', '14:00:00', '2:00 PM'
-      const t = timeStr.trim();
-      // 24h with seconds
-      const m1 = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-      if (m1){
-        const h = m1[1].padStart(2,"0");
-        const m = m1[2].padStart(2,"0");
-        return `${h}:${m}`;
-      }
-      // 12h AM/PM
-      const m2 = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      const t = String(timeStr).trim();
+      const m1 = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);     // 24h: 14:00 หรือ 14:00:00
+      if (m1) return `${m1[1].padStart(2,"0")}:${m1[2].padStart(2,"0")}`;
+      const m2 = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);     // 12h: 2:00 PM
       if (m2){
-        let h = parseInt(m2[1],10);
-        const m = m2[2];
-        const ampm = m2[3].toUpperCase();
-        if (ampm==="PM" && h<12) h+=12;
-        if (ampm==="AM" && h===12) h=0;
+        let h = parseInt(m2[1],10), m=m2[2], ap=m2[3].toUpperCase();
+        if (ap==="PM" && h<12) h+=12;
+        if (ap==="AM" && h===12) h=0;
         return `${String(h).padStart(2,"0")}:${m}`;
       }
-      return t; // ส่งกลับตามเดิม เผื่อกรณีตรงฟอร์แมตอยู่แล้ว
+      return t;
     }
-    function inRange(d){ const x = new Date(d); return x >= MIN_DATE && x <= MAX_DATE; }
 
     /* ===== แปลง CSV → list ===== */
     function parseCSV(text){
@@ -102,23 +111,24 @@
       if (rows.length < 2) return [];
       const head = rows[0].map(h => h.trim());
       const norm = head.map(h => h.replace(/\s/g,'').toLowerCase());
+
       const iDate = norm.findIndex(h => ["date","วันที่"].includes(h));
       const iTime = norm.findIndex(h => ["time","เวลา"].includes(h));
       const iStat = norm.findIndex(h => ["status","สถานะ"].includes(h));
+
       const out = [];
       for(let i=1;i<rows.length;i++){
         const r = rows[i];
         const rawDate = (r[iDate]||"").trim();
         const rawTime = (r[iTime]||"").trim();
         if (!rawDate || !rawTime) continue;
+
         const date = toYMD(rawDate);
         const time = toHHMM(rawTime);
         if (!date || !time) continue;
 
-        const raw = ((iStat>=0? r[iStat] : "ว่าง")||"").trim().toLowerCase();
-        // แปลค่า: TRUE = ว่าง, FALSE = ไม่ว่าง, หรือใช้คำไทย 'ว่าง'/'ไม่ว่าง'
-        const isFree =
-          (raw==="true") || (raw==="ว่าง") || (raw==="1") || (raw==="yes"); // FALSE=ว่าง
+        const raw = ((iStat>=0 ? r[iStat] : "ว่าง")||"").trim().toLowerCase();
+        const isFree = (raw==="true") || (raw==="ว่าง") || (raw==="1") || (raw==="yes");
         out.push({date,time,isFree});
       }
       return out;
@@ -133,65 +143,124 @@
       return map;
     }
 
-    async function loadData(){
-      try{
-        const res = await fetch(CSV_URL, {cache:"no-store"});
-        const text = await res.text();
-        const list = parseCSV(text);
-        AVAIL_MAP = buildAvailMap(list);
-        console.log("CSV rows:", list.length, list.slice(0,6));
-      }catch(e){
-        console.warn("โหลด CSV ไม่ได้ ใช้ fallback:", e);
-        // ถ้าโหลดไม่ได้ให้ว่างทุกช่อง (หรือจะตั้งเป็นตัวอย่างเองก็ได้)
-        AVAIL_MAP = {};
-      }finally{
-        renderSlots(dateEl.value);
+    /* ===== สรุปสถานะรายวัน (เขียว/เหลือง/แดง) =====
+       ถ้า “ไม่มีข้อมูลวันนั้นในชีต” = ว่างทั้งวัน (green)
+    */
+    function summarizeDayStatus(map){
+      const out  = {};
+      const slotsPerDay = TIMES.length;
+
+      // กำหนดค่าเริ่มต้นทุกวัน = green
+      for(let d=new Date(MIN_DATE); d<=MAX_DATE; d.setDate(d.getDate()+1)){
+        out[toIsoDate(d)] = "green";
       }
+
+      // ทับด้วยสถานะจริงสำหรับวันที่มีข้อมูล
+      for (const [date, times] of Object.entries(map)){
+        let free = 0;
+        TIMES.forEach(t => { if (times[t]) free++; });
+        out[date] = (free === 0) ? "red" : (free < slotsPerDay) ? "yellow" : "green";
+      }
+      return out;
     }
 
-    /* ===== render ===== */
+    /* ===== ปฏิทิน (Flatpickr) ===== */
+    function initCalendar(){
+      if (fp){ fp.destroy(); fp = null; }
+
+      fp = flatpickr("#datePicker", {
+        dateFormat: "Y-m-d",
+        defaultDate: dateEl.value || toIsoDate(new Date()),
+        minDate: toIsoDate(MIN_DATE),
+        maxDate: toIsoDate(MAX_DATE),
+        disableMobile: true,
+        // ✅ ใช้ dObj จากพารามิเตอร์ (อย่าใช้ dayElem.dateObj)
+        onDayCreate(dObj, _str, _inst, dayElem){
+          const iso = toIsoDate(dObj);
+          if (inRange(dObj)){
+            const s = DAY_STATUS[iso];   // 'green' | 'yellow' | 'red'
+            if (s) dayElem.classList.add("has-dot","dot-"+s);
+          }
+        },
+        onChange(selectedDates){
+          if (!selectedDates.length) return;
+          const iso = toIsoDate(selectedDates[0]);
+          dateEl.value = iso;
+          renderSlots(iso);
+        }
+      });
+    }
+
+    function refreshCalendarDots(){
+      if (fp) fp.redraw(); // ให้ flatpickr วาดใหม่ → onDayCreate จะถูกเรียกอีกครั้ง
+    }
+
+    /* ===== วาดช่องเวลา ===== */
     function renderSlots(dateStr){
       slotGrid.innerHTML = "";
       emptyEl.classList.add('hidden');
 
-      if(!inRange(dateStr)){ oorEl.classList.remove('hidden'); return; }
+      const d = new Date(dateStr);
+      if (!inRange(d)){ oorEl.classList.remove('hidden'); return; }
       oorEl.classList.add('hidden');
 
       const dayMap = AVAIL_MAP[dateStr] || null;
       let hasAny = false;
 
       TIMES.forEach(t=>{
-        const isFree = dayMap ? !!dayMap[t] : true; // ถ้าไม่มีข้อมูล = ยังไม่ล็อก (ว่าง)
+        const isFree = dayMap ? !!dayMap[t] : true;  // ไม่มีข้อมูล = ว่าง
         const btn = document.createElement('button');
         btn.className = "slot rounded-2xl px-4 py-5 text-center";
         btn.innerHTML = `
           <div class="text-base opacity-90 mb-1">${isFree ? 'ว่าง' : 'ไม่ว่าง'}</div>
           <div class="font-medium text-2xl md:text-3xl">${t}</div>
         `;
-        if(!isFree){ btn.classList.add('disabled'); btn.disabled = true; }
+        if (!isFree){ btn.classList.add('disabled'); btn.disabled = true; }
         slotGrid.appendChild(btn);
         hasAny = true;
       });
 
-      if(!hasAny) emptyEl.classList.remove('hidden');
+      if (!hasAny) emptyEl.classList.remove('hidden');
     }
 
-    /* ===== init ===== */
+    /* ===== โหลดข้อมูลจาก Google Sheets แล้วอัปเดตทุกอย่าง ===== */
+    async function loadData(){
+      try{
+        if (CSV_URL){
+          const res  = await fetch(CSV_URL, { cache: "no-store" });
+          const text = await res.text();
+          const list = parseCSV(text);
+          if (list.length) AVAIL_MAP = buildAvailMap(list);
+        }
+      }catch(e){
+        console.warn("โหลด CSV ไม่ได้ ใช้ข้อมูลว่างแทน:", e);
+        AVAIL_MAP = {}; // ให้ถือว่าไม่มีข้อมูล → ว่างทั้งวัน
+      }finally{
+        DAY_STATUS = summarizeDayStatus(AVAIL_MAP);
+        if (!fp) initCalendar(); else refreshCalendarDots();
+        renderSlots(dateEl.value);
+      }
+    }
+
+    /* ===== เริ่มทำงาน ===== */
     (function setDefaultDate(){
       const today = new Date();
       const d = (today < MIN_DATE || today > MAX_DATE) ? MIN_DATE : today;
-      dateEl.value = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+      dateEl.value = toIsoDate(d);
     })();
 
+    // ผู้ใช้พิมพ์วันที่เอง
     dateEl.addEventListener('change', ()=>{
       const d = new Date(dateEl.value || "");
-      if(!inRange(d)){
+      if (!inRange(d)){
         alert("ดูตารางได้เฉพาะ ก.ย.–ธ.ค. 2568 เท่านั้น");
-        dateEl.value = new Date(MIN_DATE.getTime() - MIN_DATE.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        dateEl.value = toIsoDate(MIN_DATE);
       }
       renderSlots(dateEl.value);
+      if (fp) fp.setDate(dateEl.value, true);
     });
 
+    // โหลดข้อมูลแล้ววาดหน้าจอ
     loadData();
   </script>
 </body>
