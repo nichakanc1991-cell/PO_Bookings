@@ -30,10 +30,10 @@
       position:absolute; left:50%; bottom:4px;
       transform:translateX(-50%); border-radius:9999px;
     }
-    .flatpickr-day.dot-green::after  { background:#10b981; }
-    .flatpickr-day.dot-yellow::after { background:#f59e0b; }
-    .flatpickr-day.dot-red::after    { background:#ef4444; }
-    .flatpickr-day.dot-gray::after   { background:#9ca3af; }
+    .flatpickr-day.dot-green::after  { background:#10b981; } /* ว่างทั้งวัน */
+    .flatpickr-day.dot-yellow::after { background:#f59e0b; } /* ว่างบางช่วง */
+    .flatpickr-day.dot-red::after    { background:#ef4444; } /* เต็มทั้งวัน */
+    .flatpickr-day.dot-gray::after   { background:#9ca3af; } /* ไม่มีข้อมูล */
     .flatpickr-day.dot-gray{ color:#9ca3af!important; cursor:not-allowed; }
   </style>
 </head>
@@ -50,7 +50,7 @@
           <label class="block text-lg text-[color:var(--green)] mb-1">เลือกวันที่ต้องการจองคิว</label>
           <input id="datePicker" type="text"
                  class="w-full rounded-xl border-2 border-[color:var(--green)] px-3 py-2 focus:outline-none focus:ring-4 focus:ring-green-200"/>
-          <p class="text-sm text-[color:var(--green)]/80 mt-1">*ดูตารางได้เฉพาะช่วงเวลาที่ร้านกำหนด</p>
+          <p class="text-sm text-[color:var(--green)]/80 mt-1">*ดูตารางได้เฉพาะ 1 ก.ย. – 31 ธ.ค. 2568</p>
         </div>
         <a href="https://lin.ee/n5KyWC5" target="_blank"
            class="h-[42px] px-5 rounded-xl bg-[color:var(--cream)] text-[color:var(--green)] text-lg shadow border border-[color:var(--green)] hover:bg-[color:var(--green)] hover:text-[color:var(--cream)] flex items-center justify-center">
@@ -68,7 +68,6 @@
     const TIMES = ["14:00","15:00","16:00","17:00","18:00","19:00"];
     const MIN_DATE = new Date("2025-09-01");
     const MAX_DATE = new Date("2025-12-31");
-
 
     /* ✅ ลิงก์ CSV */
     const CSV_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?output=csv";
@@ -160,26 +159,27 @@
     }
 
     /* ===== Calendar ===== */
-    fp = flatpickr("#datePicker",{
-  dateFormat:"Y-m-d",
-  defaultDate: new Date(),
-  minDate: MIN_DATE,
-  maxDate: MAX_DATE,
-  disableMobile:true,
-  onDayCreate(_, __, ___, dayElem){
-    const iso = toIsoDate(dayElem.dateObj);
-    const s = DAY_STATUS[iso];
-    if (s) dayElem.classList.add("has-dot","dot-"+s);
-    else dayElem.classList.add("dot-gray","flatpickr-disabled");
-  },
-  onChange(selected){
-    if(!selected.length) return;
-    const iso = toIsoDate(selected[0]);
-    dateEl.value = iso;
-    renderSlots(iso);
-  }
-});
-
+    function initCalendar(){
+      fp = flatpickr("#datePicker",{
+        dateFormat:"Y-m-d",
+        defaultDate: toIsoDate(new Date() < MIN_DATE ? MIN_DATE : new Date()),
+        minDate: toIsoDate(MIN_DATE),
+        maxDate: toIsoDate(MAX_DATE),
+        disableMobile:true,
+        onDayCreate(_, __, ___, dayElem){
+          const iso = toIsoDate(dayElem.dateObj);
+          const s = DAY_STATUS[iso];
+          if (s) dayElem.classList.add("has-dot","dot-"+s);
+          else dayElem.classList.add("dot-gray","flatpickr-disabled");
+        },
+        onChange(selected){
+          if(!selected.length) return;
+          const iso = toIsoDate(selected[0]);
+          dateEl.value = iso;
+          renderSlots(iso);
+        }
+      });
+    }
 
     /* ===== Load Data ===== */
     async function loadData(){
@@ -192,7 +192,8 @@
         console.warn("โหลด CSV ไม่ได้", e);
       }finally{
         if(!fp) initCalendar(); else fp.redraw();
-        renderSlots(toIsoDate(new Date()));
+        dateEl.value = toIsoDate(MIN_DATE);
+        renderSlots(dateEl.value);
       }
     }
 
