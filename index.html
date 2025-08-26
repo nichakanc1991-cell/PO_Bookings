@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ตารางคิวกรูมมิ่งของพีโอ</title>
 
-  <!-- Flatpickr -->
+  <!-- Flatpickr (ปฏิทินมีจุดสี) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-  <!-- Tailwind -->
+  <!-- Tailwind + ฟอนต์ -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -23,17 +23,15 @@
     .slot:hover{ transform:translateY(-2px); box-shadow:0 8px 0 #0003; }
     .slot.disabled{ background:var(--brown-weak); opacity:.7; text-decoration:line-through; cursor:not-allowed; box-shadow:none; }
 
-    /* จุดสถานะใต้เลขวัน */
+    /* จุดสีใต้เลขวันของ Flatpickr */
     .flatpickr-day.has-dot{ position:relative; }
     .flatpickr-day.has-dot::after{
-      content:""; width:6px; height:6px;
-      position:absolute; left:50%; bottom:4px;
-      transform:translateX(-50%); border-radius:9999px;
+      content:""; width:6px; height:6px; position:absolute; left:50%; bottom:4px; transform:translateX(-50%); border-radius:9999px;
     }
     .flatpickr-day.dot-green::after  { background:#10b981; } /* ว่างทั้งวัน */
     .flatpickr-day.dot-yellow::after { background:#f59e0b; } /* ว่างบางช่วง */
     .flatpickr-day.dot-red::after    { background:#ef4444; } /* เต็มทั้งวัน */
-    .flatpickr-day.dot-gray::after   { background:#9ca3af; } /* ไม่มีข้อมูล */
+    .flatpickr-day.dot-gray::after   { background:#9ca3af; } /* ไม่มีข้อมูล (ปิดรับจอง) */
     .flatpickr-day.dot-gray{ color:#9ca3af!important; cursor:not-allowed; }
   </style>
 </head>
@@ -48,9 +46,10 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex-1">
           <label class="block text-lg text-[color:var(--green)] mb-1">เลือกวันที่ต้องการจองคิว</label>
+          <!-- ใช้ flatpickr (type=text) เพื่อรองรับจุดสี -->
           <input id="datePicker" type="text"
                  class="w-full rounded-xl border-2 border-[color:var(--green)] px-3 py-2 focus:outline-none focus:ring-4 focus:ring-green-200"/>
-          <p class="text-sm text-[color:var(--green)]/80 mt-1">*ดูตารางได้เฉพาะ 1 ก.ย. – 31 ธ.ค. 2568</p>
+          <p class="text-sm text-[color:var(--green)]/80 mt-1">*ดูตารางได้เฉพาะ ก.ย.–ธ.ค. 2568</p>
         </div>
         <a href="https://lin.ee/n5KyWC5" target="_blank"
            class="h-[42px] px-5 rounded-xl bg-[color:var(--cream)] text-[color:var(--green)] text-lg shadow border border-[color:var(--green)] hover:bg-[color:var(--green)] hover:text-[color:var(--cream)] flex items-center justify-center">
@@ -65,13 +64,13 @@
 
   <script>
     /* ===== ค่าคงที่ ===== */
-    const TIMES = ["14:00","15:00","16:00","17:00","18:00","19:00"];
+    const TIMES    = ["14:00","15:00","16:00","17:00","18:00","19:00"];
     const MIN_DATE = new Date("2025-09-01");
     const MAX_DATE = new Date("2025-12-31");
 
-    /* ✅ ลิงก์ CSV */
-    const CSV_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?output=csv";
-    const CSV_URL  = CSV_BASE + "&t=" + Date.now();
+    /* ✅ ลิงก์ CSV + กันแคช */
+    const CSV_BASE = "hhttps://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
+    const CSV_URL  = CSV_BASE + (CSV_BASE.includes("?")?"&":"?") + "t=" + Date.now();
 
     /* ===== DOM ===== */
     const slotGrid = document.getElementById('slotGrid');
@@ -85,92 +84,85 @@
 
     /* ===== Helpers ===== */
     const toIsoDate = d => new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    const inRange = d => (d >= MIN_DATE && d <= MAX_DATE);
 
-    function toYMD(dateStr){
-      const d = new Date(dateStr);
+    function toYMD(s){
+      const d = new Date(s);
       if (isNaN(d)) return "";
       return toIsoDate(d);
     }
-    function toHHMM(timeStr){
-      const t = String(timeStr).trim();
-      const m = t.match(/^(\d{1,2}):(\d{2})/);
-      if (m) return `${m[1].padStart(2,"0")}:${m[2]}`;
+    function toHHMM(s){
+      const t = String(s).trim();
+      const m1 = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+      if (m1) return `${m1[1].padStart(2,"0")}:${m1[2].padStart(2,"0")}`;
+      const m2 = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (m2){
+        let h = parseInt(m2[1],10), m=m2[2], ap=m2[3].toUpperCase();
+        if (ap==="PM" && h<12) h+=12;
+        if (ap==="AM" && h===12) h=0;
+        return `${String(h).padStart(2,"0")}:${m}`;
+      }
       return t;
     }
 
-    /* ===== Parse CSV ===== */
+    /* ===== CSV ===== */
     function parseCSV(text){
       const rows = text.trim().split(/\r?\n/).map(r=>r.split(","));
       if (rows.length < 2) return [];
-      const head = rows[0].map(h=>h.trim().toLowerCase());
-      const iDate = head.findIndex(h => ["date","วันที่"].includes(h));
-      const iTime = head.findIndex(h => ["time","เวลา"].includes(h));
-      const iStat = head.findIndex(h => ["status","สถานะ"].includes(h));
+      const head = rows[0].map(h=>h.trim());
+      const norm = head.map(h => h.replace(/\s/g,'').toLowerCase());
+      const iDate = norm.findIndex(h => ["date","วันที่"].includes(h));
+      const iTime = norm.findIndex(h => ["time","เวลา"].includes(h));
+      const iStat = norm.findIndex(h => ["status","สถานะ"].includes(h));
       const out = [];
-      for (let i=1;i<rows.length;i++){
+      for(let i=1;i<rows.length;i++){
         const r = rows[i];
-        const date = toYMD(r[iDate]);
-        const time = toHHMM(r[iTime]);
-        const raw = (r[iStat]||"").trim().toLowerCase();
-        const isFree = ["true","ว่าง","1","yes"].includes(raw);
-        if(date && time) out.push({date,time,isFree});
+        const date = toYMD((r[iDate]||"").trim());
+        const time = toHHMM((r[iTime]||"").trim());
+        if (!date || !time) continue;
+        const raw  = ((iStat>=0? r[iStat] : "ว่าง")||"").trim().toLowerCase();
+        // ✅ TRUE/ว่าง/1/yes = ว่าง
+        const isFree = (raw==="true") || (raw==="ว่าง") || (raw==="1") || (raw==="yes");
+        out.push({date,time,isFree});
       }
       return out;
     }
-
     function buildAvailMap(list){
       const map = {};
       list.forEach(({date,time,isFree})=>{
         if (!map[date]) map[date] = {};
-        map[date][time] = isFree;
+        map[date][time] = !!isFree;
       });
       return map;
     }
-
     function summarizeDayStatus(map){
       const out = {};
       const total = TIMES.length;
-      for(const [date,times] of Object.entries(map)){
-        let free = 0;
-        TIMES.forEach(t => { if(times[t]) free++; });
-        out[date] = free === 0 ? "red" : free===total ? "green" : "yellow";
+      for (const [date, times] of Object.entries(map)){
+        let free = 0; TIMES.forEach(t => { if (times[t]) free++; });
+        out[date] = free===0 ? "red" : free===total ? "green" : "yellow";
       }
-      return out;
-    }
-
-    /* ===== Render ===== */
-    function renderSlots(date){
-      slotGrid.innerHTML = "";
-      const dayMap = AVAIL_MAP[date];
-      if (!dayMap){
-        emptyEl.textContent = "ยังไม่เปิดรับจองสำหรับวันนี้";
-        emptyEl.classList.remove("hidden");
-        return;
-      }
-      emptyEl.classList.add("hidden");
-      TIMES.forEach(t=>{
-        const isFree = !!dayMap[t];
-        const btn = document.createElement("button");
-        btn.className = "slot rounded-2xl px-4 py-5 text-center";
-        btn.innerHTML = `<div class="text-base mb-1">${isFree?"ว่าง":"ไม่ว่าง"}</div><div class="text-2xl">${t}</div>`;
-        if (!isFree){ btn.classList.add("disabled"); btn.disabled = true; }
-        slotGrid.appendChild(btn);
-      });
+      return out; // วันที่ไม่มี key = ไม่มีข้อมูล = ปิดรับจอง (dot-gray)
     }
 
     /* ===== Calendar ===== */
     function initCalendar(){
-      fp = flatpickr("#datePicker",{
-        dateFormat:"Y-m-d",
-        defaultDate: toIsoDate(new Date() < MIN_DATE ? MIN_DATE : new Date()),
+      if (fp){ fp.destroy(); fp = null; }
+
+      fp = flatpickr("#datePicker", {
+        dateFormat: "Y-m-d",
+        defaultDate: toIsoDate(new Date(Math.max(MIN_DATE,new Date()))),
         minDate: toIsoDate(MIN_DATE),
         maxDate: toIsoDate(MAX_DATE),
-        disableMobile:true,
+        disableMobile: true,
+        // เลือกได้เฉพาะวันที่มีข้อมูลในชีต
+        enable: [ (date)=> !!DAY_STATUS[toIsoDate(date)] ],
         onDayCreate(_, __, ___, dayElem){
-          const iso = toIsoDate(dayElem.dateObj);
+          const d = dayElem.dateObj; if (!inRange(d)) return;
+          const iso = toIsoDate(d);
           const s = DAY_STATUS[iso];
-          if (s) dayElem.classList.add("has-dot","dot-"+s);
-          else dayElem.classList.add("dot-gray","flatpickr-disabled");
+          if (s){ dayElem.classList.add("has-dot","dot-"+s); }
+          else { dayElem.classList.add("has-dot","dot-gray","flatpickr-disabled"); }
         },
         onChange(selected){
           if(!selected.length) return;
@@ -179,21 +171,64 @@
           renderSlots(iso);
         }
       });
+
+      // ถ้าวันปัจจุบันเลือกไม่ได้ ให้เด้งไปวันแรกที่เปิด
+      const keys = Object.keys(DAY_STATUS).sort();
+      if (keys.length){
+        const firstOpen = keys[0];
+        dateEl.value = firstOpen;
+        fp.setDate(firstOpen, true);
+        renderSlots(firstOpen);
+      }else{
+        dateEl.value = toIsoDate(MIN_DATE);
+        emptyEl.textContent = "ยังไม่เปิดรับจองในช่วงที่กำหนด";
+        emptyEl.classList.remove("hidden");
+      }
     }
 
-    /* ===== Load Data ===== */
+    function refreshCalendar(){
+      if (fp){
+        fp.set('enable', [ (date)=> !!DAY_STATUS[toIsoDate(date)] ]);
+        fp.redraw();
+      }
+    }
+
+    /* ===== Render slots ===== */
+    function renderSlots(dateStr){
+      slotGrid.innerHTML = "";
+      const dayMap = AVAIL_MAP[dateStr];
+      if (!dayMap){
+        emptyEl.textContent = "ยังไม่เปิดรับจองสำหรับวันนี้";
+        emptyEl.classList.remove("hidden");
+        return;
+      }
+      emptyEl.classList.add("hidden");
+
+      TIMES.forEach(t=>{
+        const isFree = !!dayMap[t];
+        const btn = document.createElement('button');
+        btn.className = "slot rounded-2xl px-4 py-5 text-center";
+        btn.innerHTML = `
+          <div class="text-base opacity-90 mb-1">${isFree ? 'ว่าง' : 'ไม่ว่าง'}</div>
+          <div class="font-medium text-2xl md:text-3xl">${t}</div>
+        `;
+        if(!isFree){ btn.classList.add('disabled'); btn.disabled = true; }
+        slotGrid.appendChild(btn);
+      });
+    }
+
+    /* ===== Load data and boot ===== */
     async function loadData(){
       try{
-        const res = await fetch(CSV_URL);
+        const res = await fetch(CSV_URL, { cache:"no-store" });
         const text = await res.text();
-        AVAIL_MAP = buildAvailMap(parseCSV(text));
+        AVAIL_MAP  = buildAvailMap(parseCSV(text));
         DAY_STATUS = summarizeDayStatus(AVAIL_MAP);
       }catch(e){
-        console.warn("โหลด CSV ไม่ได้", e);
+        console.warn("โหลด CSV ไม่ได้:", e);
+        AVAIL_MAP = {}; DAY_STATUS = {};
       }finally{
-        if(!fp) initCalendar(); else fp.redraw();
-        dateEl.value = toIsoDate(MIN_DATE);
-        renderSlots(dateEl.value);
+        if (!fp) initCalendar(); else { refreshCalendar(); }
       }
     }
 
