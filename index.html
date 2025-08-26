@@ -66,6 +66,9 @@
   <script>
     /* ===== ค่าคงที่ ===== */
     const TIMES = ["14:00","15:00","16:00","17:00","18:00","19:00"];
+    const MIN_DATE = new Date("2025-09-01");
+    const MAX_DATE = new Date("2025-12-31");
+
 
     /* ✅ ลิงก์ CSV */
     const CSV_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?output=csv";
@@ -157,26 +160,26 @@
     }
 
     /* ===== Calendar ===== */
-    function initCalendar(){
-      if(fp) fp.destroy();
-      fp = flatpickr("#datePicker",{
-        dateFormat:"Y-m-d",
-        defaultDate: new Date(),
-        disableMobile:true,
-        onDayCreate(_, __, ___, dayElem){
-          const iso = toIsoDate(dayElem.dateObj);
-          const s = DAY_STATUS[iso];
-          if (s) dayElem.classList.add("has-dot","dot-"+s);
-          else dayElem.classList.add("dot-gray","flatpickr-disabled");
-        },
-        onChange(selected){
-          if(!selected.length) return;
-          const iso = toIsoDate(selected[0]);
-          dateEl.value = iso;
-          renderSlots(iso);
-        }
-      });
-    }
+    fp = flatpickr("#datePicker",{
+  dateFormat:"Y-m-d",
+  defaultDate: new Date(),
+  minDate: MIN_DATE,
+  maxDate: MAX_DATE,
+  disableMobile:true,
+  onDayCreate(_, __, ___, dayElem){
+    const iso = toIsoDate(dayElem.dateObj);
+    const s = DAY_STATUS[iso];
+    if (s) dayElem.classList.add("has-dot","dot-"+s);
+    else dayElem.classList.add("dot-gray","flatpickr-disabled");
+  },
+  onChange(selected){
+    if(!selected.length) return;
+    const iso = toIsoDate(selected[0]);
+    dateEl.value = iso;
+    renderSlots(iso);
+  }
+});
+
 
     /* ===== Load Data ===== */
     async function loadData(){
