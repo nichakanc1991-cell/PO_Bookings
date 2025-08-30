@@ -12,27 +12,28 @@
   <script src="https://unpkg.com/dayjs@1/plugin/utc.js"></script>
   <script src="https://unpkg.com/dayjs@1/plugin/timezone.js"></script>
   <script>
-    dayjs.extend(dayjs_plugin_utc);
-    dayjs.extend(dayjs_plugin_timezone);
+    dayjs.extend(dayjs_plugin_utc); dayjs.extend(dayjs_plugin_timezone);
     dayjs.tz.setDefault("Asia/Bangkok");
   </script>
-  <style>
-    .slot-active{ background:#4f46e5;color:#fff;border-color:#4f46e5 }
-  </style>
+  <style>.slot-active{background:#4f46e5;color:#fff;border-color:#4f46e5}</style>
 </head>
 <body class="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
 <main class="max-w-6xl mx-auto p-4 md:p-6">
 
-  <header class="mb-4 md:mb-6 flex items-center justify-between">
+  <header class="mb-4 md:mb-6 flex items-center justify-between gap-3">
     <h1 class="text-xl md:text-2xl font-bold">PO Grooming — ระบบจองคิว</h1>
-    <a class="text-xs text-indigo-600 hover:underline" target="_blank"
-       href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit">
-      เปิด Google Sheets (date | time | status)
-    </a>
+    <div class="flex items-center gap-2 text-xs">
+      <span id="syncBadge" class="px-2 py-1 rounded bg-gray-100 text-gray-600">ยังไม่โหลด</span>
+      <button id="btnReload" class="px-2 py-1 rounded border hover:bg-gray-50">รีเฟรชข้อมูล</button>
+      <a class="text-indigo-600 hover:underline" target="_blank"
+         href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit?gid=0#gid=0">
+        เปิด Google Sheets
+      </a>
+    </div>
   </header>
 
   <div class="grid md:grid-cols-[3fr_2fr] gap-6">
-    <!-- LEFT -->
+    <!-- LEFT: Calendar -->
     <section class="space-y-4">
       <div class="bg-white rounded-2xl border shadow-sm p-4">
         <div class="flex items-center justify-between mb-2">
@@ -62,7 +63,7 @@
       </div>
     </section>
 
-    <!-- RIGHT -->
+    <!-- RIGHT: Steps ย่อ -->
     <section class="space-y-4">
       <div class="bg-white rounded-2xl border shadow-sm p-4">
         <div class="text-sm font-semibold mb-2">ขั้นตอน</div>
@@ -121,79 +122,80 @@
 </main>
 
 <script>
-  // ================= CONFIG =================
-  // ลิงก์ CSV (Publish to the web) ที่คุณให้มา
-  const SHEET_CSV_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
+  // ============ CONFIG ============
+  // ใช้ลิงก์ GVIZ JSON (เสถียรกว่า CSV)
+  const SHEET_GVIZ_JSON =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/gviz/tq?tqx=out:json&gid=0";
 
   const LINE_OA_LINK = "https://lin.ee/Ko31v26";
   const START_DATE = dayjs.tz("2025-09-01");
   const END_DATE   = dayjs.tz("2025-12-31");
   const TIME_SLOTS = ["14:00","15:00","16:00","17:00","18:00","19:00"];
 
-  // ================ STATE ===================
+  // ============ STATE ============
   let visibleMonth = START_DATE.startOf("month");
-  let selectedDate = null;  // "YYYY-MM-DD"
-  let selectedTime = null;  // "HH:mm"
-  let availability = {};    // availability[date][time] = "ว่าง" | "เต็ม" | "ปิด"
+  let selectedDate = null, selectedTime = null;
+  // availability[date][time] = "ว่าง" | "เต็ม" | "ปิด"
+  let availability = {};
   const pets = [];
 
-  // ============ CSV → Availability ==========
-  function parseCSV(text) {
-    // ตัด CRLF → LF แล้วแยกบรรทัด
-    const lines = text.replace(/\r/g, "").split("\n").filter(Boolean);
-    if (lines.length === 0) return [];
+  const syncBadge = document.getElementById("syncBadge");
 
-    // ดึง header
-    const header = lines[0].split(",").map(s => s.trim().toLowerCase());
-    const idxDate = header.indexOf("date");
-    const idxTime = header.indexOf("time");
-    const idxStatus = header.indexOf("status");
-
-    const rows = [];
-    for (let i=1; i<lines.length; i++) {
-      const cols = lines[i].split(",").map(s => s.trim());
-      const d = cols[idxDate];
-      const t = cols[idxTime];
-      const s = cols[idxStatus];
-
-      if (!d || !t) continue;
-      rows.push({ date: d, time: t, status: s });
-    }
-    return rows;
-  }
-
+  // ============ FETCH (GVIZ JSON) ============
   async function fetchSheet() {
-    const url = SHEET_CSV_URL + "&ts=" + Date.now(); // กันแคช
-    const raw = await (await fetch(url, { cache: "no-store" })).text();
-    const rows = parseCSV(raw);
+    syncBadge.textContent = "กำลังโหลด…";
+    syncBadge.className = "px-2 py-1 rounded bg-yellow-100 text-yellow-800";
 
-    availability = {};
-    rows.forEach(({date, time, status}) => {
-      // map ค่าตามที่ตกลง: TRUE=ว่าง, FALSE=เต็ม, ปิด=ปิด
-      const s = (status || "").toString().trim().toLowerCase();
-      let mapped = "ว่าง";
-      if (s === "true") mapped = "ว่าง";
-      else if (s === "false") mapped = "เต็ม";
-      else if (s.includes("ปิด")) mapped = "ปิด";
-      else if (s.includes("เต็ม")) mapped = "เต็ม";
-      else if (s.includes("ว่าง")) mapped = "ว่าง";
+    try {
+      const raw = await (await fetch(SHEET_GVIZ_JSON, { cache: "no-store" })).text();
+      const json = JSON.parse(raw.substring(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
 
-      const dateStr = dayjs(date).format("YYYY-MM-DD");
-      const timeStr = (time || "").slice(0,5); // ให้ได้รูปแบบ HH:mm
+      const cols = json.table.cols.map(c => (c.label || "").toString().trim().toLowerCase());
+      const dateIdx = cols.indexOf("date");
+      const timeIdx = cols.indexOf("time");
+      const statusIdx = cols.indexOf("status");
 
-      if (!availability[dateStr]) availability[dateStr] = {};
-      availability[dateStr][timeStr] = mapped;
-    });
+      availability = {};
+      for (const r of json.table.rows) {
+        const c = r.c || [];
+        const dVal = c[dateIdx]?.v;
+        const tVal = c[timeIdx]?.v;
+        let  sRaw = c[statusIdx]?.v;
+        if (!dVal || !tVal) continue;
+
+        const sVal = (typeof sRaw === "boolean" ? (sRaw ? "true" : "false") : (sRaw ?? ""))
+                      .toString().trim().toLowerCase();
+
+        // ✅ TRUE=ว่าง, FALSE=เต็ม, มีคำว่า "ปิด" = ปิด
+        let status = "ว่าง";
+        if (sVal === "true") status = "ว่าง";
+        else if (sVal === "false") status = "เต็ม";
+        else if (sVal.includes("ปิด")) status = "ปิด";
+        else if (sVal.includes("เต็ม")) status = "เต็ม";
+        else if (sVal.includes("ว่าง")) status = "ว่าง";
+
+        const dateStr = dayjs.tz(dVal).format("YYYY-MM-DD");
+        const timeStr = String(tVal).slice(0,5);
+
+        if (!availability[dateStr]) availability[dateStr] = {};
+        availability[dateStr][timeStr] = status;
+      }
+
+      syncBadge.textContent = "โหลดสำเร็จ " + dayjs().format("HH:mm");
+      syncBadge.className = "px-2 py-1 rounded bg-green-100 text-green-800";
+    } catch (e) {
+      console.error(e);
+      syncBadge.textContent = "โหลดข้อมูลไม่สำเร็จ";
+      syncBadge.className = "px-2 py-1 rounded bg-red-100 text-red-800";
+    }
   }
 
-  // ===== Calendar helpers (หัวเดือนภาษาไทย) =====
+  // ======= Calendar helpers (หัวเดือนภาษาไทย) =======
   function buddhistYear(y){ return y + 543; }
   function monthTitle(d){
     const thMonths = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
     return `${thMonths[d.month()]} ${buddhistYear(d.year())}`;
   }
-
   function getDayStatus(dateStr){
     const daySlots = availability[dateStr] || {};
     let free=0, full=0, closed=false;
@@ -250,7 +252,6 @@
     }
   }
 
-  // ===== Times =====
   function showTimes(){
     const box = document.getElementById("timeBox");
     if (!selectedDate) { box.classList.add("hidden"); return; }
@@ -281,7 +282,7 @@
     });
   }
 
-  // ===== Steps (ย่อ) =====
+  // ===== Steps
   function updateStep(step){
     for (let i=1; i<=5; i++){
       const li = document.getElementById(`step${i}`);
@@ -295,6 +296,7 @@
     document.getElementById("formPay").classList.toggle("hidden", step!==5);
   }
 
+  // Step 2
   document.getElementById("toPets").addEventListener("click", () => {
     const name  = document.getElementById("custName").value.trim();
     const phone = document.getElementById("custPhone").value.trim();
@@ -304,6 +306,7 @@
     updateStep(3);
   });
 
+  // Step 3
   document.getElementById("addPet").addEventListener("click", () => {
     if (pets.length >= 3) return alert("เพิ่มได้สูงสุด 3 ตัว");
     addPetForm();
@@ -317,11 +320,11 @@
       <div class="text-sm font-medium mb-2">น้องตัวที่ ${idx}</div>
       <div class="grid gap-2">
         <label class="text-xs text-gray-600">ชื่อน้อง *</label>
-        <input class="border rounded-xl p-2" data-role="petName" placeholder="เช่น มะลิ" />
+        <input class="border rounded-xl p-2" data-role="petName" placeholder="เช่น อุ๋งอุ๋ง" />
         <label class="text-xs text-gray-600">ประเภท *</label>
         <select class="border rounded-xl p-2" data-role="petType">
           <option value="">เลือกประเภท</option>
-          <option>หมา</option><option>แมว</option><option>กระต่าย</option><option>อื่นๆ</option>
+          <option>สุนัข</option><option>แมว</option><option>กระต่าย</option><option>อื่นๆ</option>
         </select>
         <label class="text-xs text-gray-600">สายพันธุ์ (ไม่บังคับ)</label>
         <input class="border rounded-xl p-2" data-role="breed" placeholder="เช่น Poodle / Scottish Fold" />
@@ -357,12 +360,9 @@
     document.getElementById("toPayment").disabled = !e.target.checked;
   });
   document.getElementById("toPayment").addEventListener("click", () => { updateStep(5); });
+  document.getElementById("goLine").addEventListener("click", () => { window.location.href = LINE_OA_LINK; });
 
-  document.getElementById("goLine").addEventListener("click", () => {
-    window.location.href = LINE_OA_LINK;
-  });
-
-  // Month nav
+  // Month nav + reload
   document.getElementById("prevMonth").addEventListener("click", () => {
     const prev = visibleMonth.subtract(1, "month");
     if (prev.isBefore(START_DATE, "month")) return;
@@ -373,10 +373,13 @@
     if (next.isAfter(END_DATE, "month")) return;
     visibleMonth = next; renderCalendar();
   });
+  document.getElementById("btnReload").addEventListener("click", async () => {
+    await fetchSheet(); renderCalendar(); if (selectedDate) showTimes();
+  });
 
   // Boot
   (async function init(){
-    try { await fetchSheet(); } catch(e){ console.warn("โหลดชีตไม่สำเร็จ", e); }
+    await fetchSheet();
     renderCalendar();
   })();
 </script>
