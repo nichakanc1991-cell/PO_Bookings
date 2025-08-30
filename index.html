@@ -1,238 +1,427 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>ตารางคิวกรูมมิ่งของพีโอ</title>
-
-  <!-- Flatpickr (ปฏิทินมีจุดสี) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-  <!-- Tailwind + ฟอนต์ -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PO Grooming – จองคิว</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    :root{ --bg:#e8f1e6; --green:#0f5132; --cream:#f5e6c7; --brown:#7b5336; --brown-weak:#b58f74; --text:#263326; }
-    html,body,*,button,input,select,textarea{ font-family:'Mitr',sans-serif!important; }
-    body{ background:var(--bg); color:var(--text); }
-    .card{ border:3px solid var(--green); border-radius:24px; background:#fefefeE6; backdrop-filter:blur(2px); }
-    .ribbon{ background:var(--cream); color:var(--green); border:2px solid var(--green); border-radius:16px; }
-    .slot{ background:var(--brown); color:var(--cream); border:2px solid #0001; box-shadow:0 6px 0 #0002; transition:.12s; }
-    .slot:hover{ transform:translateY(-2px); box-shadow:0 8px 0 #0003; }
-    .slot.disabled{ background:var(--brown-weak); opacity:.7; text-decoration:line-through; cursor:not-allowed; box-shadow:none; }
-
-    /* จุดสีใต้เลขวันของ Flatpickr */
-    .flatpickr-day.has-dot{ position:relative; }
-    .flatpickr-day.has-dot::after{
-      content:""; width:6px; height:6px; position:absolute; left:50%; bottom:4px; transform:translateX(-50%); border-radius:9999px;
-    }
-    .flatpickr-day.dot-green::after  { background:#10b981; } /* ว่างทั้งวัน */
-    .flatpickr-day.dot-yellow::after { background:#f59e0b; } /* ว่างบางช่วง */
-    .flatpickr-day.dot-red::after    { background:#ef4444; } /* เต็มทั้งวัน */
-    .flatpickr-day.dot-gray::after   { background:#9ca3af; } /* ไม่มีข้อมูล (ปิดรับจอง) */
-    .flatpickr-day.dot-gray{ color:#9ca3af!important; cursor:not-allowed; }
-  </style>
+  <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+  <script src="https://unpkg.com/dayjs@1/plugin/utc.js"></script>
+  <script src="https://unpkg.com/dayjs@1/plugin/timezone.js"></script>
+  <script>
+    dayjs.extend(dayjs_plugin_utc);
+    dayjs.extend(dayjs_plugin_timezone);
+    dayjs.tz.setDefault("Asia/Bangkok");
+  </script>
 </head>
-<body>
-  <header class="max-w-4xl mx-auto px-4 pt-8 text-center">
-    <img src="logo-po.png" alt="PO Grooming Logo" class="mx-auto h-72 w-72 object-contain drop-shadow"/>
-    <div class="inline-block ribbon px-5 py-2 mt-4 text-2xl md:text-4xl">ตารางจองคิวพีโอกรูมมิ่ง</div>
+<body class="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
+<main class="max-w-4xl mx-auto p-4 md:p-6">
+
+  <header class="mb-4 md:mb-6 flex items-center justify-between">
+    <h1 class="text-xl md:text-2xl font-bold">PO Grooming — ระบบจองคิว</h1>
+    <div class="text-xs text-gray-500">เชื่อม Google Sheets (date | time | status)</div>
   </header>
 
-  <main class="max-w-4xl mx-auto mt-8 mb-16 px-4">
-    <section class="card p-5 md:p-8">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex-1">
-          <label class="block text-lg text-[color:var(--green)] mb-1">เลือกวันที่ต้องการจองคิว</label>
-          <!-- ใช้ flatpickr (type=text) เพื่อรองรับจุดสี -->
-          <input id="datePicker" type="text"
-                 class="w-full rounded-xl border-2 border-[color:var(--green)] px-3 py-2 focus:outline-none focus:ring-4 focus:ring-green-200"/>
-          <p class="text-sm text-[color:var(--green)]/80 mt-1">*ดูตารางได้เฉพาะ ก.ย.–ธ.ค. 2568</p>
+  <div id="app" class="grid md:grid-cols-[3fr_2fr] gap-6">
+    <!-- LEFT: Calendar -->
+    <section class="md:col-span-2 space-y-4">
+      <div class="bg-white rounded-2xl border shadow-sm p-4">
+        <div class="flex items-center justify-between mb-2">
+          <button id="prevMonth" class="p-2 rounded-lg border hover:bg-gray-50">‹</button>
+          <div id="monthTitle" class="text-lg font-semibold"></div>
+          <button id="nextMonth" class="p-2 rounded-lg border hover:bg-gray-50">›</button>
         </div>
-        <a href="https://lin.ee/n5KyWC5" target="_blank"
-           class="h-[42px] px-5 rounded-xl bg-[color:var(--cream)] text-[color:var(--green)] text-lg shadow border border-[color:var(--green)] hover:bg-[color:var(--green)] hover:text-[color:var(--cream)] flex items-center justify-center">
-          ติดต่อแอดมิน
-        </a>
+
+        <div class="grid grid-cols-7 text-center text-xs text-gray-600 mb-1">
+          <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
+        </div>
+        <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+
+        <div class="mt-3 flex gap-3 text-xs text-gray-600">
+          <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>ว่างทุกเวลา</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>ว่างบางเวลา</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>เต็ม</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-gray-400 inline-block"></span>ปิด</div>
+        </div>
       </div>
 
-      <div class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4" id="slotGrid"></div>
-      <p id="empty" class="text-center text-[color:var(--green)]/70 mt-8 hidden"></p>
+      <div id="timeBox" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
+        <div class="text-sm text-gray-700 mb-2">เลือกเวลา <span id="chosenDateLabel" class="font-semibold"></span></div>
+        <div id="timeGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
+      </div>
     </section>
-  </main>
 
-  <script>
-    /* ===== ค่าคงที่ ===== */
-    const TIMES    = ["14:00","15:00","16:00","17:00","18:00","19:00"];
-    const MIN_DATE = new Date("2025-09-01");
-    const MAX_DATE = new Date("2025-12-31");
+    <!-- RIGHT: Stepper & Forms -->
+    <section class="space-y-4">
+      <div class="bg-white rounded-2xl border shadow-sm p-4">
+        <div class="text-sm font-semibold mb-2">ขั้นตอน</div>
+        <ol class="text-sm space-y-2">
+          <li id="step1" class="flex items-start gap-2"><span class="w-6 h-6 flex items-center justify-center rounded-full bg-indigo-600 text-white">1</span> เลือกวัน/เวลา</li>
+          <li id="step2" class="flex items-start gap-2 text-gray-600"><span class="w-6 h-6 flex items-center justify-center rounded-full border">2</span> กรอกชื่อ & เบอร์</li>
+          <li id="step3" class="flex items-start gap-2 text-gray-600"><span class="w-6 h-6 flex items-center justify-center rounded-full border">3</span> รายละเอียดน้อง (สูงสุด 3 ตัว)</li>
+          <li id="step4" class="flex items-start gap-2 text-gray-600"><span class="w-6 h-6 flex items-center justify-center rounded-full border">4</span> อ่านกติกา & ยอมรับ</li>
+          <li id="step5" class="flex items-start gap-2 text-gray-600"><span class="w-6 h-6 flex items-center justify-center rounded-full border">5</span> ชำระมัดจำ & แจ้งสลิป</li>
+        </ol>
+      </div>
 
-    /* ✅ ลิงก์ CSV + กันแคช */
-    const CSV_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
-    const CSV_URL  = CSV_BASE + (CSV_BASE.includes("?")?"&":"?") + "t=" + Date.now();
+      <!-- Step 2: Customer -->
+      <div id="formCustomer" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
+        <div class="text-sm font-semibold mb-2">ข้อมูลผู้จอง</div>
+        <label class="block text-xs text-gray-600 mb-1">ชื่อ–นามสกุล</label>
+        <input id="custName" class="w-full border rounded-xl p-2 mb-2" placeholder="ชื่อ-นามสกุล" />
+        <label class="block text-xs text-gray-600 mb-1">เบอร์ติดต่อ</label>
+        <input id="custPhone" class="w-full border rounded-xl p-2 mb-3" placeholder="เช่น 08xxxxxxxx" />
+        <button id="toPets" class="w-full px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
+      </div>
 
-    /* ===== DOM ===== */
-    const slotGrid = document.getElementById('slotGrid');
-    const emptyEl  = document.getElementById('empty');
-    const dateEl   = document.getElementById('datePicker');
+      <!-- Step 3: Pets (up to 3) -->
+      <div id="formPets" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
+        <div class="text-sm font-semibold mb-2">รายละเอียดน้องสัตว์ (สูงสุด 3 ตัว)</div>
+        <div class="space-y-4" id="petsContainer"></div>
 
-    /* ===== Data ===== */
-    let AVAIL_MAP  = {};  // { "YYYY-MM-DD": { "14:00": true/false } }
-    let DAY_STATUS = {};  // { "YYYY-MM-DD": "green"|"yellow"|"red" }
-    let fp = null;
+        <div class="mt-3">
+          <div class="text-xs text-gray-600 mb-1">ข้อควรระวัง (อ่านจากรูปด้านล่าง)</div>
+          <img id="warningImage" src="" alt="ข้อควรระวัง" class="w-full border rounded-xl">
+        </div>
 
-    /* ===== Helpers ===== */
-    const toIsoDate = d => new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
-    const inRange = d => (d >= MIN_DATE && d <= MAX_DATE);
+        <div class="mt-4 flex gap-2">
+          <button id="addPet" class="px-3 py-2 rounded-xl border hover:bg-gray-50 text-sm">+ เพิ่มตัวที่ 2/3</button>
+          <button id="toTerms" class="flex-1 px-3 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
+        </div>
+      </div>
 
-    function toYMD(s){
-      const d = new Date(s);
-      if (isNaN(d)) return "";
-      return toIsoDate(d);
+      <!-- Step 4: Terms -->
+      <div id="formTerms" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
+        <div class="text-sm font-semibold mb-2">กรุณาอ่านกติกาการรับบริการ</div>
+        <div class="space-y-3">
+          <img id="termsImg1" class="w-full border rounded-xl" alt="terms1"/>
+          <img id="termsImg2" class="w-full border rounded-xl" alt="terms2"/>
+          <img id="termsImg3" class="w-full border rounded-xl" alt="terms3"/>
+        </div>
+        <label class="flex items-center gap-2 text-sm mt-3">
+          <input id="agree" type="checkbox" class="w-4 h-4" />
+          <span>ฉันได้อ่านและยอมรับเงื่อนไขข้างต้นแล้ว</span>
+        </label>
+        <button id="toPayment" class="w-full mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" disabled>ไปหน้าชำระเงิน</button>
+      </div>
+
+      <!-- Step 5: Payment -->
+      <div id="formPay" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
+        <div class="text-sm font-semibold mb-2">ชำระมัดจำ 200 บาท</div>
+        <img id="qrImage" class="w-full border rounded-xl" alt="QR PromptPay" />
+        <button id="goLine" class="w-full mt-3 px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700">
+          แจ้งสลิปทางไลน์ (เปิด LINE OA)
+        </button>
+        <div class="text-xs text-gray-500 mt-2">หลังแจ้งสลิป แอดมินจะอัปเดตตารางคิวใน Google Sheets</div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="text-center text-xs text-gray-500 mt-8">© 2025 PO Grooming</footer>
+</main>
+
+<script>
+  // ------------------------------
+  // CONFIG — แก้ค่าตรงนี้ให้ตรงของคุณ
+  // ------------------------------
+  const SHEET_ID   = "1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE"; // ไฟล์ของคุณ
+  const SHEET_NAME = "Sheet1"; // ชื่อแผ่น
+  // รูปภาพ (รูป #2–#4 = กติกา, #5 = ข้อควรระวัง, #6 = QR)
+  // ✅ เพิ่มลิงก์รูปตรงนี้
+  const IMG_TERMS_1 = "./terms-1.png";
+  const IMG_TERMS_2 = "./terms-2.png";
+  const IMG_TERMS_3 = "./terms-3.png";
+  const IMG_WARNING = "./warning.png";
+  const IMG_QR      = "./qr.png";
+  // ลิงก์ไลน์ OA สำหรับแจ้งสลิป
+  const LINE_OA_LINK = "https://lin.ee/Ko31v26";
+
+  // ช่วงวันที่ให้เลือก (ก.ย.–ธ.ค. 2568)
+  const START_DATE = dayjs.tz("2025-09-01");
+  const END_DATE   = dayjs.tz("2025-12-31");
+  const TIME_SLOTS = ["14:00","15:00","16:00","17:00","18:00","19:00"];
+
+  // ------------------------------
+  // STATE
+  // ------------------------------
+  let visibleMonth = START_DATE.startOf("month");
+  let selectedDate = null;
+  let selectedTime = null;
+  // availability[date][time] = "ว่าง" | "เต็ม" | "ปิด"
+  let availability = {};
+
+  const pets = [];
+
+  // ------------------------------
+  // โหลดรูป
+  // ------------------------------
+  termsImg1.src = IMG_TERMS_1; termsImg2.src = IMG_TERMS_2; termsImg3.src = IMG_TERMS_3;
+  warningImage.src = IMG_WARNING; qrImage.src = IMG_QR;
+
+  // ------------------------------
+  // อ่าน Google Sheet (รูปแบบ: date | time | status)
+  // ใช้ Google Visualization API (ไม่ต้องใช้ API key)
+  // ------------------------------
+  async function fetchSheet() {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+    const raw = await (await fetch(url)).text();
+    const json = JSON.parse(raw.substring(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
+    const cols = json.table.cols.map(c => (c.label || "").toLowerCase());
+    const rows = json.table.rows;
+
+    const dateIdx = cols.indexOf("date");
+    const timeIdx = cols.indexOf("time");
+    const statusIdx = cols.indexOf("status");
+
+    availability = {};
+    rows.forEach(r => {
+      const c = r.c || [];
+      const dVal = c[dateIdx]?.v;
+      const tVal = c[timeIdx]?.v;
+      let sVal = (c[statusIdx]?.v ?? "").toString().trim().toLowerCase();
+
+      if (!dVal || !tVal) return;
+
+      // ปกติ status จะเป็น TRUE/FALSE (boolean) หรือข้อความ
+      // แปลงเป็น: FALSE -> "ว่าง", TRUE -> "เต็ม", "ปิด" -> "ปิด"
+      let status = "ว่าง";
+      if (sVal === "true") status = "เต็ม";
+      else if (sVal === "false" || sVal === "") status = "ว่าง";
+      else if (sVal.includes("ปิด")) status = "ปิด";
+      else if (sVal.includes("เต็ม")) status = "เต็ม";
+      else if (sVal.includes("ว่าง")) status = "ว่าง";
+
+      const dateStr = dayjs.tz(dVal).format("YYYY-MM-DD");
+      const timeStr = String(tVal).slice(0,5); // "14:00"
+
+      if (!availability[dateStr]) availability[dateStr] = {};
+      availability[dateStr][timeStr] = status;
+    });
+  }
+
+  // ------------------------------
+  // Calendar helpers
+  // ------------------------------
+  function buddhistYear(y){ return y + 543; }
+  function monthTitle(d){
+    const m = d.format("MMMM");
+    return `${m} ${buddhistYear(d.year())}`;
+  }
+
+  function getDayStatus(dateStr){
+    const daySlots = availability[dateStr] || {};
+    // ถ้าวันนี้ไม่มีข้อมูลในชีต → ถือว่า "ว่างทุกเวลา"
+    let free=0, full=0, closed=false;
+    for (const t of TIME_SLOTS) {
+      const v = (daySlots[t] || "ว่าง");
+      if (v === "ปิด") { closed = true; break; }
+      if (v === "เต็ม") full++; else free++;
     }
-    function toHHMM(s){
-      const t = String(s).trim();
-      const m1 = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-      if (m1) return `${m1[1].padStart(2,"0")}:${m1[2].padStart(2,"0")}`;
-      const m2 = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-      if (m2){
-        let h = parseInt(m2[1],10), m=m2[2], ap=m2[3].toUpperCase();
-        if (ap==="PM" && h<12) h+=12;
-        if (ap==="AM" && h===12) h=0;
-        return `${String(h).padStart(2,"0")}:${m}`;
-      }
-      return t;
-    }
+    if (closed) return "gray";
+    if (free === 0) return "red";
+    if (full === 0) return "green";
+    return "yellow";
+  }
 
-    /* ===== CSV ===== */
-    function parseCSV(text){
-      const rows = text.trim().split(/\r?\n/).map(r=>r.split(","));
-      if (rows.length < 2) return [];
-      const head = rows[0].map(h=>h.trim());
-      const norm = head.map(h => h.replace(/\s/g,'').toLowerCase());
-      const iDate = norm.findIndex(h => ["date","วันที่"].includes(h));
-      const iTime = norm.findIndex(h => ["time","เวลา"].includes(h));
-      const iStat = norm.findIndex(h => ["status","สถานะ"].includes(h));
-      const out = [];
-      for(let i=1;i<rows.length;i++){
-        const r = rows[i];
-        const date = toYMD((r[iDate]||"").trim());
-        const time = toHHMM((r[iTime]||"").trim());
-        if (!date || !time) continue;
-        const raw  = ((iStat>=0? r[iStat] : "ว่าง")||"").trim().toLowerCase();
-        // ✅ TRUE/ว่าง/1/yes = ว่าง
-        const isFree = (raw==="true") || (raw==="ว่าง") || (raw==="1") || (raw==="yes");
-        out.push({date,time,isFree});
-      }
-      return out;
-    }
-    function buildAvailMap(list){
-      const map = {};
-      list.forEach(({date,time,isFree})=>{
-        if (!map[date]) map[date] = {};
-        map[date][time] = !!isFree;
+  function renderCalendar() {
+    monthTitleEl.textContent = monthTitle(visibleMonth);
+
+    const start = visibleMonth.startOf("month").startOf("week");
+    const end   = visibleMonth.endOf("month").endOf("week");
+    calendarGrid.innerHTML = "";
+
+    let d = start.clone();
+    while (d.isBefore(end) || d.isSame(end, "day")) {
+      const dateStr = d.format("YYYY-MM-DD");
+      const inRange = d.isAfter(START_DATE.subtract(1,"day")) && d.isBefore(END_DATE.add(1,"day"));
+      const isCurMonth = d.month() === visibleMonth.month();
+      const status = inRange ? getDayStatus(dateStr) : "gray";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.disabled = !inRange || status === "gray";
+      btn.className =
+        "aspect-square rounded-xl border text-sm flex flex-col items-center justify-center gap-1 " +
+        (dateStr === selectedDate ? "bg-indigo-50 border-indigo-300" : "bg-white hover:bg-gray-50") +
+        (!isCurMonth ? " opacity-50" : "") +
+        (!inRange || status==="gray" ? " opacity-40 cursor-not-allowed" : "");
+
+      btn.innerHTML = `
+        <div class="leading-none">${d.date()}</div>
+        <span class="inline-block w-2.5 h-2.5 rounded-full ${status==='green'?'bg-green-500':status==='yellow'?'bg-yellow-500':status==='red'?'bg-red-500':'bg-gray-400'}"></span>
+      `;
+      btn.addEventListener("click", () => {
+        if (btn.disabled) return;
+        selectedDate = dateStr;
+        selectedTime = null;
+        showTimes();
+        renderCalendar();
+        updateStep(2); // กระตุ้นให้ไปขั้นถัดไปเมื่อเลือกเวลาได้
       });
-      return map;
-    }
-    function summarizeDayStatus(map){
-      const out = {};
-      const total = TIMES.length;
-      for (const [date, times] of Object.entries(map)){
-        let free = 0; TIMES.forEach(t => { if (times[t]) free++; });
-        out[date] = free===0 ? "red" : free===total ? "green" : "yellow";
-      }
-      return out; // วันที่ไม่มี key = ไม่มีข้อมูล = ปิดรับจอง (dot-gray)
-    }
 
-    /* ===== Calendar ===== */
-    function initCalendar(){
-      if (fp){ fp.destroy(); fp = null; }
+      calendarGrid.appendChild(btn);
+      d = d.add(1, "day");
+    }
+  }
 
-      fp = flatpickr("#datePicker", {
-        dateFormat: "Y-m-d",
-        defaultDate: toIsoDate(new Date(Math.max(MIN_DATE,new Date()))),
-        minDate: toIsoDate(MIN_DATE),
-        maxDate: toIsoDate(MAX_DATE),
-        disableMobile: true,
-        // เลือกได้เฉพาะวันที่มีข้อมูลในชีต
-        enable: [ (date)=> !!DAY_STATUS[toIsoDate(date)] ],
-        onDayCreate(_, __, ___, dayElem){
-          const d = dayElem.dateObj; if (!inRange(d)) return;
-          const iso = toIsoDate(d);
-          const s = DAY_STATUS[iso];
-          if (s){ dayElem.classList.add("has-dot","dot-"+s); }
-          else { dayElem.classList.add("has-dot","dot-gray","flatpickr-disabled"); }
-        },
-        onChange(selected){
-          if(!selected.length) return;
-          const iso = toIsoDate(selected[0]);
-          dateEl.value = iso;
-          renderSlots(iso);
-        }
+  // เวลา
+  function showTimes(){
+    if (!selectedDate) { timeBox.classList.add("hidden"); return; }
+    timeBox.classList.remove("hidden");
+    chosenDateLabel.textContent =
+      `(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
+
+    timeGrid.innerHTML = "";
+    const daySlots = availability[selectedDate] || {};
+    TIME_SLOTS.forEach(t => {
+      const v = (daySlots[t] || "ว่าง");
+      const taken = (v === "เต็ม") || (v === "ปิด");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = t;
+      btn.disabled = taken;
+      btn.className =
+        "py-3 rounded-xl border text-sm font-medium " +
+        (taken ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-indigo-50");
+      btn.addEventListener("click", () => {
+        selectedTime = t;
+        updateStep(2);
       });
+      timeGrid.appendChild(btn);
+    });
+  }
 
-      // ถ้าวันปัจจุบันเลือกไม่ได้ ให้เด้งไปวันแรกที่เปิด
-      const keys = Object.keys(DAY_STATUS).sort();
-      if (keys.length){
-        const firstOpen = keys[0];
-        dateEl.value = firstOpen;
-        fp.setDate(firstOpen, true);
-        renderSlots(firstOpen);
-      }else{
-        dateEl.value = toIsoDate(MIN_DATE);
-        emptyEl.textContent = "ยังไม่เปิดรับจองในช่วงที่กำหนด";
-        emptyEl.classList.remove("hidden");
-      }
+  // ------------------------------
+  // STEP FLOWS
+  // ------------------------------
+  function updateStep(step){
+    for (let i=1; i<=5; i++){
+      const li = document.getElementById(`step${i}`);
+      if (i < step) li.className = "flex items-start gap-2 text-green-700";
+      else if (i === step) li.className = "flex items-start gap-2";
+      else li.className = "flex items-start gap-2 text-gray-600";
     }
+    formCustomer.classList.toggle("hidden", step!==2);
+    formPets.classList.toggle("hidden", step!==3);
+    formTerms.classList.toggle("hidden", step!==4);
+    formPay.classList.toggle("hidden", step!==5);
+  }
 
-    function refreshCalendar(){
-      if (fp){
-        fp.set('enable', [ (date)=> !!DAY_STATUS[toIsoDate(date)] ]);
-        fp.redraw();
-      }
+  // Step 2 → Step 3
+  toPets.addEventListener("click", () => {
+    const name  = custName.value.trim();
+    const phone = custPhone.value.trim();
+    if (!selectedDate || !selectedTime) return alert("กรุณาเลือกวันและเวลาหน้าแรก");
+    if (!name || !phone) return alert("กรุณากรอกชื่อและเบอร์โทร");
+    if (pets.length === 0) addPetForm();
+    updateStep(3);
+  });
+
+  // Step 3: เพิ่มน้อง (สูงสุด 3)
+  addPet.addEventListener("click", () => {
+    if (pets.length >= 3) return alert("เพิ่มได้สูงสุด 3 ตัว");
+    addPetForm();
+  });
+
+  function addPetForm(){
+    const idx = pets.length + 1;
+    const wrap = document.createElement("div");
+    wrap.className = "p-3 border rounded-xl";
+    wrap.innerHTML = `
+      <div class="text-sm font-medium mb-2">น้องตัวที่ ${idx}</div>
+      <div class="grid gap-2">
+        <label class="text-xs text-gray-600">ชื่อน้อง *</label>
+        <input class="border rounded-xl p-2" data-role="petName" placeholder="เช่น มะลิ" />
+
+        <label class="text-xs text-gray-600">ประเภท *</label>
+        <select class="border rounded-xl p-2" data-role="petType">
+          <option value="">เลือกประเภท</option>
+          <option>หมา</option><option>แมว</option><option>กระต่าย</option><option>อื่นๆ</option>
+        </select>
+
+        <label class="text-xs text-gray-600">สายพันธุ์ (ไม่บังคับ)</label>
+        <input class="border rounded-xl p-2" data-role="breed" placeholder="เช่น Poodle / Scottish Fold" />
+
+        <label class="text-xs text-gray-600">ประเภทบริการ *</label>
+        <select class="border rounded-xl p-2" data-role="service">
+          <option value="">เลือกบริการ</option>
+          <option>อาบน้ำ</option>
+          <option>ตัดขน</option>
+          <option>อาบน้ำและตัดขน</option>
+          <option>บริการเสริมอย่างเดียว</option>
+        </select>
+
+        <label class="text-xs text-gray-600">ข้อควรระวัง</label>
+        <textarea class="border rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
+      </div>
+    `;
+    petsContainer.appendChild(wrap);
+    pets.push(wrap);
+  }
+
+  toTerms.addEventListener("click", () => {
+    if (pets.length === 0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
+    let ok = false;
+    for (const wrap of pets){
+      const petName = wrap.querySelector('[data-role="petName"]').value.trim();
+      const petType = wrap.querySelector('[data-role="petType"]').value.trim();
+      const service = wrap.querySelector('[data-role="service"]').value.trim();
+      if (!petName && !petType && !service) continue;
+      if (!petName || !petType || !service) return alert("กรอก ชื่อน้อง / ประเภท / ประเภทบริการ ให้ครบในแต่ละตัว");
+      ok = true;
     }
+    if (!ok) return alert("กรุณากรอกข้อมูลน้องอย่างน้อย 1 ตัว");
+    updateStep(4);
+  });
 
-    /* ===== Render slots ===== */
-    function renderSlots(dateStr){
-      slotGrid.innerHTML = "";
-      const dayMap = AVAIL_MAP[dateStr];
-      if (!dayMap){
-        emptyEl.textContent = "ยังไม่เปิดรับจองสำหรับวันนี้";
-        emptyEl.classList.remove("hidden");
-        return;
-      }
-      emptyEl.classList.add("hidden");
+  agree.addEventListener("change", (e) => { toPayment.disabled = !e.target.checked; });
+  toPayment.addEventListener("click", () => { updateStep(5); });
 
-      TIMES.forEach(t=>{
-        const isFree = !!dayMap[t];
-        const btn = document.createElement('button');
-        btn.className = "slot rounded-2xl px-4 py-5 text-center";
-        btn.innerHTML = `
-          <div class="text-base opacity-90 mb-1">${isFree ? 'ว่าง' : 'ไม่ว่าง'}</div>
-          <div class="font-medium text-2xl md:text-3xl">${t}</div>
-        `;
-        if(!isFree){ btn.classList.add('disabled'); btn.disabled = true; }
-        slotGrid.appendChild(btn);
-      });
-    }
+  goLine.addEventListener("click", () => { window.location.href = LINE_OA_LINK; });
 
-    /* ===== Load data and boot ===== */
-    async function loadData(){
-      try{
-        const res = await fetch(CSV_URL, { cache:"no-store" });
-        const text = await res.text();
-        AVAIL_MAP  = buildAvailMap(parseCSV(text));
-        DAY_STATUS = summarizeDayStatus(AVAIL_MAP);
-      }catch(e){
-        console.warn("โหลด CSV ไม่ได้:", e);
-        AVAIL_MAP = {}; DAY_STATUS = {};
-      }finally{
-        if (!fp) initCalendar(); else { refreshCalendar(); }
-      }
-    }
+  // ------------------------------
+  // NAV MONTH
+  // ------------------------------
+  prevMonth.addEventListener("click", () => {
+    const prev = visibleMonth.subtract(1, "month");
+    if (prev.isBefore(START_DATE, "month")) return;
+    visibleMonth = prev; renderCalendar();
+  });
+  nextMonth.addEventListener("click", () => {
+    const next = visibleMonth.add(1, "month");
+    if (next.isAfter(END_DATE, "month")) return;
+    visibleMonth = next; renderCalendar();
+  });
 
-    loadData();
-  </script>
+  // ------------------------------
+  // BOOT
+  // ------------------------------
+  (async function init(){
+    try { await fetchSheet(); } catch(e){ console.warn("โหลดชีตไม่สำเร็จ", e); }
+    renderCalendar();
+  })();
+</script>
+
+<!-- IDs used by JS -->
+<script>
+  const monthTitleEl = document.getElementById("monthTitle");
+  const calendarGrid = document.getElementById("calendarGrid");
+  const timeBox = document.getElementById("timeBox");
+  const chosenDateLabel = document.getElementById("chosenDateLabel");
+  const timeGrid = document.getElementById("timeGrid");
+  const formCustomer = document.getElementById("formCustomer");
+  const formPets = document.getElementById("formPets");
+  const formTerms = document.getElementById("formTerms");
+  const formPay = document.getElementById("formPay");
+  const toPets = document.getElementById("toPets");
+  const addPet = document.getElementById("addPet");
+  const toTerms = document.getElementById("toTerms");
+  const agree = document.getElementById("agree");
+  const toPayment = document.getElementById("toPayment");
+  const goLine = document.getElementById("goLine");
+  const custName = document.getElementById("custName");
+  const custPhone = document.getElementById("custPhone");
+  const petsContainer = document.getElementById("petsContainer");
+</script>
 </body>
 </html>
