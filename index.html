@@ -163,24 +163,41 @@
     return `${thMonths[d.month()]} ${buddhistYear(d.year())}`;
   }
 
+  <script>
   // ================== Normalizers (GVIZ) =================
+  // รองรับ: "2025-09-01", "9/1/2025", "Date(2025,8,1)", "Date(2025,8,1,14,0,0)"
   function normalizeDate(cell) {
     const raw = (cell && typeof cell === "object" && ("v" in cell || "f" in cell))
       ? (cell.v ?? cell.f) : cell;
     if (!raw) return null;
 
-    if (typeof raw === "string") {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return dayjs.tz(raw); // 2025-09-01
-      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {               // 9/1/2025
-        const [m,d,y] = raw.split("/").map(Number);
-        return dayjs.tz({ year:y, month:m-1, day:d });
-      }
-      const m = raw.match(/Date\((\d+),\s*(\d+),\s*(\d+)\)/);     // Date(2025,8,1)
-      if (m) return dayjs.tz({ year:+m[1], month:+m[2], day:+m[3] });
+    // 1) ISO YYYY-MM-DD
+    if (typeof raw === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      const d = dayjs.tz(raw);
+      return d.isValid() ? d : null;
     }
-    return dayjs.tz(raw);
+    // 2) M/D/YYYY
+    if (typeof raw === "string" && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
+      const [m,d,y] = raw.split("/").map(Number);
+      const dt = dayjs.tz({ year:y, month:m-1, day:d });
+      return dt.isValid() ? dt : null;
+    }
+    // 3) GViz Date(YYYY,MM,DD[,hh,mm,ss])
+    if (typeof raw === "string") {
+      const m = raw.match(/Date\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+))?\s*\)/);
+      if (m) {
+        const y=+m[1], mm=+m[2], dd=+m[3];
+        const hh=+(m[4] ?? 0), mi=+(m[5] ?? 0), ss=+(m[6] ?? 0);
+        const dt = dayjs.tz({ year:y, month:mm, day:dd, hour:hh, minute:mi, second:ss });
+        return dt.isValid() ? dt : null;
+      }
+    }
+    // 4) ฟอลแบ็ก: ลองปล่อยให้ dayjs ตีความ
+    const guess = dayjs.tz(raw);
+    return guess.isValid() ? guess : null;
   }
 
+  // คืน "HH:mm" เสมอ (ไม่โยนเข้า dayjs)
   function normalizeTime(cell) {
     const raw = (cell && typeof cell === "object" && ("v" in cell || "f" in cell))
       ? (cell.v ?? cell.f) : cell;
@@ -223,7 +240,8 @@
       const d = normalizeDate(c[dateIdx]);
       const t = normalizeTime(c[timeIdx]);
       const s = c[statusIdx]?.v ?? c[statusIdx]?.f ?? "";
-      if (!d || !t) continue;
+      // ถ้า date/time ไม่ valid -> ข้าม
+      if (!d || !d.isValid?.() || !t) continue;
 
       const dateStr = d.format("YYYY-MM-DD");
       if (!out[dateStr]) out[dateStr] = {};
@@ -242,10 +260,22 @@
     const out = {};
     for (let i=1; i<lines.length; i++) {
       const cols = lines[i].split(",").map(s => s.trim());
-      const d = cols[idxDate], t = cols[idxTime], s = cols[idxStatus];
-      if (!d || !t) continue;
-      const dateStr = dayjs(d).format("YYYY-MM-DD");
-      const timeStr = (t||"").slice(0,5);
+      const dRaw = cols[idxDate], tRaw = cols[idxTime], s = cols[idxStatus];
+      if (!dRaw || !tRaw) continue;
+
+      // พยายามตีความ date หลายรูปแบบ
+      let d = null;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dRaw)) d = dayjs.tz(dRaw);
+      else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dRaw)) {
+        const [m,dd,y] = dRaw.split("/").map(Number);
+        d = dayjs.tz({ year:y, month:m-1, day:dd });
+      } else d = dayjs.tz(dRaw);
+      if (!d || !d.isValid()) continue;
+
+      const dateStr = d.format("YYYY-MM-DD");
+      const timeStr = normalizeTime(tRaw);  // ใช้ normalizer ของ time เดิม
+      if (!timeStr) continue;
+
       if (!out[dateStr]) out[dateStr] = {};
       out[dateStr][timeStr] = mapStatus(s);
     }
@@ -277,7 +307,9 @@
       }
     }
   }
+</script>
 
+ 
   // =================== CALENDAR UI ===================
   function getDayStatus(dateStr){
     const daySlots = availability[dateStr] || {};
@@ -466,3 +498,4 @@
 </script>
 </body>
 </html>
+
