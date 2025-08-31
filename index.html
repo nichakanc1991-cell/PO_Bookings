@@ -101,24 +101,28 @@
         </div>
       </div>
 
-      <!-- รูปเงื่อนไข/ประกาศ -->
-      <section class="bg-white rounded-2xl border shadow-sm p-4 space-y-3 mt-4">
-        <img src="./terms-1.png" class="w-full rounded-lg border object-contain" alt="การจองคิว">
-        <img src="./terms-2.png" class="w-full rounded-lg border object-contain" alt="การเข้ารับบริการ">
-        <img src="./terms-3.png" class="w-full rounded-lg border object-contain" alt="ประกาศจากร้าน">
-        <img src="./warning.png" class="w-full rounded-lg border object-contain" alt="ข้อควรระวังสำคัญ">
+     
       </section>
 
-      <!-- Step 4 -->
-      <div id="formTerms" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
-        <label class="flex items-center gap-2 text-sm">
-          <input id="agree" type="checkbox" class="w-4 h-4" />
-          <span>ฉันได้อ่านและยอมรับเงื่อนไขการบริการแล้ว</span>
-        </label>
-        <button id="toPayment" class="w-full mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" disabled>
-          ไปหน้าชำระเงิน
-        </button>
-      </div>
+     <!-- Step 4 -->
+<div id="formTerms" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
+  <section class="space-y-3 mb-4">
+    <img src="./terms-1.png" class="w-full rounded-lg border object-contain" alt="การจองคิว">
+    <img src="./terms-2.png" class="w-full rounded-lg border object-contain" alt="การเข้ารับบริการ">
+    <img src="./terms-3.png" class="w-full rounded-lg border object-contain" alt="ประกาศจากร้าน">
+    <img src="./warning.png" class="w-full rounded-lg border object-contain" alt="ข้อควรระวังสำคัญ">
+  </section>
+
+  <label class="flex items-center gap-2 text-sm">
+    <input id="agree" type="checkbox" class="w-4 h-4" />
+    <span>ฉันได้อ่านและยอมรับเงื่อนไขการบริการแล้ว</span>
+  </label>
+  <button id="toPayment"
+    class="w-full mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40"
+    disabled>
+    ไปหน้าชำระเงิน
+  </button>
+</div>
 
       <!-- Step 5 -->
       <div id="formPay" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
@@ -482,3 +486,4 @@
 </script>
 </body>
 </html>
+
