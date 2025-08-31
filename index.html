@@ -4,11 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PO Grooming — ระบบจองคิว</title>
-
-  <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- dayjs + timezone -->
   <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
   <script src="https://unpkg.com/dayjs@1/plugin/utc.js"></script>
   <script src="https://unpkg.com/dayjs@1/plugin/timezone.js"></script>
@@ -17,10 +13,7 @@
     dayjs.extend(dayjs_plugin_timezone);
     dayjs.tz.setDefault("Asia/Bangkok");
   </script>
-
-  <style>
-    .slot-active{ background:#4f46e5; color:#fff; border-color:#4f46e5 }
-  </style>
+  <style>.slot-active{background:#909c83;color:#fff;border-color:#4f46e5}</style>
 </head>
 <body class="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
 <main class="max-w-6xl mx-auto p-4 md:p-6">
@@ -31,14 +24,12 @@
       <span id="syncBadge" class="px-2 py-1 rounded bg-gray-100 text-gray-600">ยังไม่โหลด</span>
       <button id="btnReload" class="px-2 py-1 rounded border hover:bg-gray-50">รีเฟรชข้อมูล</button>
       <a class="text-indigo-600 hover:underline" target="_blank"
-         href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit?gid=0#gid=0">
-        เปิด Google Sheets
-      </a>
+         href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit?gid=0#gid=0">เปิด Google Sheets</a>
     </div>
   </header>
 
   <div class="grid md:grid-cols-[3fr_2fr] gap-6">
-    <!-- LEFT: Calendar -->
+    <!-- LEFT -->
     <section class="space-y-4">
       <div class="bg-white rounded-2xl border shadow-sm p-4">
         <div class="flex items-center justify-between mb-2">
@@ -46,12 +37,10 @@
           <div id="monthTitle" class="text-lg font-semibold"></div>
           <button id="nextMonth" class="p-2 rounded-lg border hover:bg-gray-50">›</button>
         </div>
-
         <div class="grid grid-cols-7 text-center text-xs text-gray-600 mb-1">
           <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
         </div>
         <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
-
         <div class="mt-3 flex gap-3 text-xs text-gray-600">
           <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>ว่างทุกเวลา</div>
           <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>ว่างบางเวลา</div>
@@ -68,7 +57,7 @@
       </div>
     </section>
 
-    <!-- RIGHT: Steps -->
+    <!-- RIGHT -->
     <section class="space-y-4">
       <div class="bg-white rounded-2xl border shadow-sm p-4">
         <div class="text-sm font-semibold mb-2">ขั้นตอน</div>
@@ -84,8 +73,8 @@
       <!-- Step 2 -->
       <div id="formCustomer" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
         <div class="text-sm font-semibold mb-2">ข้อมูลผู้จอง</div>
-        <label class="block text-xs text-gray-600 mb-1">ชื่อ–นามสกุล</label>
-        <input id="custName" class="w-full border rounded-xl p-2 mb-2" placeholder="ชื่อ-นามสกุล" />
+        <label class="block text-xs text-gray-600 mb-1">ชื่อ–นามสกุลหรือชื่อเล่น</label>
+        <input id="custName" class="w-full border rounded-xl p-2 mb-2" placeholder="ชื่อ-นามสกุลหรือชื่อเล่น" />
         <label class="block text-xs text-gray-600 mb-1">เบอร์ติดต่อ</label>
         <input id="custPhone" class="w-full border rounded-xl p-2 mb-3" placeholder="เช่น 08xxxxxxxx" />
         <button id="toPets" class="w-full px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
@@ -94,37 +83,31 @@
       <!-- Step 3 -->
       <div id="formPets" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
         <div class="text-sm font-semibold mb-2">รายละเอียดน้อง (สูงสุด 3 ตัว)</div>
-        <div class="space-y-4" id="petsContainer"></div>
+        <div id="petsContainer" class="space-y-4"></div>
         <section class="space-y-3 mb-4">
           <img src="./warning.png" class="w-full rounded-lg border object-contain" alt="ข้อควรระวังสำคัญ">
-          </section>
+        </section>
         <div class="mt-4 flex gap-2">
           <button id="addPet" class="px-3 py-2 rounded-xl border hover:bg-gray-50 text-sm">+ เพิ่มตัวที่ 2/3</button>
           <button id="toTerms" class="flex-1 px-3 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
         </div>
       </div>
 
-     
-      </section>
-
-     <!-- Step 4 -->
-<div id="formTerms" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
-  <section class="space-y-3 mb-4">
-    <img src="./terms-1.png" class="w-full rounded-lg border object-contain" alt="การจองคิว">
-    <img src="./terms-2.png" class="w-full rounded-lg border object-contain" alt="การเข้ารับบริการ">
-    <img src="./terms-3.png" class="w-full rounded-lg border object-contain" alt="ประกาศจากร้าน">
-  </section>
-
-  <label class="flex items-center gap-2 text-sm">
-    <input id="agree" type="checkbox" class="w-4 h-4" />
-    <span>ฉันได้อ่านและยอมรับเงื่อนไขการบริการแล้ว</span>
-  </label>
-  <button id="toPayment"
-    class="w-full mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40"
-    disabled>
-    ไปหน้าชำระเงิน
-  </button>
-</div>
+      <!-- Step 4 -->
+      <div id="formTerms" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
+        <section class="space-y-3 mb-4">
+          <img src="./terms-1.png" class="w-full rounded-lg border object-contain" alt="การจองคิว">
+          <img src="./terms-2.png" class="w-full rounded-lg border object-contain" alt="การเข้ารับบริการ">
+          <img src="./terms-3.png" class="w-full rounded-lg border object-contain" alt="ประกาศจากร้าน">
+        </section>
+        <label class="flex items-center gap-2 text-sm">
+          <input id="agree" type="checkbox" class="w-4 h-4" />
+          <span>ฉันได้อ่านและยอมรับเงื่อนไขการบริการแล้ว</span>
+        </label>
+        <button id="toPayment" class="w-full mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" disabled>
+          ไปหน้าชำระเงิน
+        </button>
+      </div>
 
       <!-- Step 5 -->
       <div id="formPay" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
@@ -141,365 +124,290 @@
 </main>
 
 <script>
-  /* ======================= CONFIG ======================= */
-  const SHEET_GVIZ_JSON =
-    "https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/gviz/tq?tqx=out:json&gid=0";
-  const SHEET_CSV_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
+/* ===== CONFIG ===== */
+const SHEET_GVIZ_JSON="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/gviz/tq?tqx=out:json&gid=0";
+const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
+const LINE_OA_ID="@po_grooming";
 
-  const LINE_OA_LINK = "https://lin.ee/Ko31v26";
-  const START_DATE = dayjs.tz("2025-09-01");
-  const END_DATE   = dayjs.tz("2025-12-31");
-  const TIME_SLOTS = ["14:00","15:00","16:00","17:00","18:00","19:00"];
+const START_DATE=dayjs.tz("2025-09-01");
+const END_DATE=dayjs.tz("2025-12-31");
+const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00","19:00"];
 
-  /* ======================= STATE ======================== */
-  let visibleMonth = START_DATE.startOf("month");
-  let selectedDate = null, selectedTime = null;
-  // availability[YYYY-MM-DD][HH:mm] => "ว่าง" | "เต็ม" | "ปิด"
-  let availability = {};
-  const pets = [];
-  const syncBadge = document.getElementById("syncBadge");
+/* ===== STATE ===== */
+let visibleMonth=START_DATE.startOf("month");
+let selectedDate=null, selectedTime=null;
+let availability={};
+const pets=[];
+const syncBadge=document.getElementById("syncBadge");
 
-  /* ============== HELPERS (หัวเดือนภาษาไทย) ============== */
-  function buddhistYear(y){ return y + 543; }
-  function monthTitle(d){
-    const thMonths = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-    return `${thMonths[d.month()]} ${buddhistYear(d.year())}`;
-  }
+/* ===== Helpers ===== */
+const buddhistYear=y=>y+543;
+const monthTitle=d=>{
+  const th=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  return `${th[d.month()]} ${buddhistYear(d.year())}`;
+};
 
-  /* ============== Normalizers (GVIZ/CSV) ============== */
-  function normalizeDate(cell) {
-    const raw = (cell && typeof cell === "object" && ("v" in cell || "f" in cell))
-      ? (cell.v ?? cell.f) : cell;
-    if (!raw) return null;
-
-    if (typeof raw === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-      const d = dayjs.tz(raw); return d.isValid() ? d : null;
-    }
-    if (typeof raw === "string" && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
-      const [m,d,y] = raw.split("/").map(Number);
-      const dt = dayjs.tz({ year:y, month:m-1, day:d }); return dt.isValid() ? dt : null;
-    }
-    if (typeof raw === "string") {
-      const m = raw.match(/Date\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+))?\s*\)/);
-      if (m) {
-        const y=+m[1], mm=+m[2], dd=+m[3];
-        const hh=+(m[4] ?? 0), mi=+(m[5] ?? 0), ss=+(m[6] ?? 0);
-        const dt = dayjs.tz({ year:y, month:mm, day:dd, hour:hh, minute:mi, second:ss });
-        return dt.isValid() ? dt : null;
-      }
-    }
-    const guess = dayjs.tz(raw);
-    return guess.isValid() ? guess : null;
-  }
-
-  // คืนค่า "HH:mm" เสมอ รองรับทั้งสตริง/ตัวเลขจากชีต
-function normalizeTime(cell) {
-  const raw = (cell && typeof cell === "object" && ("v" in cell || "f" in cell))
-    ? (cell.v ?? cell.f) : cell;
-  if (raw == null) return null;
-
-  // ✅ เคสเวลาเป็นตัวเลขแบบ fraction-of-day ของ Google Sheets (เช่น 0.5 = 12:00)
-  if (typeof raw === "number" && raw >= 0 && raw < 1) {
-    const totalMinutes = Math.round(raw * 24 * 60);
-    const hh = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
-    const mm = String(totalMinutes % 60).padStart(2, "0");
-    return `${hh}:${mm}`;
-  }
-
-  let s = String(raw).trim();
-
-  // HH:mm หรือ HH:mm:ss
-  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.slice(0,5).padStart(5,"0");
-
-  // 2:00 PM / 2:00AM
-  const ampm = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (ampm) {
-    let hh = +ampm[1], mm = ampm[2];
-    const isPM = /pm/i.test(ampm[3]);
-    if (isPM && hh < 12) hh += 12;
-    if (!isPM && hh === 12) hh = 0;
-    return String(hh).padStart(2,"0") + ":" + mm;
-  }
-
-  // "14" -> "14:00"
-  if (/^\d{1,2}$/.test(s)) return String(+s).padStart(2,"0")+":00";
-
-  // fallback
+function normalizeDate(cell){
+  const raw=(cell&&typeof cell==="object"&&("v" in cell||"f" in cell))?(cell.v??cell.f):cell;
+  if(!raw) return null;
+  if(typeof raw==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(raw)){const d=dayjs.tz(raw);return d.isValid()?d:null;}
+  if(typeof raw==="string"&&/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)){const[m,d,y]=raw.split("/").map(Number);const dt=dayjs.tz({year:y,month:m-1,day:d});return dt.isValid()?dt:null;}
+  if(typeof raw==="string"){const m=raw.match(/Date\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+),\s*(\d+),\s*(\d+))?\)/);if(m){const[y,mm,dd,hh=0,mi=0,ss=0]=m.slice(1).map(Number);const dt=dayjs.tz({year:y,month:mm,day:dd,hour:hh,minute:mi,second:ss});return dt.isValid()?dt:null;}}
+  const guess=dayjs.tz(raw);return guess.isValid()?guess:null;
+}
+function normalizeTime(cell){
+  const raw=(cell&&typeof cell==="object"&&("v" in cell||"f" in cell))?(cell.v??cell.f):cell;
+  if(raw==null) return null;
+  if(typeof raw==="number"&&raw>=0&&raw<1){const mins=Math.round(raw*24*60);const hh=String(Math.floor(mins/60)).padStart(2,"0");const mm=String(mins%60).padStart(2,"0");return `${hh}:${mm}`;}
+  let s=String(raw).trim();
+  if(/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.slice(0,5).padStart(5,"0");
+  const ampm=s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if(ampm){let hh=+ampm[1],mm=ampm[2];const isPM=/pm/i.test(ampm[3]);if(isPM&&hh<12)hh+=12; if(!isPM&&hh===12)hh=0;return `${String(hh).padStart(2,"0")}:${mm}`;}
+  if(/^\d{1,2}$/.test(s)) return `${String(+s).padStart(2,"0")}:00`;
   return s.slice(0,5);
 }
+function mapStatus(val){
+  const s=(typeof val==="boolean"?(val?"true":"false"):(val??"")).toString().trim().toLowerCase();
+  if(s==="true"||s.includes("ว่าง")) return "ว่าง";
+  if(s==="false"||s.includes("เต็ม")) return "เต็ม";
+  if(s.includes("ปิด")) return "ปิด";
+  return "ว่าง";
+}
 
-
-  function mapStatus(val) {
-    const s = (typeof val === "boolean" ? (val ? "true" : "false") : (val ?? ""))
-      .toString().trim().toLowerCase();
-    if (s === "true" || s.includes("ว่าง")) return "ว่าง";
-    if (s === "false" || s.includes("เต็ม")) return "เต็ม";
-    if (s.includes("ปิด")) return "ปิด";
-    return "ว่าง";
+/* ===== Parsers ===== */
+function parseGviz(text){
+  const obj=JSON.parse(text.substring(text.indexOf("{"),text.lastIndexOf("}")+1));
+  const cols=obj.table.cols||[];
+  const labels=cols.map(c=>(c.label||"").toLowerCase());
+  const types=cols.map(c=>(c.type||"").toLowerCase());
+  let dateIdx=labels.indexOf("date");
+  let timeIdx=labels.indexOf("time");
+  let statusIdx=labels.indexOf("status");
+  if(dateIdx===-1) dateIdx=types.indexOf("date");
+  if(timeIdx===-1) timeIdx=types.indexOf("timeofday");
+  if(timeIdx===-1) timeIdx=(dateIdx!==1?1:0);
+  if(statusIdx===-1) statusIdx=[0,1,2].find(i=>i!==dateIdx&&i!==timeIdx)??2;
+  if(dateIdx<0||timeIdx<0||statusIdx<0){console.error("Resolve GViz columns failed", {labels,types});return {};}
+  const out={};
+  for(const r of (obj.table.rows||[])){
+    const c=r.c||[];
+    const d=normalizeDate(c[dateIdx]); const t=normalizeTime(c[timeIdx]); const s=c[statusIdx]?.v??c[statusIdx]?.f??"";
+    if(!d||!d.isValid?.()||!t) continue;
+    const key=d.format("YYYY-MM-DD"); if(!out[key]) out[key]={}; out[key][t]=mapStatus(s);
   }
-
-  /* =================== PARSERS =================== */
- <script>
-  function parseGviz(text) {
-    const obj = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
-
-    const colsMeta = obj.table.cols || [];
-    const labels   = colsMeta.map(c => (c.label || "").toString().trim().toLowerCase());
-    const types    = colsMeta.map(c => (c.type  || "").toString().trim().toLowerCase());
-
-    // พยายามจับ index จาก label ก่อน
-    let dateIdx   = labels.indexOf("date");
-    let timeIdx   = labels.indexOf("time");
-    let statusIdx = labels.indexOf("status");
-
-    // ถ้า label ว่าง ให้ fallback ด้วย type/ตำแหน่ง
-    if (dateIdx === -1)   dateIdx   = types.indexOf("date");            // คอลัมน์ชนิดวันที่
-    if (timeIdx === -1)   timeIdx   = types.indexOf("timeofday");       // ถ้ามีชนิด timeofday
-    if (timeIdx === -1)   timeIdx   = (dateIdx !== 1 ? 1 : 0);          // เดาว่าอยู่คอลัมน์ถัดจาก date
-    if (statusIdx === -1) statusIdx = [0,1,2].find(i => i!==dateIdx && i!==timeIdx) ?? 2;
-
-    // ถ้ายังหาไม่ได้จริง ๆ ให้แจ้งเตือนชัด ๆ
-    if (dateIdx < 0 || timeIdx < 0 || statusIdx < 0) {
-      console.error("GViz column indices resolve failed:", { labels, types, dateIdx, timeIdx, statusIdx });
-      return {};
-    }
-
-    const out = {};
-    for (const row of (obj.table.rows || [])) {
-      const c = row.c || [];
-      const d = normalizeDate(c[dateIdx]);
-      const t = normalizeTime(c[timeIdx]);
-      const s = c[statusIdx]?.v ?? c[statusIdx]?.f ?? "";
-
-      if (!d || !d.isValid?.() || !t) continue;
-
-      const dateStr = d.format("YYYY-MM-DD");
-      if (!out[dateStr]) out[dateStr] = {};
-      out[dateStr][t] = mapStatus(s);
-    }
-    return out;
+  return out;
+}
+function parseCsv(text){
+  const lines=text.replace(/\r/g,"").split("\n").filter(Boolean);
+  const header=lines[0].split(",").map(s=>s.trim().toLowerCase());
+  const iD=header.indexOf("date"), iT=header.indexOf("time"), iS=header.indexOf("status");
+  const out={};
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(",").map(s=>s.trim());
+    const dRaw=cols[iD], tRaw=cols[iT], s=cols[iS]; if(!dRaw||!tRaw) continue;
+    let d=null;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(dRaw)) d=dayjs.tz(dRaw);
+    else if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dRaw)){const[m,dd,y]=dRaw.split("/").map(Number); d=dayjs.tz({year:y,month:m-1,day:dd});}
+    else d=dayjs.tz(dRaw);
+    if(!d||!d.isValid()) continue;
+    const key=d.format("YYYY-MM-DD");
+    const t=normalizeTime(tRaw); if(!t) continue;
+    if(!out[key]) out[key]={}; out[key][t]=mapStatus(s);
   }
-</script>
+  return out;
+}
 
-
-  /* =================== FETCH SHEET =================== */
-  async function fetchSheet() {
-    if (syncBadge) { syncBadge.textContent = "กำลังโหลด…"; syncBadge.className="px-2 py-1 rounded bg-yellow-100 text-yellow-800"; }
-    try {
-      const r1 = await fetch(SHEET_GVIZ_JSON + "&ts=" + Date.now(), { cache:"no-store" });
-      if (!r1.ok) throw new Error("GVIZ HTTP " + r1.status);
-      const t1 = await r1.text();
-      availability = parseGviz(t1);
-      syncBadge.textContent = "โหลดสำเร็จ (gviz) " + dayjs().format("HH:mm");
-      syncBadge.className = "px-2 py-1 rounded bg-green-100 text-green-800";
-    } catch (e1) {
-      console.warn("GVIZ ล้มเหลว → ใช้ CSV", e1);
-      try {
-        const r2 = await fetch(SHEET_CSV_URL + "&ts=" + Date.now(), { cache:"no-store" });
-        if (!r2.ok) throw new Error("CSV HTTP " + r2.status);
-        const t2 = await r2.text();
-        availability = parseCsv(t2);
-        syncBadge.textContent = "โหลดสำเร็จ (csv) " + dayjs().format("HH:mm");
-        syncBadge.className = "px-2 py-1 rounded bg-green-100 text-green-800";
-      } catch (e2) {
-        console.error("โหลดชีตผิดพลาด:", e2);
-        syncBadge.textContent = "โหลดข้อมูลไม่สำเร็จ";
-        syncBadge.className = "px-2 py-1 rounded bg-red-100 text-red-800";
-        availability = {};
-      }
+/* ===== Fetch Sheet ===== */
+async function fetchSheet(){
+  syncBadge.textContent="กำลังโหลด…"; syncBadge.className="px-2 py-1 rounded bg-yellow-100 text-yellow-800";
+  try{
+    const r=await fetch(SHEET_GVIZ_JSON+"&ts="+Date.now(),{cache:"no-store"});
+    if(!r.ok) throw new Error("GVIZ "+r.status);
+    availability=parseGviz(await r.text());
+    syncBadge.textContent="โหลดสำเร็จ (gviz) "+dayjs().format("HH:mm");
+    syncBadge.className="px-2 py-1 rounded bg-green-100 text-green-800";
+  }catch(e1){
+    console.warn("GVIZ fail → CSV",e1);
+    try{
+      const r2=await fetch(SHEET_CSV_URL+"&ts="+Date.now(),{cache:"no-store"});
+      if(!r2.ok) throw new Error("CSV "+r2.status);
+      availability=parseCsv(await r2.text());
+      syncBadge.textContent="โหลดสำเร็จ (csv) "+dayjs().format("HH:mm");
+      syncBadge.className="px-2 py-1 rounded bg-green-100 text-green-800";
+    }catch(e2){
+      console.error("โหลดชีตผิดพลาด:",e2);
+      syncBadge.textContent="โหลดข้อมูลไม่สำเร็จ";
+      syncBadge.className="px-2 py-1 rounded bg-red-100 text-red-800";
+      availability={};
     }
   }
+}
 
-  /* =================== CALENDAR UI =================== */
-  function getDayStatus(dateStr){
-    const daySlots = availability[dateStr] || {};
-    let free=0, full=0, closed=false;
-    for (const t of TIME_SLOTS) {
-      const v = (daySlots[t] ?? "ว่าง");
-      if (v === "ปิด") { closed = true; break; }
-      if (v === "เต็ม") full++; else free++;
+/* ===== UI Calendar ===== */
+function getDayStatus(dateStr){
+  const daySlots=availability[dateStr]||{};
+  let free=0, full=0, closed=false;
+  for(const t of TIME_SLOTS){
+    const v=(daySlots[t]??"ว่าง");
+    if(v==="ปิด"){closed=true;break;}
+    if(v==="เต็ม") full++; else free++;
+  }
+  if(closed) return "gray";
+  if(free===0) return "red";
+  if(full===0) return "green";
+  return "yellow";
+}
+function renderCalendar(){
+  document.getElementById("monthTitle").textContent=monthTitle(visibleMonth);
+  const start=visibleMonth.startOf("month").startOf("week");
+  const end=visibleMonth.endOf("month").endOf("week");
+  const grid=document.getElementById("calendarGrid"); grid.innerHTML="";
+  let d=start.clone();
+  while(d.isBefore(end)||d.isSame(end,"day")){
+    const dateStr=d.format("YYYY-MM-DD");
+    const inRange=d.isAfter(START_DATE.subtract(1,"day"))&&d.isBefore(END_DATE.add(1,"day"));
+    const isCurMonth=d.month()===visibleMonth.month();
+    const status=inRange?getDayStatus(dateStr):"gray";
+    const btn=document.createElement("button");
+    btn.type="button"; btn.disabled=!inRange||status==="gray";
+    btn.className="aspect-square rounded-xl border text-sm flex flex-col items-center justify-center gap-1 "+
+      (dateStr===selectedDate?"bg-indigo-50 border-indigo-300":"bg-white hover:bg-gray-50")+
+      (!isCurMonth?" opacity-50":"")+(!inRange||status==="gray"?" opacity-40 cursor-not-allowed":"");
+    btn.innerHTML=`<div class="leading-none">${d.date()}</div>
+      <span class="inline-block w-2.5 h-2.5 rounded-full ${status==='green'?'bg-green-500':status==='yellow'?'bg-yellow-500':status==='red'?'bg-red-500':'bg-gray-400'}"></span>`;
+    btn.addEventListener("click",()=>{ if(btn.disabled) return; selectedDate=dateStr; selectedTime=null; showTimes(); renderCalendar(); updateStep(2);});
+    grid.appendChild(btn);
+    d=d.add(1,"day");
+  }
+}
+function showTimes(){
+  const box=document.getElementById("timeBox");
+  if(!selectedDate){ box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  document.getElementById("chosenDateLabel").textContent=`(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
+  const grid=document.getElementById("timeGrid"); grid.innerHTML="";
+  const daySlots=availability[selectedDate]||{};
+  TIME_SLOTS.forEach(t=>{
+    const v=(daySlots[t]??"ว่าง"), taken=(v==="เต็ม")||(v==="ปิด");
+    const btn=document.createElement("button");
+    btn.type="button"; btn.textContent=t; btn.disabled=taken;
+    btn.className="py-3 rounded-xl border text-sm font-medium "+(taken?"bg-gray-100 text-gray-400 cursor-not-allowed":"bg-white hover:bg-indigo-50");
+    btn.addEventListener("click",()=>{[...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2);});
+    grid.appendChild(btn);
+  });
+}
+
+/* ===== Steps & actions ===== */
+function updateStep(step){
+  for(let i=1;i<=5;i++){
+    const li=document.getElementById(`step${i}`);
+    if(i<step) li.className="flex items-start gap-2 text-green-700";
+    else if(i===step) li.className="flex items-start gap-2";
+    else li.className="flex items-start gap-2 text-gray-600";
+  }
+  document.getElementById("formCustomer").classList.toggle("hidden",step!==2);
+  document.getElementById("formPets").classList.toggle("hidden",step!==3);
+  document.getElementById("formTerms").classList.toggle("hidden",step!==4);
+  document.getElementById("formPay").classList.toggle("hidden",step!==5);
+}
+document.getElementById("toPets").addEventListener("click",()=>{
+  const name=document.getElementById("custName").value.trim();
+  const phone=document.getElementById("custPhone").value.trim();
+  if(!selectedDate||!selectedTime) return alert("กรุณาเลือกวันและเวลาหน้าแรก");
+  if(!name||!phone) return alert("กรุณากรอกชื่อและเบอร์โทร");
+  if(pets.length===0) addPetForm();
+  updateStep(3);
+});
+document.getElementById("addPet").addEventListener("click",()=>{
+  if(pets.length>=3) return alert("เพิ่มได้สูงสุด 3 ตัว");
+  addPetForm();
+});
+function addPetForm(){
+  const idx=pets.length+1;
+  const wrap=document.createElement("div");
+  wrap.className="p-3 border rounded-xl";
+  wrap.innerHTML=`
+    <div class="text-sm font-medium mb-2">น้องตัวที่ ${idx}</div>
+    <div class="grid gap-2">
+      <label class="text-xs text-gray-600">ชื่อน้อง *</label>
+      <input class="border rounded-xl p-2" data-role="petName" placeholder="เช่น อุ๋งอุ๋ง" />
+      <label class="text-xs text-gray-600">ประเภท *</label>
+      <select class="border rounded-xl p-2" data-role="petType">
+        <option value="">เลือกประเภท</option>
+        <option>สุนัข</option><option>แมว</option><option>กระต่าย</option><option>อื่นๆ</option>
+      </select>
+      <label class="text-xs text-gray-600">สายพันธุ์ (ไม่บังคับ)</label>
+      <input class="border rounded-xl p-2" data-role="breed" placeholder="เช่น Poodle / Scottish Fold" />
+      <label class="text-xs text-gray-600">ประเภทบริการ *</label>
+      <select class="border rounded-xl p-2" data-role="service">
+        <option value="">เลือกบริการ</option>
+        <option>อาบน้ำ</option><option>ตัดขน</option><option>อาบน้ำและตัดขน</option><option>บริการเสริมอย่างเดียว</option>
+      </select>
+      <label class="text-xs text-gray-600">ข้อควรระวัง</label>
+      <textarea class="border rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
+    </div>`;
+  document.getElementById("petsContainer").appendChild(wrap);
+  pets.push(wrap);
+}
+document.getElementById("toTerms").addEventListener("click",()=>{
+  if(pets.length===0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
+  let ok=false;
+  for(const wrap of pets){
+    const petName=wrap.querySelector('[data-role="petName"]').value.trim();
+    const petType=wrap.querySelector('[data-role="petType"]').value.trim();
+    const service=wrap.querySelector('[data-role="service"]').value.trim();
+    if(!petName && !petType && !service) continue;
+    if(!petName || !petType || !service) return alert("กรอก ชื่อน้อง / ประเภท / ประเภทบริการ ให้ครบในแต่ละตัว");
+    ok=true;
+  }
+  if(!ok) return alert("กรุณากรอกข้อมูลน้องอย่างน้อย 1 ตัว");
+  updateStep(4);
+});
+document.getElementById("agree").addEventListener("change",e=>{
+  document.getElementById("toPayment").disabled=!e.target.checked;
+});
+document.getElementById("toPayment").addEventListener("click",()=>updateStep(5));
+
+/* ===== Deep link to LINE OA with summary ===== */
+document.getElementById("goLine").addEventListener("click",()=>{
+  const name=document.getElementById("custName").value.trim();
+  const phone=document.getElementById("custPhone").value.trim();
+  if(!selectedDate||!selectedTime) return alert("ยังไม่ได้เลือกวันเวลา");
+  if(!name||!phone) return alert("กรุณากรอกชื่อและเบอร์ในขั้นตอนที่ 2");
+
+  // รวบรวมรายละเอียดน้อง
+  const petLines=[];
+  pets.forEach((wrap,i)=>{
+    const n=wrap.querySelector('[data-role="petName"]').value.trim();
+    const t=wrap.querySelector('[data-role="petType"]').value.trim();
+    const s=wrap.querySelector('[data-role="service"]').value.trim();
+    const b=wrap.querySelector('[data-role="breed"]').value.trim();
+    const note=wrap.querySelector('[data-role="notes"]').value.trim();
+    if(n||t||s){
+      petLines.push(`${i+1}. ${n||"-"} / ${t||"-"} / ${s||"-"}${b?` (${b})`:""}${note?` — ${note}`:""}`);
     }
-    if (closed) return "gray";
-    if (free === 0) return "red";
-    if (full === 0) return "green";
-    return "yellow";
-  }
-
-  function renderCalendar() {
-    document.getElementById("monthTitle").textContent = monthTitle(visibleMonth);
-
-    const start = visibleMonth.startOf("month").startOf("week");
-    const end   = visibleMonth.endOf("month").endOf("week");
-    const grid  = document.getElementById("calendarGrid");
-    grid.innerHTML = "";
-
-    let d = start.clone();
-    while (d.isBefore(end) || d.isSame(end, "day")) {
-      const dateStr = d.format("YYYY-MM-DD");
-      const inRange = d.isAfter(START_DATE.subtract(1,"day")) && d.isBefore(END_DATE.add(1,"day"));
-      const isCurMonth = d.month() === visibleMonth.month();
-      const status = inRange ? getDayStatus(dateStr) : "gray";
-
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.disabled = !inRange || status === "gray";
-      btn.className =
-        "aspect-square rounded-xl border text-sm flex flex-col items-center justify-center gap-1 " +
-        (dateStr === selectedDate ? "bg-indigo-50 border-indigo-300" : "bg-white hover:bg-gray-50") +
-        (!isCurMonth ? " opacity-50" : "") +
-        (!inRange || status==="gray" ? " opacity-40 cursor-not-allowed" : "");
-
-      btn.innerHTML = `
-        <div class="leading-none">${d.date()}</div>
-        <span class="inline-block w-2.5 h-2.5 rounded-full ${status==='green'?'bg-green-500':status==='yellow'?'bg-yellow-500':status==='red'?'bg-red-500':'bg-gray-400'}"></span>
-      `;
-      btn.addEventListener("click", () => {
-        if (btn.disabled) return;
-        selectedDate = dateStr;
-        selectedTime = null;
-        showTimes();
-        renderCalendar();
-        updateStep(2);
-      });
-
-      grid.appendChild(btn);
-      d = d.add(1, "day");
-    }
-  }
-
-  function showTimes(){
-    const box = document.getElementById("timeBox");
-    if (!selectedDate) { box.classList.add("hidden"); return; }
-    box.classList.remove("hidden");
-    document.getElementById("chosenDateLabel").textContent =
-      `(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
-
-    const grid = document.getElementById("timeGrid");
-    grid.innerHTML = "";
-    const daySlots = availability[selectedDate] || {};
-    TIME_SLOTS.forEach(t => {
-      const v = (daySlots[t] ?? "ว่าง");
-      const taken = (v === "เต็ม") || (v === "ปิด");
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = t;
-      btn.disabled = taken;
-      btn.className =
-        "py-3 rounded-xl border text-sm font-medium " +
-        (taken ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-indigo-50");
-      btn.addEventListener("click", () => {
-        [...grid.children].forEach(el => el.classList.remove("slot-active"));
-        btn.classList.add("slot-active");
-        selectedTime = t;
-        updateStep(2);
-      });
-      grid.appendChild(btn);
-    });
-  }
-
-  /* =================== STEPS =================== */
-  function updateStep(step){
-    for (let i=1; i<=5; i++){
-      const li = document.getElementById(`step${i}`);
-      if (i < step) li.className = "flex items-start gap-2 text-green-700";
-      else if (i === step) li.className = "flex items-start gap-2";
-      else li.className = "flex items-start gap-2 text-gray-600";
-    }
-    document.getElementById("formCustomer").classList.toggle("hidden", step!==2);
-    document.getElementById("formPets").classList.toggle("hidden", step!==3);
-    document.getElementById("formTerms").classList.toggle("hidden", step!==4);
-    document.getElementById("formPay").classList.toggle("hidden", step!==5);
-  }
-
-  document.getElementById("toPets").addEventListener("click", () => {
-    const name  = document.getElementById("custName").value.trim();
-    const phone = document.getElementById("custPhone").value.trim();
-    if (!selectedDate || !selectedTime) return alert("กรุณาเลือกวันและเวลาหน้าแรก");
-    if (!name || !phone) return alert("กรุณากรอกชื่อและเบอร์โทร");
-    if (pets.length === 0) addPetForm();
-    updateStep(3);
   });
 
-  document.getElementById("addPet").addEventListener("click", () => {
-    if (pets.length >= 3) return alert("เพิ่มได้สูงสุด 3 ตัว");
-    addPetForm();
-  });
+  const dateLabel=`${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())}`;
+  const msg=[
+    "📌 แจ้งจองคิวจากหน้าเว็บ",
+    `• วันเวลา: ${dateLabel} เวลา ${selectedTime} น.`,
+    `• ลูกค้า: ${name}`,
+    `• โทร: ${phone}`,
+    (petLines.length?`• รายละเอียดน้อง:\n   - ${petLines.join("\n   - ")}`:"• รายละเอียดน้อง: -"),
+    "— ส่งจากระบบจองคิว PO Grooming —"
+  ].join("\n");
 
-  function addPetForm(){
-    const idx = pets.length + 1;
-    const wrap = document.createElement("div");
-    wrap.className = "p-3 border rounded-xl";
-    wrap.innerHTML = `
-      <div class="text-sm font-medium mb-2">น้องตัวที่ ${idx}</div>
-      <div class="grid gap-2">
-        <label class="text-xs text-gray-600">ชื่อน้อง *</label>
-        <input class="border rounded-xl p-2" data-role="petName" placeholder="เช่น อุ๋งอุ๋ง" />
-        <label class="text-xs text-gray-600">ประเภท *</label>
-        <select class="border rounded-xl p-2" data-role="petType">
-          <option value="">เลือกประเภท</option>
-          <option>สุนัข</option><option>แมว</option><option>กระต่าย</option><option>อื่นๆ</option>
-        </select>
-        <label class="text-xs text-gray-600">สายพันธุ์ (ไม่บังคับ)</label>
-        <input class="border rounded-xl p-2" data-role="breed" placeholder="เช่น Poodle / Scottish Fold" />
-        <label class="text-xs text-gray-600">ประเภทบริการ *</label>
-        <select class="border rounded-xl p-2" data-role="service">
-          <option value="">เลือกบริการ</option>
-          <option>อาบน้ำ</option><option>ตัดขน</option><option>อาบน้ำและตัดขน</option><option>บริการเสริมอย่างเดียว</option>
-        </select>
-        <label class="text-xs text-gray-600">ข้อควรระวัง</label>
-        <textarea class="border rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
-      </div>
-    `;
-    document.getElementById("petsContainer").appendChild(wrap);
-    pets.push(wrap);
-  }
+  const url=`https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?text=${encodeURIComponent(msg)}`;
+  window.location.href=url;
+});
 
-  document.getElementById("toTerms").addEventListener("click", () => {
-    if (pets.length === 0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
-    let ok = false;
-    for (const wrap of pets){
-      const petName = wrap.querySelector('[data-role="petName"]').value.trim();
-      const petType = wrap.querySelector('[data-role="petType"]').value.trim();
-      const service = wrap.querySelector('[data-role="service"]').value.trim();
-      if (!petName && !petType && !service) continue;
-      if (!petName || !petType || !service) return alert("กรอก ชื่อน้อง / ประเภท / ประเภทบริการ ให้ครบในแต่ละตัว");
-      ok = true;
-    }
-    if (!ok) return alert("กรุณากรอกข้อมูลน้องอย่างน้อย 1 ตัว");
-    updateStep(4);
-  });
+/* ===== Nav & boot ===== */
+document.getElementById("prevMonth").addEventListener("click",()=>{const prev=visibleMonth.subtract(1,"month"); if(prev.isBefore(START_DATE,"month"))return; visibleMonth=prev; renderCalendar();});
+document.getElementById("nextMonth").addEventListener("click",()=>{const next=visibleMonth.add(1,"month"); if(next.isAfter(END_DATE,"month"))return; visibleMonth=next; renderCalendar();});
+document.getElementById("btnReload").addEventListener("click",async()=>{await fetchSheet(); renderCalendar(); if(selectedDate) showTimes();});
 
-  document.getElementById("agree").addEventListener("change", (e) => {
-    document.getElementById("toPayment").disabled = !e.target.checked;
-  });
-  document.getElementById("toPayment").addEventListener("click", () => { updateStep(5); });
-  document.getElementById("goLine").addEventListener("click", () => { window.location.href = LINE_OA_LINK; });
-
-  /* ============== Month nav + Reload ============== */
-  document.getElementById("prevMonth").addEventListener("click", () => {
-    const prev = visibleMonth.subtract(1, "month");
-    if (prev.isBefore(START_DATE, "month")) return;
-    visibleMonth = prev; renderCalendar();
-  });
-  document.getElementById("nextMonth").addEventListener("click", () => {
-    const next = visibleMonth.add(1, "month");
-    if (next.isAfter(END_DATE, "month")) return;
-    visibleMonth = next; renderCalendar();
-  });
-  document.getElementById("btnReload").addEventListener("click", async () => {
-    await fetchSheet(); renderCalendar(); if (selectedDate) showTimes();
-  });
-
-  /* ======================= BOOT ======================= */
-  (async function init(){
-    await fetchSheet();
-    renderCalendar();
-  })();
+(async function init(){ await fetchSheet(); renderCalendar(); })();
 </script>
 </body>
 </html>
-
-
-
-
