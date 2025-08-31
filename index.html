@@ -240,57 +240,48 @@ function normalizeTime(cell) {
   }
 
   /* =================== PARSERS =================== */
+ <script>
   function parseGviz(text) {
-    const json = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
-    const cols = json.table.cols.map(c => (c.label || "").toString().trim().toLowerCase());
-    const dateIdx = cols.indexOf("date");
-    const timeIdx = cols.indexOf("time");
-    const statusIdx = cols.indexOf("status");
+    const obj = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
+
+    const colsMeta = obj.table.cols || [];
+    const labels   = colsMeta.map(c => (c.label || "").toString().trim().toLowerCase());
+    const types    = colsMeta.map(c => (c.type  || "").toString().trim().toLowerCase());
+
+    // พยายามจับ index จาก label ก่อน
+    let dateIdx   = labels.indexOf("date");
+    let timeIdx   = labels.indexOf("time");
+    let statusIdx = labels.indexOf("status");
+
+    // ถ้า label ว่าง ให้ fallback ด้วย type/ตำแหน่ง
+    if (dateIdx === -1)   dateIdx   = types.indexOf("date");            // คอลัมน์ชนิดวันที่
+    if (timeIdx === -1)   timeIdx   = types.indexOf("timeofday");       // ถ้ามีชนิด timeofday
+    if (timeIdx === -1)   timeIdx   = (dateIdx !== 1 ? 1 : 0);          // เดาว่าอยู่คอลัมน์ถัดจาก date
+    if (statusIdx === -1) statusIdx = [0,1,2].find(i => i!==dateIdx && i!==timeIdx) ?? 2;
+
+    // ถ้ายังหาไม่ได้จริง ๆ ให้แจ้งเตือนชัด ๆ
+    if (dateIdx < 0 || timeIdx < 0 || statusIdx < 0) {
+      console.error("GViz column indices resolve failed:", { labels, types, dateIdx, timeIdx, statusIdx });
+      return {};
+    }
 
     const out = {};
-    for (const r of json.table.rows) {
-      const c = r.c || [];
+    for (const row of (obj.table.rows || [])) {
+      const c = row.c || [];
       const d = normalizeDate(c[dateIdx]);
       const t = normalizeTime(c[timeIdx]);
       const s = c[statusIdx]?.v ?? c[statusIdx]?.f ?? "";
+
       if (!d || !d.isValid?.() || !t) continue;
+
       const dateStr = d.format("YYYY-MM-DD");
       if (!out[dateStr]) out[dateStr] = {};
       out[dateStr][t] = mapStatus(s);
     }
     return out;
   }
+</script>
 
-  function parseCsv(text) {
-    const lines = text.replace(/\r/g, "").split("\n").filter(Boolean);
-    const header = lines[0].split(",").map(s => s.trim().toLowerCase());
-    const idxDate = header.indexOf("date");
-    const idxTime = header.indexOf("time");
-    const idxStatus = header.indexOf("status");
-
-    const out = {};
-    for (let i=1; i<lines.length; i++) {
-      const cols = lines[i].split(",").map(s => s.trim());
-      const dRaw = cols[idxDate], tRaw = cols[idxTime], s = cols[idxStatus];
-      if (!dRaw || !tRaw) continue;
-
-      let d = null;
-      if (/^\d{4}-\d{2}-\d{2}$/.test(dRaw)) d = dayjs.tz(dRaw);
-      else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dRaw)) {
-        const [m,dd,y] = dRaw.split("/").map(Number);
-        d = dayjs.tz({ year:y, month:m-1, day:dd });
-      } else d = dayjs.tz(dRaw);
-      if (!d || !d.isValid()) continue;
-
-      const dateStr = d.format("YYYY-MM-DD");
-      const timeStr = normalizeTime(tRaw);
-      if (!timeStr) continue;
-
-      if (!out[dateStr]) out[dateStr] = {};
-      out[dateStr][timeStr] = mapStatus(s);
-    }
-    return out;
-  }
 
   /* =================== FETCH SHEET =================== */
   async function fetchSheet() {
@@ -508,6 +499,7 @@ function normalizeTime(cell) {
 </script>
 </body>
 </html>
+
 
 
 
