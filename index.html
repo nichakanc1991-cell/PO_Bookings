@@ -193,22 +193,42 @@
     return guess.isValid() ? guess : null;
   }
 
-  function normalizeTime(cell) {
-    const raw = (cell && typeof cell === "object" && ("v" in cell || "f" in cell))
-      ? (cell.v ?? cell.f) : cell;
-    if (!raw) return null;
-    let s = String(raw).trim();
+  // คืนค่า "HH:mm" เสมอ รองรับทั้งสตริง/ตัวเลขจากชีต
+function normalizeTime(cell) {
+  const raw = (cell && typeof cell === "object" && ("v" in cell || "f" in cell))
+    ? (cell.v ?? cell.f) : cell;
+  if (raw == null) return null;
 
-    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.slice(0,5).padStart(5,"0");
-    const ampm = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-    if (ampm) {
-      let hh = +ampm[1], mm = ampm[2], isPM = /pm/i.test(ampm[3]);
-      if (isPM && hh < 12) hh += 12; if (!isPM && hh === 12) hh = 0;
-      return String(hh).padStart(2,"0")+":"+mm;
-    }
-    if (/^\d{1,2}$/.test(s)) return String(+s).padStart(2,"0")+":00";
-    return s.slice(0,5);
+  // ✅ เคสเวลาเป็นตัวเลขแบบ fraction-of-day ของ Google Sheets (เช่น 0.5 = 12:00)
+  if (typeof raw === "number" && raw >= 0 && raw < 1) {
+    const totalMinutes = Math.round(raw * 24 * 60);
+    const hh = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+    const mm = String(totalMinutes % 60).padStart(2, "0");
+    return `${hh}:${mm}`;
   }
+
+  let s = String(raw).trim();
+
+  // HH:mm หรือ HH:mm:ss
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.slice(0,5).padStart(5,"0");
+
+  // 2:00 PM / 2:00AM
+  const ampm = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (ampm) {
+    let hh = +ampm[1], mm = ampm[2];
+    const isPM = /pm/i.test(ampm[3]);
+    if (isPM && hh < 12) hh += 12;
+    if (!isPM && hh === 12) hh = 0;
+    return String(hh).padStart(2,"0") + ":" + mm;
+  }
+
+  // "14" -> "14:00"
+  if (/^\d{1,2}$/.test(s)) return String(+s).padStart(2,"0")+":00";
+
+  // fallback
+  return s.slice(0,5);
+}
+
 
   function mapStatus(val) {
     const s = (typeof val === "boolean" ? (val ? "true" : "false") : (val ?? ""))
@@ -488,5 +508,6 @@
 </script>
 </body>
 </html>
+
 
 
