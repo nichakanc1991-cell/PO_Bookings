@@ -48,12 +48,27 @@
           <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-gray-400 inline-block"></span>ปิด</div>
         </div>
       </div>
+<!-- วางต่อจาก legend ใต้ปฏิทิน (ภายในกล่องปฏิทินเดียวกัน) -->
+<div class="mt-3 rounded-xl border bg-amber-50 text-amber-900 text-xs p-3 leading-relaxed">
+  <div class="font-semibold mb-1">⌛ เวลาโดยประมาณของบริการ</div>
+  <ul class="list-disc pl-5 space-y-0.5">
+    <li>บริการเสริมอย่างเดียว — <span class="font-medium">1 ชั่วโมง</span></li>
+    <li>อาบน้ำอย่างเดียว หรือ ตัดขนอย่างเดียว — <span class="font-medium">2 ชั่วโมง</span></li>
+    <li>อาบน้ำและตัดขน — <span class="font-medium">3 ชั่วโมง</span></li>
+  </ul>
+  <div class="mt-2 text-[11px] text-amber-800">
+    * ระบบจะให้เลือกได้เฉพาะบริการที่ใช้เวลาไม่เกิน “เวลาว่างต่อเนื่อง” ของช่วงที่คุณเลือก
+  </div>
+</div>
 
       <div id="timeBox" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
         <div class="text-sm text-gray-700 mb-2">เลือกเวลา
           <span id="chosenDateLabel" class="font-semibold"></span>
         </div>
         <div id="timeGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
+
+        <!-- บอกใบ้งานที่ทำได้ตามเวลาที่เหลือ -->
+        <div id="allowedServiceHint" class="text-xs text-gray-600 mt-3 hidden"></div>
       </div>
     </section>
 
@@ -84,9 +99,15 @@
       <div id="formPets" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
         <div class="text-sm font-semibold mb-2">รายละเอียดน้อง (สูงสุด 3 ตัว)</div>
         <div id="petsContainer" class="space-y-4"></div>
-        <section class="space-y-3 mb-4">
-          <img src="./warning.png" class="w-full rounded-lg border object-contain" alt="ข้อควรระวังสำคัญ">
+
+        <!-- รูป/รายการบริการเสริม -->
+        <section class="space-y-2 mb-4">
+          <img src="./addons.png" class="w-full rounded-lg border object-contain" alt="บริการเสริมและราคา (ถ้ายังไม่ใส่ไฟล์ รูปจะไม่แสดง)">
+          <div class="text-xs text-gray-600">
+            * เลือก “บริการเสริมอย่างเดียว” ได้เมื่อเวลาที่เหลือพอ (1 ชม.) เช่น ขัดฟัน, ตัดเล็บ, ทำความสะอาดหู ฯลฯ
+          </div>
         </section>
+
         <div class="mt-4 flex gap-2">
           <button id="addPet" class="px-3 py-2 rounded-xl border hover:bg-gray-50 text-sm">+ เพิ่มตัวที่ 2/3</button>
           <button id="toTerms" class="flex-1 px-3 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
@@ -133,10 +154,19 @@ const START_DATE=dayjs.tz("2025-09-01");
 const END_DATE=dayjs.tz("2025-12-31");
 const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00","19:00"];
 
+/* งานบริการ + เวลาที่ใช้ (ชั่วโมง) */
+const SERVICE_DURATION = {
+  "บริการเสริมอย่างเดียว": 1,
+  "อาบน้ำ": 2,
+  "ตัดขน": 2,
+  "อาบน้ำและตัดขน": 3,
+};
+
 /* ===== STATE ===== */
 let visibleMonth=START_DATE.startOf("month");
 let selectedDate=null, selectedTime=null;
 let availability={};
+let allowedServicesForSelected = Object.keys(SERVICE_DURATION); // อัปเดตตามเวลาที่เลือก
 const pets=[];
 const syncBadge=document.getElementById("syncBadge");
 
@@ -147,38 +177,53 @@ const monthTitle=d=>{
   return `${th[d.month()]} ${buddhistYear(d.year())}`;
 };
 
-
-// แทนที่ทั้งฟังก์ชันเดิม
-function normalizeTime(cell) {
-  // ดึงค่า v/f ถ้า cell เป็นอ็อบเจ็กต์ของ gviz
+/* ---- NORMALIZERS (มี normalizeDate ครบ) ---- */
+function normalizeDate(cell) {
   const raw = (cell && typeof cell === "object" && ("v" in cell || "f" in cell))
-    ? (cell.f ?? cell.v)   // ⚠️ ให้ความสำคัญกับ 'f' ก่อน (บางที gviz ให้ "2:00 PM")
+    ? (cell.v ?? cell.f) : cell;
+  if (!raw) return null;
+
+  if (typeof raw === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const d = dayjs.tz(raw); return d.isValid() ? d : null;
+  }
+  if (typeof raw === "string" && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
+    const [m,d,y] = raw.split("/").map(Number);
+    const dt = dayjs.tz({ year:y, month:m-1, day:d }); return dt.isValid() ? dt : null;
+  }
+  if (typeof raw === "string") {
+    const m = raw.match(/Date\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+))?\s*\)/);
+    if (m) {
+      const y=+m[1], mm=+m[2], dd=+m[3];
+      const hh=+(m[4] ?? 0), mi=+(m[5] ?? 0), ss=+(m[6] ?? 0);
+      const dt = dayjs.tz({ year:y, month:mm, day:dd, hour:hh, minute:mi, second:ss });
+      return dt.isValid() ? dt : null;
+    }
+  }
+  const guess = dayjs.tz(raw);
+  return guess.isValid() ? guess : null;
+}
+
+// เวลา → "HH:mm" (รองรับ timeofday / fraction-of-day / "2:00 PM")
+function normalizeTime(cell) {
+  const raw = (cell && typeof cell === "object" && ("v" in cell || "f" in cell))
+    ? (cell.f ?? cell.v)
     : cell;
 
   if (raw == null) return null;
 
-  // 1) กรณี gviz timeofday: [hh, mm, ss, (optional ms)]
   if (Array.isArray(raw) && raw.length >= 2) {
     const hh = String(Number(raw[0]) || 0).padStart(2, "0");
     const mm = String(Number(raw[1]) || 0).padStart(2, "0");
     return `${hh}:${mm}`;
   }
-
-  // 2) กรณีเป็นตัวเลข fraction-of-day (เช่น 0.5 = 12:00)
   if (typeof raw === "number" && raw >= 0 && raw < 1) {
     const totalMinutes = Math.round(raw * 24 * 60);
     const hh = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
     const mm = String(totalMinutes % 60).padStart(2, "0");
     return `${hh}:${mm}`;
   }
-
-  // 3) สตริงทั่วไป
   let s = String(raw).trim();
-
-  // HH:mm หรือ HH:mm:ss
   if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.slice(0,5).padStart(5,"0");
-
-  // 2:00 PM / 2:00AM
   const ampm = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
   if (ampm) {
     let hh = +ampm[1], mm = ampm[2];
@@ -187,11 +232,7 @@ function normalizeTime(cell) {
     if (!isPM && hh === 12) hh = 0;
     return String(hh).padStart(2,"0") + ":" + mm;
   }
-
-  // "14" -> "14:00"
   if (/^\d{1,2}$/.test(s)) return String(+s).padStart(2,"0") + ":00";
-
-  // fallback (กันพลาด)
   return s.slice(0,5);
 }
 
@@ -272,7 +313,7 @@ async function fetchSheet(){
   }
 }
 
-/* ===== UI Calendar ===== */
+/* ===== Calendar / Slots ===== */
 function getDayStatus(dateStr){
   const daySlots=availability[dateStr]||{};
   let free=0, full=0, closed=false;
@@ -286,6 +327,7 @@ function getDayStatus(dateStr){
   if(full===0) return "green";
   return "yellow";
 }
+
 function renderCalendar(){
   document.getElementById("monthTitle").textContent=monthTitle(visibleMonth);
   const start=visibleMonth.startOf("month").startOf("week");
@@ -309,6 +351,59 @@ function renderCalendar(){
     d=d.add(1,"day");
   }
 }
+
+function isTakenStatus(v){ return v==="เต็ม" || v==="ปิด"; }
+
+/* นับ “ช่องว่างต่อเนื่อง” เริ่มจากเวลาที่เลือกไปข้างหน้า */
+function contiguousFreeSlots(dateStr, startTime){
+  const daySlots = availability[dateStr] || {};
+  const idx = TIME_SLOTS.indexOf(startTime);
+  if (idx < 0) return 0;
+  let n = 0;
+  for (let i = idx; i < TIME_SLOTS.length; i++){
+    const t = TIME_SLOTS[i];
+    const v = (daySlots[t] ?? "ว่าง");
+    if (isTakenStatus(v)) break;
+    n++;
+  }
+  return n;
+}
+
+/* แปลงจำนวน “ช่อง” เป็นชั่วโมง (1 ช่อง = 1 ชม.) */
+function slotsToHours(nSlots){ return nSlots; }
+
+/* คำนวณรายการบริการที่อนุญาตตามเวลาที่เหลือ */
+function calcAllowedServices(dateStr, startTime){
+  const slots = contiguousFreeSlots(dateStr, startTime);
+  const hours = slotsToHours(slots);
+  // คืน service ที่ duration <= hours
+  return Object.entries(SERVICE_DURATION)
+    .filter(([_, hrs]) => hrs <= hours)
+    .map(([name]) => name);
+}
+
+/* ปรับ option ใน select ของ “ประเภทบริการ” ให้ตรง allowed */
+function updateServiceSelectOptions(allowed){
+  const selects = document.querySelectorAll('[data-role="service"]');
+  selects.forEach(sel=>{
+    const current = sel.value;
+    sel.innerHTML = `<option value="">เลือกบริการ</option>` + 
+      allowed.map(s=>`<option>${s}</option>`).join("");
+    if (allowed.includes(current)) sel.value = current;
+  });
+}
+
+/* ใบ้ผู้ใช้ว่าเวลาที่เลือกทำงานอะไรได้บ้าง */
+function showAllowedHint(allowed, dateStr, timeStr){
+  const hint = document.getElementById("allowedServiceHint");
+  if (!dateStr || !timeStr){ hint.classList.add("hidden"); return; }
+  const slots = contiguousFreeSlots(dateStr, timeStr);
+  const hours = slotsToHours(slots);
+  const text = `เวลาที่เหลือจาก ${timeStr} มีประมาณ ${hours} ชม. → ทำได้: ${allowed.length ? allowed.join(", ") : "— (เวลาน้อยเกินไป)"}`;
+  hint.textContent = text;
+  hint.classList.remove("hidden");
+}
+
 function showTimes(){
   const box=document.getElementById("timeBox");
   if(!selectedDate){ box.classList.add("hidden"); return; }
@@ -316,14 +411,35 @@ function showTimes(){
   document.getElementById("chosenDateLabel").textContent=`(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
   const grid=document.getElementById("timeGrid"); grid.innerHTML="";
   const daySlots=availability[selectedDate]||{};
+
   TIME_SLOTS.forEach(t=>{
-    const v=(daySlots[t]??"ว่าง"), taken=(v==="เต็ม")||(v==="ปิด");
+    const v=(daySlots[t]??"ว่าง"), taken=isTakenStatus(v);
     const btn=document.createElement("button");
     btn.type="button"; btn.textContent=t; btn.disabled=taken;
     btn.className="py-3 rounded-xl border text-sm font-medium "+(taken?"bg-gray-100 text-gray-400 cursor-not-allowed":"bg-white hover:bg-indigo-50");
-    btn.addEventListener("click",()=>{[...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2);});
+    btn.addEventListener("click",()=>{
+      [...grid.children].forEach(el=>el.classList.remove("slot-active"));
+      btn.classList.add("slot-active");
+      selectedTime=t;
+
+      // คำนวณบริการที่อนุญาตตามเวลาที่เหลือ
+      allowedServicesForSelected = calcAllowedServices(selectedDate, selectedTime);
+      updateServiceSelectOptions(allowedServicesForSelected);
+      showAllowedHint(allowedServicesForSelected, selectedDate, selectedTime);
+
+      updateStep(2);
+    });
     grid.appendChild(btn);
   });
+
+  // ถ้ามีเวลาเลือกค้างไว้จากก่อนหน้า ให้รีเฟรชใบ้/options
+  if (selectedTime){
+    allowedServicesForSelected = calcAllowedServices(selectedDate, selectedTime);
+    updateServiceSelectOptions(allowedServicesForSelected);
+    showAllowedHint(allowedServicesForSelected, selectedDate, selectedTime);
+  } else {
+    document.getElementById("allowedServiceHint").classList.add("hidden");
+  }
 }
 
 /* ===== Steps & actions ===== */
@@ -339,18 +455,26 @@ function updateStep(step){
   document.getElementById("formTerms").classList.toggle("hidden",step!==4);
   document.getElementById("formPay").classList.toggle("hidden",step!==5);
 }
+
 document.getElementById("toPets").addEventListener("click",()=>{
   const name=document.getElementById("custName").value.trim();
   const phone=document.getElementById("custPhone").value.trim();
   if(!selectedDate||!selectedTime) return alert("กรุณาเลือกวันและเวลาหน้าแรก");
   if(!name||!phone) return alert("กรุณากรอกชื่อและเบอร์โทร");
-  if(pets.length===0) addPetForm();
+  if(pets.length===0) addPetForm(); // สร้างฟอร์มแรก
+  // อัปเดต option ตามเวลาที่เลือกทันที
+  allowedServicesForSelected = calcAllowedServices(selectedDate, selectedTime);
+  updateServiceSelectOptions(allowedServicesForSelected);
   updateStep(3);
 });
+
 document.getElementById("addPet").addEventListener("click",()=>{
   if(pets.length>=3) return alert("เพิ่มได้สูงสุด 3 ตัว");
   addPetForm();
+  // ใส่ options ให้สอดคล้องเวลาที่เลือก
+  updateServiceSelectOptions(allowedServicesForSelected);
 });
+
 function addPetForm(){
   const idx=pets.length+1;
   const wrap=document.createElement("div");
@@ -367,17 +491,24 @@ function addPetForm(){
       </select>
       <label class="text-xs text-gray-600">สายพันธุ์ (ไม่บังคับ)</label>
       <input class="border rounded-xl p-2" data-role="breed" placeholder="เช่น Poodle / Scottish Fold" />
+
       <label class="text-xs text-gray-600">ประเภทบริการ *</label>
       <select class="border rounded-xl p-2" data-role="service">
         <option value="">เลือกบริการ</option>
-        <option>อาบน้ำ</option><option>ตัดขน</option><option>อาบน้ำและตัดขน</option><option>บริการเสริมอย่างเดียว</option>
+        <!-- options จะถูกเติมตาม allowedServicesForSelected -->
       </select>
+
+      <!-- ช่องบริการเสริม (optional) -->
+      <label class="text-xs text-gray-600">บริการเสริมที่ต้องการ (ไม่บังคับ)</label>
+      <textarea class="border rounded-xl p-2 min-h-[60px]" data-role="addon" placeholder="เช่น เคลียร์ช่องหู ทรีตเม้นท์ สปาเกลือ"></textarea>
+
       <label class="text-xs text-gray-600">ข้อควรระวัง</label>
       <textarea class="border rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
     </div>`;
   document.getElementById("petsContainer").appendChild(wrap);
   pets.push(wrap);
 }
+
 document.getElementById("toTerms").addEventListener("click",()=>{
   if(pets.length===0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
   let ok=false;
@@ -387,11 +518,16 @@ document.getElementById("toTerms").addEventListener("click",()=>{
     const service=wrap.querySelector('[data-role="service"]').value.trim();
     if(!petName && !petType && !service) continue;
     if(!petName || !petType || !service) return alert("กรอก ชื่อน้อง / ประเภท / ประเภทบริการ ให้ครบในแต่ละตัว");
+    // ตรวจซ้ำ: ประเภทบริการที่เลือกต้องอยู่ใน allowed ณ เวลาปัจจุบัน
+    if (!allowedServicesForSelected.includes(service)) {
+      return alert(`เวลาที่เหลือไม่พอสำหรับบริการ “${service}”\nกรุณาเลือกบริการที่ใช้เวลาไม่เกิน: ${allowedServicesForSelected.join(", ")}`);
+    }
     ok=true;
   }
   if(!ok) return alert("กรุณากรอกข้อมูลน้องอย่างน้อย 1 ตัว");
   updateStep(4);
 });
+
 document.getElementById("agree").addEventListener("change",e=>{
   document.getElementById("toPayment").disabled=!e.target.checked;
 });
@@ -411,9 +547,10 @@ document.getElementById("goLine").addEventListener("click",()=>{
     const t=wrap.querySelector('[data-role="petType"]').value.trim();
     const s=wrap.querySelector('[data-role="service"]').value.trim();
     const b=wrap.querySelector('[data-role="breed"]').value.trim();
+    const addon=wrap.querySelector('[data-role="addon"]').value.trim();
     const note=wrap.querySelector('[data-role="notes"]').value.trim();
     if(n||t||s){
-      petLines.push(`${i+1}. ${n||"-"} / ${t||"-"} / ${s||"-"}${b?` (${b})`:""}${note?` — ${note}`:""}`);
+      petLines.push(`${i+1}. ${n||"-"} / ${t||"-"} / ${s||"-"}${b?` (${b})`:""}${addon?` | เสริม: ${addon}`:""}${note?` — ${note}`:""}`);
     }
   });
 
@@ -440,5 +577,3 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
 </script>
 </body>
 </html>
-
-
