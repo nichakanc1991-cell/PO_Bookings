@@ -215,6 +215,83 @@ function mapStatus(val){
   return "ว่าง";
 }
 
+/* ===== Booking duration rules ===== */
+const SERVICE_DURATION = {
+  "บริการเสริมอย่างเดียว": 1,
+  "อาบน้ำ": 2,
+  "ตัดขน": 2,
+  "อาบน้ำและตัดขน": 3,
+};
+/* เวลาใด “เปิดทุกบริการได้เสมอ” */
+const ALWAYS_ALLOW_ALL_AT = "19:00";
+
+/* นับจำนวน “ชั่วโมงว่างต่อเนื่อง” จากเวลาเริ่ม (ดูจาก availability + TIME_SLOTS) */
+function contiguousFreeSlots(dateStr, startTime) {
+  if (!dateStr || !startTime) return 0;
+  const daySlots = availability[dateStr] || {};
+  const idx = TIME_SLOTS.indexOf(startTime);
+  if (idx < 0) return 0;
+
+  let n = 0;
+  for (let i = idx; i < TIME_SLOTS.length; i++) {
+    const t = TIME_SLOTS[i];
+    const v = (daySlots[t] ?? "ว่าง");
+    if (v === "เต็ม" || v === "ปิด") break;
+    n++;
+  }
+  return n;
+}
+
+/* ตรวจว่า “บริการนี้” เลือกได้ไหม ณ date/time ที่เลือก */
+function canBookService(serviceName, dateStr, startTime) {
+  // พิเศษ: 19:00 เปิดได้ทุกบริการ
+  if (startTime === ALWAYS_ALLOW_ALL_AT) return true;
+
+  const need = SERVICE_DURATION[serviceName] ?? 0;
+  const free = contiguousFreeSlots(dateStr, startTime);
+  return free >= need;
+}
+
+/* เปิด/ปิดตัวเลือกบริการทุกใบใน Step 3 ตาม selectedDate/selectedTime */
+function updateServiceOptions() {
+  const dateStr = selectedDate;
+  const startTime = selectedTime;
+
+  // ถ้ายังไม่เลือกเวลา ให้เปิดหมด
+  const allowAll = !dateStr || !startTime || startTime === ALWAYS_ALLOW_ALL_AT;
+
+  // รายการบริการที่ต้องคุม
+  const serviceList = Object.keys(SERVICE_DURATION); // ตามคอนสแตนท์ด้านบน
+
+  pets.forEach(wrap => {
+    const select = wrap.querySelector('[data-role="service"]');
+    if (!select) return;
+
+    // เปิด/ปิด Option ทีละรายการ
+    [...select.options].forEach(opt => {
+      const label = opt.value.trim();
+      if (!label) return; // "เลือกบริการ"
+      if (allowAll) {
+        opt.disabled = false;
+      } else {
+        opt.disabled = !canBookService(label, dateStr, startTime);
+      }
+    });
+
+    // ถ้าค่าสำหรับ option ที่เลือกอยู่ตอนนี้ใช้ไม่ได้ ให้รีเซ็ตเป็นค่าว่าง
+    const cur = select.value.trim();
+    if (cur && select.querySelector(`option[value="${cur}"]`)?.disabled) {
+      select.value = "";
+    }
+
+    // แปะ title อธิบาย (ช่วย UX เวลา hover)
+    select.title = allowAll
+      ? "เลือกบริการได้ทุกชนิด"
+      : "ระบบจำกัดบริการตามเวลาว่างต่อเนื่องของช่วงที่เลือก";
+  });
+}
+
+  
 /* ===== Parsers ===== */
 function parseGviz(text){
   const obj=JSON.parse(text.substring(text.indexOf("{"),text.lastIndexOf("}")+1));
@@ -333,7 +410,11 @@ function showTimes(){
     const btn=document.createElement("button");
     btn.type="button"; btn.textContent=t; btn.disabled=taken;
     btn.className="py-3 rounded-xl border text-sm font-medium "+(taken?"bg-gray-100 text-gray-400 cursor-not-allowed":"bg-white hover:bg-indigo-50");
-    btn.addEventListener("click",()=>{[...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2);});
+    btn.addEventListener("click",()=>{[...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2);
+  // อัปเดตตัวเลือกบริการให้สอดคล้องกับเวลาที่เลือก
+  updateServiceOptions();
+});
+
     grid.appendChild(btn);
   });
 }
@@ -358,6 +439,7 @@ document.getElementById("toPets").addEventListener("click",()=>{
   if(!name||!phone) return alert("กรุณากรอกชื่อและเบอร์โทร");
   if(pets.length===0) addPetForm();
   updateStep(3);
+  updateServiceOptions(); // คุม option ทันทีเมื่อเข้าหน้า Step 3
 });
 document.getElementById("addPet").addEventListener("click",()=>{
   if(pets.length>=3) return alert("เพิ่มได้สูงสุด 3 ตัว");
@@ -388,7 +470,7 @@ function addPetForm(){
       <textarea class="border rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
     </div>`;
   document.getElementById("petsContainer").appendChild(wrap);
-  pets.push(wrap);
+  pets.push(wrap);updateServiceOptions(); // ให้ select บริการถูกคุมตั้งแต่วินาทีที่เพิ่มฟอร์ม
 }
 document.getElementById("toTerms").addEventListener("click",()=>{
   if(pets.length===0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
@@ -452,6 +534,7 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
 </script>
 </body>
 </html>
+
 
 
 
