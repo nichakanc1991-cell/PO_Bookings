@@ -503,7 +503,9 @@ document.getElementById("toTerms").addEventListener("click",()=>{
 document.getElementById("agree").addEventListener("change",e=>{
   document.getElementById("toPayment").disabled=!e.target.checked;
 });
-document.getElementById("toPayment").addEventListener("click",()=>updateStep(5));
+document.getElementById("toPayment").addEventListener("click",()=>{
+  updateStep(5);
+
   // ✅ เริ่มนับถอยหลัง 15 นาที
   const dateKey = selectedDate;
   const timeKey = selectedTime;
@@ -522,6 +524,7 @@ document.getElementById("toPayment").addEventListener("click",()=>updateStep(5))
     }
   }, 15 * 60 * 1000);
 });
+
 
 /* ===== Deep link to LINE OA with summary ===== */
 document.getElementById("goLine").addEventListener("click",()=>{
@@ -566,6 +569,7 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
 </script>
 </body>
 </html>
+
 
 
 
