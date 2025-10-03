@@ -539,10 +539,8 @@ document.getElementById("goLine").addEventListener("click",()=>{
     const n=wrap.querySelector('[data-role="petName"]').value.trim();
     const t=wrap.querySelector('[data-role="petType"]').value.trim();
     const s=wrap.querySelector('[data-role="service"]').value.trim();
-    const b=wrap.querySelector('[data-role="breed"]').value.trim();
-    const note=wrap.querySelector('[data-role="notes"]').value.trim();
     if(n||t||s){
-      petLines.push(`${i+1}. ${n||"-"} / ${t||"-"} / ${s||"-"}${b?` (${b})`:""}${note?` — ${note}`:""}`);
+      petLines.push(`${n||"-"} / ${t||"-"} / ${s||"-"}`);
     }
   });
 
@@ -558,7 +556,28 @@ document.getElementById("goLine").addEventListener("click",()=>{
 
   const url=`https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?text=${encodeURIComponent(msg)}`;
   window.location.href=url;
-});
+
+  // ✅ ส่งข้อมูลไป Google Script
+  fetch("https://script.google.com/macros/s/AKfycbwzyFy594e9JIpxGSbhn4XeJsfPVqEmrmtWMXC5nnBKwXeS3IWua-ZnofE969UxTJGe/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      date: selectedDate,
+      time: selectedTime,
+      name: name,
+      phone: phone,
+      pet: petLines.join(", ")
+    }),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(r => r.json())
+  .then(res => {
+    console.log("ส่งข้อมูลไป Google Script สำเร็จ:", res);
+  })
+  .catch(err => {
+    console.error("ผิดพลาดในการส่งไป Google Script:", err);
+  });
+}); // ✅ ต้องมีตรงนี้ (ปิด event handler ให้จบ)
+
 
 /* ===== Nav & boot ===== */
 document.getElementById("prevMonth").addEventListener("click",()=>{const prev=visibleMonth.subtract(1,"month"); if(prev.isBefore(START_DATE,"month"))return; visibleMonth=prev; renderCalendar();});
@@ -569,6 +588,7 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
 </script>
 </body>
 </html>
+
 
 
 
