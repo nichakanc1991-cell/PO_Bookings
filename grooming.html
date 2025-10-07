@@ -15,7 +15,7 @@
   </script>
   <style>.slot-active{background:#909c83;color:#556B2F;border-color:#4f46e5}</style>
 </head>
-<body class="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
+<body class="min-h-screen bg-gradient-to-b from-[#0b3d36] to-[#f8f4e7]">
 <main class="max-w-6xl mx-auto p-4 md:p-6">
 
   <header class="mb-4 md:mb-6 flex items-center justify-between gap-3">
@@ -96,6 +96,20 @@
       <div id="formPets" class="bg-white rounded-2xl border shadow-sm p-4 hidden">
         <div class="text-sm font-semibold mb-2">รายละเอียดน้อง (สูงสุด 3 ตัว)</div>
         <div id="petsContainer" class="space-y-4"></div>
+        <!-- รูปภาพแสดงราคาตามประเภทสัตว์ -->
+<div class="mt-4 space-y-3 text-center">
+  <p class="text-xs text-gray-600">💰 ตารางราคาโดยประมาณ (ขึ้นอยู่กับขนาดและสภาพขนจริง)</p>
+  <div id="priceCat" class="hidden">
+    <img src="./price-cat.png" alt="ราคาอาบน้ำ-ตัดขนแมว" class="w-full rounded-lg border shadow-sm object-contain">
+  </div>
+  <div id="priceDog" class="hidden">
+    <img src="./price-dog.png" alt="ราคาอาบน้ำ-ตัดขนสุนัข" class="w-full rounded-lg border shadow-sm object-contain">
+  </div>
+  <div id="optionImage" class="hidden">
+    <img src="./option.png" alt="บริการเสริมเพิ่มเติม" class="w-full rounded-lg border shadow-sm object-contain">
+  </div>
+</div>
+
         <section class="space-y-3 mb-4">
           <img src="./warning.png" class="w-full rounded-lg border object-contain" alt="ข้อควรระวังสำคัญ">
         </section>
@@ -224,7 +238,7 @@ const SERVICE_DURATION = {
   "อาบน้ำและตัดขน": 3,
 };
 /* เวลาใด “เปิดทุกบริการได้เสมอ” */
-const ALWAYS_ALLOW_ALL_AT = "19:00";
+const ALWAYS_ALLOW_ALL_AT = ["18:00", "19:00"];
 
 /* นับจำนวน “ชั่วโมงว่างต่อเนื่อง” จากเวลาเริ่ม (ดูจาก availability + TIME_SLOTS) */
 function contiguousFreeSlots(dateStr, startTime) {
@@ -245,8 +259,8 @@ function contiguousFreeSlots(dateStr, startTime) {
 
 /* ตรวจว่า “บริการนี้” เลือกได้ไหม ณ date/time ที่เลือก */
 function canBookService(serviceName, dateStr, startTime) {
-  // พิเศษ: 19:00 เปิดได้ทุกบริการ
-  if (startTime === ALWAYS_ALLOW_ALL_AT) return true;
+  // ✅ พิเศษ: 18:00 และ 19:00 เปิดได้ทุกบริการ
+  if (ALWAYS_ALLOW_ALL_AT.includes(startTime)) return true;
 
   const need = SERVICE_DURATION[serviceName] ?? 0;
   const free = contiguousFreeSlots(dateStr, startTime);
@@ -480,6 +494,8 @@ function addPetForm(){
         <option value="">เลือกบริการ</option>
         <option>อาบน้ำ</option><option>ตัดขน</option><option>อาบน้ำและตัดขน</option><option>บริการเสริมอย่างเดียว</option>
       </select>
+      <label class="text-xs text-gray-600">บริการเสริมเพิ่มเติมที่ต้องการ (ถ้ามี)</label>
+<textarea class="border rounded-xl p-2 min-h-[60px]" data-role="addon" placeholder="เช่น ทรีตเมนต์ขน เคลียร์ช่องหู ฯลฯ"></textarea>
       <label class="text-xs text-gray-600">ข้อควรระวัง</label>
       <textarea class="border rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
     </div>`;
@@ -498,6 +514,17 @@ document.getElementById("toTerms").addEventListener("click",()=>{
     ok=true;
   }
   if(!ok) return alert("กรุณากรอกข้อมูลน้องอย่างน้อย 1 ตัว");
+  // ✅ ถ้ามีสัตว์ 3 ตัว ให้เพิ่มเวลาบริการ +1 ชั่วโมง
+if (pets.length === 3) {
+  console.log("เพิ่มเวลาบริการ +1 ชั่วโมง (เพราะมีน้อง 3 ตัว)");
+  const currentTimeIndex = TIME_SLOTS.indexOf(selectedTime);
+  if (currentTimeIndex !== -1 && currentTimeIndex + 1 < TIME_SLOTS.length) {
+    const extendedSlot = TIME_SLOTS[currentTimeIndex + 1];
+    if (availability[selectedDate]) {
+      availability[selectedDate][extendedSlot] = "เต็ม (เพิ่มเวลาอัตโนมัติ)";
+    }
+  }
+}
   updateStep(4);
 });
 document.getElementById("agree").addEventListener("change",e=>{
