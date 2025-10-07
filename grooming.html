@@ -18,20 +18,23 @@
 <body class="min-h-screen bg-gradient-to-b from-[#0b3d36] to-[#f8f4e7]">
 <main class="max-w-6xl mx-auto p-4 md:p-6">
 
-  <header class="mb-4 md:mb-6 flex items-center justify-between gap-3">
-    <h1 class="text-xl md:text-2xl font-bold">PO Grooming — ระบบจองคิว</h1>
-    <div class="flex items-center gap-2 text-xs">
-      <span id="syncBadge" class="px-2 py-1 rounded bg-gray-100 text-gray-600">ยังไม่โหลด</span>
-      <button id="btnReload" class="px-2 py-1 rounded border hover:bg-gray-50">รีเฟรชข้อมูล</button>
-      <a class="text-indigo-600 hover:underline" target="_blank"
-         href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit?gid=0#gid=0">เปิด Google Sheets</a>
-    </div>
-  </header>
+  <header class="mb-4 md:mb-6 flex items-center justify-between gap-3 bg-white/40 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-sm">
+  <h1 class="text-2xl md:text-3xl font-extrabold text-[#1c322d] tracking-wide drop-shadow-sm">
+    🐾 PO Grooming — <span class="text-[#324f44] font-semibold">ระบบจองคิว</span>
+  </h1>
+  <div class="flex items-center gap-2 text-xs">
+    <span id="syncBadge" class="px-2 py-1 rounded bg-gray-100 text-gray-600">ยังไม่โหลด</span>
+    <button id="btnReload" class="px-2 py-1 rounded border hover:bg-gray-50">รีเฟรชข้อมูล</button>
+    <a class="text-indigo-700 hover:underline font-medium" target="_blank"
+       href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit?gid=0#gid=0">เปิด Google Sheets</a>
+  </div>
+</header>
+
 
   <div class="grid md:grid-cols-[3fr_2fr] gap-6">
     <!-- LEFT -->
     <section class="space-y-4">
-      <div class="bg-white rounded-2xl border shadow-sm p-4">
+      <div class="bg-[#f6f9f7]/90 border border-[#dbe4df] rounded-2xl shadow-md p-4 backdrop-blur-sm">
         <div class="flex items-center justify-between mb-2">
           <button id="prevMonth" class="p-2 rounded-lg border hover:bg-gray-50">‹</button>
           <div id="monthTitle" class="text-lg font-semibold"></div>
@@ -71,8 +74,8 @@
 
     <!-- RIGHT -->
     <section class="space-y-4">
-      <div class="bg-white rounded-2xl border shadow-sm p-4">
-        <div class="text-sm font-semibold mb-2">ขั้นตอน</div>
+      <div class="bg-[#ffffff]/70 rounded-2xl border border-[#dce4df] shadow-sm p-4 backdrop-blur-sm">
+  <div class="text-sm font-semibold mb-2 text-[#1c322d]">ขั้นตอน</div>
         <ol class="text-sm space-y-2">
           <li id="step1" class="flex items-start gap-2"><span class="w-6 h-6 flex items-center justify-center rounded-full bg-indigo-600 text-white">1</span> เลือกวัน/เวลา</li>
           <li id="step2" class="flex items-start gap-2 text-gray-600"><span class="w-6 h-6 flex items-center justify-center rounded-full border">2</span> กรอกชื่อ & เบอร์</li>
@@ -89,7 +92,7 @@
         <input id="custName" class="w-full border rounded-xl p-2 mb-2" placeholder="ชื่อ-นามสกุลหรือชื่อเล่น" />
         <label class="block text-xs text-gray-600 mb-1">เบอร์ติดต่อ</label>
         <input id="custPhone" class="w-full border rounded-xl p-2 mb-3" placeholder="เช่น 08xxxxxxxx" />
-        <button id="toPets" class="w-full px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
+        <button id="toPets" class="w-full px-4 py-2 rounded-xl bg-[#324f44] text-white hover:bg-[#2a3e38] transition"> ถัดไป</button>
       </div>
 
       <!-- Step 3 -->
