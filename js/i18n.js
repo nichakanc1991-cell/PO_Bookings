@@ -2,10 +2,11 @@
 
 const translations = {
   th: {
+    // ปุ่มหลัก
     "btn.grooming": "จองคิวอาบน้ำ–ตัดขน",
     "btn.hotel": "จองห้องพักโรงแรมแมว",
 
-    // หน้าจองคิว
+    // หน้า Booking
     "title.booking": "ระบบจองคิว",
     "label.steps": "ขั้นตอน",
     "label.name": "ชื่อ–นามสกุลหรือชื่อเล่น",
@@ -16,7 +17,19 @@ const translations = {
     "label.pay": "ไปหน้าชำระเงิน",
     "label.deposit": "ชำระมัดจำ 200 บาท ต่อตัว โปรดชำระภายใน 15 นาที",
     "label.notifyline": "แจ้งสลิปทางไลน์ (เปิด LINE OA)",
+    "label.customerinfo": "ข้อมูลผู้จอง",
+    "label.addpet": "+ เพิ่มตัวที่ 2/3",
+    "label.confirmterms": "ยืนยันเงื่อนไข",
+    "label.payment": "ชำระมัดจำ & แจ้งสลิป",
+    "label.calendarstatus": "สถานะคิว",
+    "label.available": "ว่างทุกเวลา",
+    "label.partial": "ว่างบางเวลา",
+    "label.full": "เต็ม",
+    "label.closed": "ปิด",
+    "label.selecttime": "เลือกเวลา",
+    "label.bookinfo": "รายละเอียดการจอง",
   },
+
   en: {
     "btn.grooming": "Grooming & Bath Booking",
     "btn.hotel": "Cat Hotel Reservation",
@@ -31,7 +44,19 @@ const translations = {
     "label.pay": "Proceed to Payment",
     "label.deposit": "Deposit 200 THB per pet — please complete within 15 minutes",
     "label.notifyline": "Notify via LINE (Open LINE OA)",
+    "label.customerinfo": "Customer Information",
+    "label.addpet": "+ Add 2nd/3rd Pet",
+    "label.confirmterms": "Confirm Terms",
+    "label.payment": "Deposit & Slip Notification",
+    "label.calendarstatus": "Slot Status",
+    "label.available": "Available",
+    "label.partial": "Partially Available",
+    "label.full": "Full",
+    "label.closed": "Closed",
+    "label.selecttime": "Select Time",
+    "label.bookinfo": "Booking Details",
   },
+
   zh: {
     "btn.grooming": "猫咪美容与洗澡预约",
     "btn.hotel": "猫咪酒店预订",
@@ -46,15 +71,21 @@ const translations = {
     "label.pay": "前往付款页面",
     "label.deposit": "每只猫需支付定金 200 泰铢，请在15分钟内完成",
     "label.notifyline": "通过 LINE 通知（打开 LINE OA）",
+    "label.customerinfo": "预约人资料",
+    "label.addpet": "+ 添加第2/3只",
+    "label.confirmterms": "确认条款",
+    "label.payment": "支付定金并上传凭证",
+    "label.calendarstatus": "档期状态",
+    "label.available": "可预约",
+    "label.partial": "部分可预约",
+    "label.full": "已满",
+    "label.closed": "休息",
+    "label.selecttime": "选择时间",
+    "label.bookinfo": "预约详情",
   }
 };
-// อ่านภาษาจาก URL ก่อน (ถ้าไม่มี ให้ใช้ค่าที่เก็บไว้ใน localStorage)
-function getLangFromUrl() {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get("lang") || localStorage.getItem("lang") || "th";
-}
 
-let currentLang = getLangFromUrl();
+let currentLang = localStorage.getItem("lang") || "th";
 
 function setLang(lang) {
   currentLang = lang;
@@ -63,7 +94,6 @@ function setLang(lang) {
 }
 
 function applyLang() {
-  // แปลข้อความ
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
     if (translations[currentLang] && translations[currentLang][key]) {
@@ -71,7 +101,7 @@ function applyLang() {
     }
   });
 
-  // อัปเดตลิงก์ทั้งหมดให้แนบภาษาปัจจุบันไปด้วย
+  // แนบภาษาปัจจุบันในลิงก์ทั้งหมด
   document.querySelectorAll("a[href]").forEach(a => {
     const href = a.getAttribute("href");
     if (href && href.includes(".html")) {
