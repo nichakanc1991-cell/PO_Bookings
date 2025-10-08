@@ -1,6 +1,5 @@
 /* ===== i18n.js — ระบบแปลภาษา 3 ภาษา (ไทย / อังกฤษ / จีน) ===== */
 
-// กำหนดข้อความหลัก 3 ภาษา
 const translations = {
   th: {
     "btn.grooming": "จองคิวอาบน้ำ–ตัดขน",
@@ -16,18 +15,16 @@ const translations = {
   },
 };
 
-// อ่านค่าภาษาเริ่มต้น (จาก localStorage ถ้ามี)
 let currentLang = localStorage.getItem("lang") || "th";
 
-// ฟังก์ชันเปลี่ยนภาษา
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem("lang", lang);
   applyLang();
 }
 
-// ฟังก์ชันแปลข้อความในหน้า
 function applyLang() {
+  // แปลข้อความ
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
     if (translations[currentLang] && translations[currentLang][key]) {
@@ -35,13 +32,12 @@ function applyLang() {
     }
   });
 
-  // อัปเดตลิงก์ให้ส่งค่าภาษาไปยังหน้าถัดไป
+  // อัปเดตลิงก์ให้คง path เดิมและใส่พารามิเตอร์ lang
   document.querySelectorAll("a[href]").forEach(a => {
-    const href = a.getAttribute("href");
+    let href = a.getAttribute("href");
     if (href.includes(".html")) {
-      const url = new URL(href, window.location.origin);
-      url.searchParams.set("lang", currentLang);
-      a.setAttribute("href", url.pathname + url.search);
+      href = href.split("?")[0];
+      a.setAttribute("href", href + "?lang=" + currentLang);
     }
   });
 }
