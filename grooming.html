@@ -40,14 +40,20 @@
   <!-- Header -->
   <header class="mb-4 md:mb-6 flex items-center justify-between gap-3 bg-white/65 backdrop-blur-md rounded-2xl px-5 py-3 shadow-md border border-[color:var(--po-border)]/70">
     <h1 class="text-2xl md:text-3xl font-extrabold text-[var(--po-forest)] tracking-wide drop-shadow-sm">
-      🐾 PO Grooming — <span class="text-[var(--po-olive)] font-semibold">ระบบจองคิว</span>
-    </h1>
+  🐾 PO Grooming — <span class="text-[var(--po-olive)] font-semibold" data-i18n="title.booking">ระบบจองคิว</span>
+</h1>
     <div class="flex items-center gap-2 text-xs">
       <span id="syncBadge" class="px-2 py-1 rounded bg-gray-100 text-gray-600">ยังไม่โหลด</span>
       <button id="btnReload" class="px-2 py-1 rounded border border-[color:var(--po-border)] hover:bg-white/60">รีเฟรชข้อมูล</button>
       <a class="text-indigo-700 hover:underline font-medium" target="_blank"
          href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit?gid=0#gid=0">เปิด Google Sheets</a>
     </div>
+  <div class="flex items-center gap-2 text-sm">
+     <button onclick="setLang('th')" class="px-2 py-1 rounded hover:bg-white/60">ไทย</button>|
+     <button onclick="setLang('en')" class="px-2 py-1 rounded hover:bg-white/60">English</button>|
+     <button onclick="setLang('zh')" class="px-2 py-1 rounded hover:bg-white/60">中文</button>
+  </div>
+
   </header>
 
   <div class="grid md:grid-cols-[3fr_2fr] gap-6">
@@ -100,7 +106,7 @@
     <section class="space-y-4">
       <!-- Steps Card -->
       <div class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/80 backdrop-blur">
-        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">ขั้นตอน</div>
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]" data-i18n="label.steps">ขั้นตอน</div>
         <ol class="text-sm space-y-2">
           <li id="step1" class="flex items-start gap-2">
             <span class="w-6 h-6 flex items-center justify-center rounded-full bg-[var(--po-olive)] text-white">1</span> เลือกวัน/เวลา
@@ -123,11 +129,11 @@
       <!-- Step 2 -->
       <div id="formCustomer" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
         <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">ข้อมูลผู้จอง</div>
-        <label class="block text-xs text-gray-600 mb-1">ชื่อ–นามสกุลหรือชื่อเล่น</label>
+        <label class="block text-xs text-gray-600 mb-1" data-i18n="label.name">ชื่อ–นามสกุลหรือชื่อเล่น</label>
         <input id="custName" class="w-full border border-[color:var(--po-border)] rounded-xl p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-[var(--po-olive)]/30" placeholder="ชื่อ-นามสกุลหรือชื่อเล่น" />
-        <label class="block text-xs text-gray-600 mb-1">เบอร์ติดต่อ</label>
+        <label class="block text-xs text-gray-600 mb-1"data-i18n="label.phone">เบอร์ติดต่อ</label>
         <input id="custPhone" class="w-full border border-[color:var(--po-border)] rounded-xl p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-[var(--po-olive)]/30" placeholder="เช่น 08xxxxxxxx" />
-        <button id="toPets" class="w-full px-4 py-2 rounded-xl bg-[var(--po-olive)] text-white hover:bg-[var(--po-olive-dark)] transition">
+        <button id="toPets" class="w-full px-4 py-2 rounded-xl bg-[var(--po-olive)] text-white hover:bg-[var(--po-olive-dark)] transition"data-i18n="label.next">
           ถัดไป
         </button>
       </div>
@@ -180,9 +186,9 @@
 
       <!-- Step 5 -->
       <div id="formPay" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
-        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">ชำระมัดจำ 200 บาท ต่อตัว โปรดชำระภายใน 15 นาที </div>
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]"data-i18n="label.deposit">ชำระมัดจำ 200 บาท ต่อตัว โปรดชำระภายใน 15 นาที </div>
         <img id="qrImage" class="w-full rounded-xl border border-[color:var(--po-border)] shadow max-h-[560px] object-contain" src="./qr.png" alt="QR">
-        <button id="goLine" class="w-full mt-3 px-4 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700">
+        <button id="goLine" class="w-full mt-3 px-4 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700"data-i18n="label.notifyline">
           แจ้งสลิปทางไลน์ (เปิด LINE OA)
         </button>
       </div>
