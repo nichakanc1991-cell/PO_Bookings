@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PO Grooming — ระบบจองคิว</title>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com?ver=3.4.1"></script>
+  <script src="js/i18n.js"></script>
+
+
+  <!-- Day.js -->
+  <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+  <script src="https://unpkg.com/dayjs@1/plugin/utc.js"></script>
+  <script src="https://unpkg.com/dayjs@1/plugin/timezone.js"></script>
+  <script>
+    dayjs.extend(dayjs_plugin_utc);
+    dayjs.extend(dayjs_plugin_timezone);
+    dayjs.tz.setDefault("Asia/Bangkok");
+  </script>
+
+  <style>
+    /* โทนสีหลัก */
+    :root{
+      --po-deep:#0b3d36;      /* เขียวเข้มบนสุด */
+      --po-forest:#1c322d;    /* เขียวป่าข้อความเข้ม */
+      --po-olive:#324f44;     /* เขียวมะกอกปุ่มหลัก */
+      --po-olive-dark:#2a3e38;
+      --po-card:#f6f9f7;      /* การ์ดโทนอ่อน */
+      --po-border:#dbe4df;    /* เส้นขอบนุ่ม */
+      --po-cream:#f8f4e7;     /* ครีมไล่พื้นหลังล่าง */
+    }
+    .slot-active{background:#e6efe9;border-color:#93c5b1;color:#1f3933}
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-b from-[var(--po-deep)] to-[var(--po-cream)]">
+<main class="max-w-6xl mx-auto p-4 md:p-6">
+
+  <!-- Header -->
+  <header class="mb-4 md:mb-6 flex items-center justify-between gap-3 bg-white/65 backdrop-blur-md rounded-2xl px-5 py-3 shadow-md border border-[color:var(--po-border)]/70">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-[var(--po-forest)] tracking-wide drop-shadow-sm">
+      🐾 PO Grooming — <span class="text-[var(--po-olive)] font-semibold">ระบบจองคิว</span>
+    </h1>
+    <div class="flex items-center gap-2 text-xs">
+      <span id="syncBadge" class="px-2 py-1 rounded bg-gray-100 text-gray-600">ยังไม่โหลด</span>
+      <button id="btnReload" class="px-2 py-1 rounded border border-[color:var(--po-border)] hover:bg-white/60">รีเฟรชข้อมูล</button>
+      <a class="text-indigo-700 hover:underline font-medium" target="_blank"
+         href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit?gid=0#gid=0">เปิด Google Sheets</a>
+    </div>
+  </header>
+
+  <div class="grid md:grid-cols-[3fr_2fr] gap-6">
+    <!-- LEFT -->
+    <section class="space-y-4">
+      <!-- Calendar Card -->
+      <div class="rounded-2xl shadow-md p-4 border border-[color:var(--po-border)] bg-[color:var(--po-card)]/90 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-2">
+          <button id="prevMonth" class="p-2 rounded-lg border border-[color:var(--po-border)] hover:bg-white">‹</button>
+          <div id="monthTitle" class="text-lg font-semibold text-[var(--po-forest)]"></div>
+          <button id="nextMonth" class="p-2 rounded-lg border border-[color:var(--po-border)] hover:bg-white">›</button>
+        </div>
+
+        <div class="grid grid-cols-7 text-center text-xs text-[color:var(--po-olive)] mb-1 font-medium">
+          <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
+        </div>
+        <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+
+        <div class="mt-3 flex flex-wrap gap-3 text-xs text-gray-700">
+          <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>ว่างทุกเวลา</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>ว่างบางเวลา</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>เต็ม</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-gray-400 inline-block"></span>ปิด</div>
+        </div>
+
+        <!-- Legend note -->
+        <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs p-3 leading-relaxed">
+          <div class="font-semibold mb-1">⌛ เวลาโดยประมาณของบริการ</div>
+          <ul class="list-disc pl-5 space-y-0.5">
+            <li>บริการเสริมอย่างเดียว — <span class="font-medium">1 ชั่วโมง</span></li>
+            <li>อาบน้ำอย่างเดียว หรือ ตัดขนอย่างเดียว — <span class="font-medium">2 ชั่วโมง</span></li>
+            <li>อาบน้ำและตัดขน — <span class="font-medium">3 ชั่วโมง</span></li>
+          </ul>
+          <div class="mt-2 text-[11px] text-amber-800">
+            * ระบบจะให้เลือกได้เฉพาะบริการที่ใช้เวลาไม่เกิน “เวลาว่างต่อเนื่อง” ของช่วงที่คุณเลือก
+          </div>
+        </div>
+      </div>
+
+      <!-- Time slots -->
+      <div id="timeBox" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
+        <div class="text-sm text-[color:var(--po-forest)] mb-2 font-medium">
+          เลือกเวลา <span id="chosenDateLabel" class="font-semibold"></span>
+        </div>
+        <div id="timeGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="space-y-4">
+      <!-- Steps Card -->
+      <div class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/80 backdrop-blur">
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">ขั้นตอน</div>
+        <ol class="text-sm space-y-2">
+          <li id="step1" class="flex items-start gap-2">
+            <span class="w-6 h-6 flex items-center justify-center rounded-full bg-[var(--po-olive)] text-white">1</span> เลือกวัน/เวลา
+          </li>
+          <li id="step2" class="flex items-start gap-2 text-gray-600">
+            <span class="w-6 h-6 flex items-center justify-center rounded-full border">2</span> กรอกชื่อ & เบอร์
+          </li>
+          <li id="step3" class="flex items-start gap-2 text-gray-600">
+            <span class="w-6 h-6 flex items-center justify-center rounded-full border">3</span> รายละเอียดน้อง (สูงสุด 3 ตัว)
+          </li>
+          <li id="step4" class="flex items-start gap-2 text-gray-600">
+            <span class="w-6 h-6 flex items-center justify-center rounded-full border">4</span> ยืนยันเงื่อนไข
+          </li>
+          <li id="step5" class="flex items-start gap-2 text-gray-600">
+            <span class="w-6 h-6 flex items-center justify-center rounded-full border">5</span> ชำระมัดจำ & แจ้งสลิป
+          </li>
+        </ol>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="formCustomer" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">ข้อมูลผู้จอง</div>
+        <label class="block text-xs text-gray-600 mb-1">ชื่อ–นามสกุลหรือชื่อเล่น</label>
+        <input id="custName" class="w-full border border-[color:var(--po-border)] rounded-xl p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-[var(--po-olive)]/30" placeholder="ชื่อ-นามสกุลหรือชื่อเล่น" />
+        <label class="block text-xs text-gray-600 mb-1">เบอร์ติดต่อ</label>
+        <input id="custPhone" class="w-full border border-[color:var(--po-border)] rounded-xl p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-[var(--po-olive)]/30" placeholder="เช่น 08xxxxxxxx" />
+        <button id="toPets" class="w-full px-4 py-2 rounded-xl bg-[var(--po-olive)] text-white hover:bg-[var(--po-olive-dark)] transition">
+          ถัดไป
+        </button>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="formPets" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">รายละเอียดน้อง (สูงสุด 3 ตัว)</div>
+        <div id="petsContainer" class="space-y-4"></div>
+
+        <!-- ราคาตามประเภทสัตว์ -->
+        <div class="mt-4 space-y-3 text-center">
+          <p class="text-xs text-gray-600">💰 ตารางราคาโดยประมาณ (ขึ้นอยู่กับขนาดและสภาพขนจริง)</p>
+          <div id="priceCat" class="hidden">
+            <img src="./price-cat.png" alt="ราคาอาบน้ำ-ตัดขนแมว" class="w-full rounded-lg border border-[color:var(--po-border)] shadow-sm object-contain">
+          </div>
+          <div id="priceDog" class="hidden">
+            <img src="./price-dog.png" alt="ราคาอาบน้ำ-ตัดขนสุนัข" class="w-full rounded-lg border border-[color:var(--po-border)] shadow-sm object-contain">
+          </div>
+          <div id="optionImage" class="hidden">
+            <img src="./option.png" alt="บริการเสริมเพิ่มเติม" class="w-full rounded-lg border border-[color:var(--po-border)] shadow-sm object-contain">
+          </div>
+        </div>
+
+        <!-- คำเตือน -->
+        <section class="space-y-3 my-4">
+          <img src="./warning.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="ข้อควรระวังสำคัญ">
+        </section>
+
+        <div class="mt-4 flex gap-2">
+          <button id="addPet" class="px-3 py-2 rounded-xl border border-[color:var(--po-border)] hover:bg-white text-sm">+ เพิ่มตัวที่ 2/3</button>
+          <button id="toTerms" class="flex-1 px-3 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div id="formTerms" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
+        <section class="space-y-3 mb-4">
+          <img src="./terms-1.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="การจองคิว">
+          <img src="./terms-2.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="การเข้ารับบริการ">
+          <img src="./terms-3.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="ประกาศจากร้าน">
+        </section>
+        <label class="flex items-center gap-2 text-sm">
+          <input id="agree" type="checkbox" class="w-4 h-4" />
+          <span>ฉันได้อ่านและยอมรับเงื่อนไขการบริการแล้ว</span>
+        </label>
+        <button id="toPayment" class="w-full mt-3 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" disabled>
+          ไปหน้าชำระเงิน
+        </button>
+      </div>
+
+      <!-- Step 5 -->
+      <div id="formPay" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">ชำระมัดจำ 200 บาท ต่อตัว โปรดชำระภายใน 15 นาที </div>
+        <img id="qrImage" class="w-full rounded-xl border border-[color:var(--po-border)] shadow max-h-[560px] object-contain" src="./qr.png" alt="QR">
+        <button id="goLine" class="w-full mt-3 px-4 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700">
+          แจ้งสลิปทางไลน์ (เปิด LINE OA)
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <footer class="text-center text-xs text-gray-200/90 mt-8">© 2025 PO Grooming</footer>
+</main>
+
+<script>
+/* ===== CONFIG (เดิม) ===== */
+const SHEET_GVIZ_JSON="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/gviz/tq?tqx=out:json&gid=0";
+const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
+const LINE_OA_ID="@po_grooming";
+
+const START_DATE=dayjs.tz("2025-10-01");
+const END_DATE=dayjs.tz("2025-12-31");
+const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00","19:00"];
+
+/* ===== STATE (เดิม) ===== */
+let visibleMonth=START_DATE.startOf("month");
+let selectedDate=null, selectedTime=null;
+let availability={};
+const pets=[];
+const syncBadge=document.getElementById("syncBadge");
+
+/* ===== Helpers (เดิม) ===== */
+const buddhistYear=y=>y+543;
+const monthTitle=d=>{
+  const th=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  return `${th[d.month()]} ${buddhistYear(d.year())}`;
+};
+
+/* (เดิม) – ปรับให้ครบ self-contained: normalizeDate */
+function normalizeDate(cell){
+  // รับได้ทั้ง date object ของ gviz, timestamp, สตริงรูปแบบต่างๆ
+  const raw = (cell && typeof cell==="object" && ("v" in cell || "f" in cell)) ? (cell.f ?? cell.v) : cell;
+  if (raw==null) return null;
+
+  // gviz date: Date(2025,9,25)
+  if (typeof raw==="string" && /Date\(\d+,\d+,\d+\)/.test(raw)){
+    const [y,m,d] = raw.match(/\d+/g).map(Number);
+    return dayjs.tz({year:y,month:m,day:d});
+  }
+
+  // ISO / YYYY-MM-DD
+  if (typeof raw==="string" && /^\d{4}-\d{2}-\d{2}/.test(raw)) return dayjs.tz(raw);
+
+  // DD/MM/YYYY หรือ MM/DD/YYYY (พยายามแกะ)
+  if (typeof raw==="string" && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)){
+    const [a,b,y]=raw.split("/").map(Number);
+    // เดาว่าเป็น D/M/Y
+    const d1 = dayjs.tz({year:y,month:b-1,day:a});
+    if (d1.isValid()) return d1;
+  }
+
+  // timestamp หรือ Date
+  const d = dayjs.tz(raw);
+  return d.isValid()? d : null;
+}
+
+/* (เดิม) */
+function normalizeTime(cell){
+  const raw = (cell && typeof cell==="object" && ("v" in cell || "f" in cell)) ? (cell.f ?? cell.v) : cell;
+  if (raw==null) return null;
+
+  if (Array.isArray(raw) && raw.length>=2){
+    const hh=String(Number(raw[0])||0).padStart(2,"0");
+    const mm=String(Number(raw[1])||0).padStart(2,"0");
+    return `${hh}:${mm}`;
+  }
+  if (typeof raw==="number" && raw>=0 && raw<1){
+    const totalMinutes=Math.round(raw*24*60);
+    const hh=String(Math.floor(totalMinutes/60)).padStart(2,"0");
+    const mm=String(totalMinutes%60).padStart(2,"0");
+    return `${hh}:${mm}`;
+  }
+  let s=String(raw).trim();
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.slice(0,5).padStart(5,"0");
+  const ampm=s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (ampm){
+    let hh=+ampm[1], mm=ampm[2]; const isPM=/pm/i.test(ampm[3]);
+    if (isPM && hh<12) hh+=12; if (!isPM && hh===12) hh=0;
+    return String(hh).padStart(2,"0")+":"+mm;
+  }
+  if (/^\d{1,2}$/.test(s)) return String(+s).padStart(2,"0")+":00";
+  return s.slice(0,5);
+}
+
+/* (เดิม) */
+function mapStatus(val){
+  const s=(typeof val==="boolean"?(val?"true":"false"):(val??"")).toString().trim().toLowerCase();
+  if(s==="true"||s.includes("ว่าง")) return "ว่าง";
+  if(s==="false"||s.includes("เต็ม")) return "เต็ม";
+  if(s.includes("ปิด")) return "ปิด";
+  if(s.includes("รอมัดจำ") || s.includes("pending")) return "รอมัดจำ";
+  return "ว่าง";
+}
+
+/* ===== Rules (เดิม) ===== */
+const SERVICE_DURATION = {
+  "บริการเสริมอย่างเดียว": 1,
+  "อาบน้ำ": 2,
+  "ตัดขน": 2,
+  "อาบน้ำและตัดขน": 3,
+};
+const ALWAYS_ALLOW_ALL_AT = ["18:00", "19:00"];
+
+function contiguousFreeSlots(dateStr, startTime){
+  if (!dateStr || !startTime) return 0;
+  const daySlots=availability[dateStr]||{};
+  const idx=TIME_SLOTS.indexOf(startTime);
+  if (idx<0) return 0;
+  let n=0;
+  for (let i=idx;i<TIME_SLOTS.length;i++){
+    const t=TIME_SLOTS[i];
+    const v=(daySlots[t]??"ว่าง");
+    if (v==="เต็ม"||v==="ปิด") break;
+    n++;
+  }
+  return n;
+}
+function canBookService(serviceName, dateStr, startTime){
+  if (ALWAYS_ALLOW_ALL_AT.includes(startTime)) return true;
+  const need=SERVICE_DURATION[serviceName]??0;
+  const free=contiguousFreeSlots(dateStr,startTime);
+  return free>=need;
+}
+function updateServiceOptions(){
+  const dateStr=selectedDate, startTime=selectedTime;
+  const allowAll=!dateStr||!startTime||ALWAYS_ALLOW_ALL_AT.includes(startTime);
+  pets.forEach(wrap=>{
+    const select=wrap.querySelector('[data-role="service"]'); if(!select) return;
+    [...select.options].forEach(opt=>{
+      const label=opt.value.trim(); if(!label) return;
+      opt.disabled = allowAll ? false : !canBookService(label,dateStr,startTime);
+    });
+    const cur=select.value.trim();
+    if(cur && select.querySelector(`option[value="${cur}"]`)?.disabled){ select.value=""; }
+    select.title = allowAll ? "เลือกบริการได้ทุกชนิด" : "ระบบจำกัดบริการตามเวลาว่างต่อเนื่องของช่วงที่เลือก";
+  });
+}
+
+/* ===== Parsers (เดิม) ===== */
+function parseGviz(text){
+  const obj=JSON.parse(text.substring(text.indexOf("{"),text.lastIndexOf("}")+1));
+  const cols=obj.table.cols||[];
+  const labels=cols.map(c=>(c.label||"").toLowerCase());
+  const types=cols.map(c=>(c.type||"").toLowerCase());
+  let dateIdx=labels.indexOf("date");
+  let timeIdx=labels.indexOf("time");
+  let statusIdx=labels.indexOf("status");
+  if(dateIdx===-1) dateIdx=types.indexOf("date");
+  if(timeIdx===-1) timeIdx=types.indexOf("timeofday");
+  if(timeIdx===-1) timeIdx=(dateIdx!==1?1:0);
+  if(statusIdx===-1) statusIdx=[0,1,2].find(i=>i!==dateIdx&&i!==timeIdx)??2;
+  if(dateIdx<0||timeIdx<0||statusIdx<0){console.error("Resolve GViz columns failed",{labels,types});return {};}
+  const out={};
+  for(const r of (obj.table.rows||[])){
+    const c=r.c||[];
+    const d=normalizeDate(c[dateIdx]); const t=normalizeTime(c[timeIdx]); const s=c[statusIdx]?.v??c[statusIdx]?.f??"";
+    if(!d||!d.isValid?.()||!t) continue;
+    const key=d.format("YYYY-MM-DD"); if(!out[key]) out[key]={}; out[key][t]=mapStatus(s);
+  }
+  return out;
+}
+function parseCsv(text){
+  const lines=text.replace(/\r/g,"").split("\n").filter(Boolean);
+  const header=lines[0].split(",").map(s=>s.trim().toLowerCase());
+  const iD=header.indexOf("date"), iT=header.indexOf("time"), iS=header.indexOf("status");
+  const out={};
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(",").map(s=>s.trim());
+    const dRaw=cols[iD], tRaw=cols[iT], s=cols[iS]; if(!dRaw||!tRaw) continue;
+    let d=null;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(dRaw)) d=dayjs.tz(dRaw);
+    else if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dRaw)){const[m,dd,y]=dRaw.split("/").map(Number); d=dayjs.tz({year:y,month:m-1,day:dd});}
+    else d=dayjs.tz(dRaw);
+    if(!d||!d.isValid()) continue;
+    const key=d.format("YYYY-MM-DD");
+    const t=normalizeTime(tRaw); if(!t) continue;
+    if(!out[key]) out[key]={}; out[key][t]=mapStatus(s);
+  }
+  return out;
+}
+
+/* ===== Fetch Sheet (เดิม) ===== */
+async function fetchSheet(){
+  syncBadge.textContent="กำลังโหลด…"; syncBadge.className="px-2 py-1 rounded bg-yellow-100 text-yellow-800";
+  try{
+    const r=await fetch(SHEET_GVIZ_JSON+"&ts="+Date.now(),{cache:"no-store"});
+    if(!r.ok) throw new Error("GVIZ "+r.status);
+    availability=parseGviz(await r.text());
+    syncBadge.textContent="โหลดสำเร็จ (gviz) "+dayjs().format("HH:mm");
+    syncBadge.className="px-2 py-1 rounded bg-green-100 text-green-800";
+  }catch(e1){
+    console.warn("GVIZ fail → CSV",e1);
+    try{
+      const r2=await fetch(SHEET_CSV_URL+"&ts="+Date.now(),{cache:"no-store"});
+      if(!r2.ok) throw new Error("CSV "+r2.status);
+      availability=parseCsv(await r2.text());
+      syncBadge.textContent="โหลดสำเร็จ (csv) "+dayjs().format("HH:mm");
+      syncBadge.className="px-2 py-1 rounded bg-green-100 text-green-800";
+    }catch(e2){
+      console.error("โหลดชีตผิดพลาด:",e2);
+      syncBadge.textContent="โหลดข้อมูลไม่สำเร็จ";
+      syncBadge.className="px-2 py-1 rounded bg-red-100 text-red-800";
+      availability={};
+    }
+  }
+}
+
+/* ===== UI Calendar (เดิม) ===== */
+function getDayStatus(dateStr){
+  const daySlots=availability[dateStr]||{};
+  let free=0, full=0, pending=0, closed=false;
+  for(const t of TIME_SLOTS){
+    const v=(daySlots[t]??"ว่าง");
+    if(v==="ปิด"){closed=true;break;}
+    if(v==="เต็ม") full++;
+    else if(v==="รอมัดจำ") pending++;
+    else free++;
+  }
+  if(closed) return "gray";
+  if(free===0 && pending>0) return "yellow";
+  if(free===0) return "red";
+  if(full===0 && pending===0) return "green";
+  return "yellow";
+}
+function renderCalendar(){
+  document.getElementById("monthTitle").textContent=monthTitle(visibleMonth);
+  const start=visibleMonth.startOf("month").startOf("week");
+  const end=visibleMonth.endOf("month").endOf("week");
+  const grid=document.getElementById("calendarGrid"); grid.innerHTML="";
+  let d=start.clone();
+  while(d.isBefore(end)||d.isSame(end,"day")){
+    const dateStr=d.format("YYYY-MM-DD");
+    const inRange=d.isAfter(START_DATE.subtract(1,"day"))&&d.isBefore(END_DATE.add(1,"day"));
+    const isCurMonth=d.month()===visibleMonth.month();
+    const status=inRange?getDayStatus(dateStr):"gray";
+    const btn=document.createElement("button");
+    btn.type="button"; btn.disabled=!inRange||status==="gray";
+    btn.className="aspect-square rounded-xl border border-[color:var(--po-border)] text-sm flex flex-col items-center justify-center gap-1 "+
+      (dateStr===selectedDate?"bg-indigo-50 border-indigo-300":"bg-white hover:bg-gray-50")+
+      (!isCurMonth?" opacity-50":"")+(!inRange||status==="gray"?" opacity-40 cursor-not-allowed":"");
+    btn.innerHTML=`<div class="leading-none">${d.date()}</div>
+      <span class="inline-block w-2.5 h-2.5 rounded-full ${status==='green'?'bg-green-500':status==='yellow'?'bg-yellow-500':status==='red'?'bg-red-500':'bg-gray-400'}"></span>`;
+    btn.addEventListener("click",()=>{ if(btn.disabled) return; selectedDate=dateStr; selectedTime=null; showTimes(); renderCalendar(); updateStep(2);});
+    grid.appendChild(btn);
+    d=d.add(1,"day");
+  }
+}
+function showTimes(){
+  const box=document.getElementById("timeBox");
+  if(!selectedDate){ box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  document.getElementById("chosenDateLabel").textContent=`(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
+  const grid=document.getElementById("timeGrid"); grid.innerHTML="";
+  const daySlots=availability[selectedDate]||{};
+  TIME_SLOTS.forEach(t=>{
+    const v=(daySlots[t]??"ว่าง");
+    const taken=(v==="เต็ม")||(v==="ปิด");
+    const isPending=(v==="รอมัดจำ");
+
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.textContent=t;
+    btn.disabled=taken || isPending;
+    btn.className="py-3 rounded-xl border border-[color:var(--po-border)] text-sm font-medium "+
+      (taken?"bg-gray-100 text-gray-400 cursor-not-allowed":
+       isPending?"bg-yellow-100 text-yellow-700 cursor-wait":
+       "bg-white hover:bg-[var(--po-card)]");
+    btn.addEventListener("click",()=>{[...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2); updateServiceOptions();});
+    grid.appendChild(btn);
+  });
+}
+
+/* ===== Steps & actions (เดิม) ===== */
+function updateStep(step){
+  for(let i=1;i<=5;i++){
+    const li=document.getElementById(`step${i}`);
+    if(i<step) li.className="flex items-start gap-2 text-green-700";
+    else if(i===step) li.className="flex items-start gap-2";
+    else li.className="flex items-start gap-2 text-gray-600";
+  }
+  document.getElementById("formCustomer").classList.toggle("hidden",step!==2);
+  document.getElementById("formPets").classList.toggle("hidden",step!==3);
+  document.getElementById("formTerms").classList.toggle("hidden",step!==4);
+  document.getElementById("formPay").classList.toggle("hidden",step!==5);
+}
+document.getElementById("toPets").addEventListener("click",()=>{
+  const name=document.getElementById("custName").value.trim();
+  const phone=document.getElementById("custPhone").value.trim();
+  if(!selectedDate||!selectedTime) return alert("กรุณาเลือกวันและเวลาหน้าแรก");
+  if(!name||!phone) return alert("กรุณากรอกชื่อและเบอร์โทร");
+  if(pets.length===0) addPetForm();
+  updateStep(3);
+  updateServiceOptions();
+});
+document.getElementById("addPet").addEventListener("click",()=>{
+  if(pets.length>=3) return alert("เพิ่มได้สูงสุด 3 ตัว");
+  addPetForm();
+});
+function addPetForm(){
+  const idx=pets.length+1;
+  const wrap=document.createElement("div");
+  wrap.className="p-3 border border-[color:var(--po-border)] rounded-xl";
+  wrap.innerHTML=`
+    <div class="text-sm font-medium mb-2 text-[var(--po-forest)]">น้องตัวที่ ${idx}</div>
+    <div class="grid gap-2">
+      <label class="text-xs text-gray-600">ชื่อน้อง *</label>
+      <input class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="petName" placeholder="เช่น อุ๋งอุ๋ง" />
+      <label class="text-xs text-gray-600">ประเภท *</label>
+      <select class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="petType">
+        <option value="">เลือกประเภท</option>
+        <option>สุนัข</option><option>แมว</option><option>กระต่าย</option><option>อื่นๆ</option>
+      </select>
+      <label class="text-xs text-gray-600">สายพันธุ์ (ไม่บังคับ)</label>
+      <input class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="breed" placeholder="เช่น Poodle / Scottish Fold" />
+      <label class="text-xs text-gray-600">ประเภทบริการ *</label>
+      <select class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="service">
+        <option value="">เลือกบริการ</option>
+        <option>อาบน้ำ</option><option>ตัดขน</option><option>อาบน้ำและตัดขน</option><option>บริการเสริมอย่างเดียว</option>
+      </select>
+      <label class="text-xs text-gray-600">บริการเสริมเพิ่มเติมที่ต้องการ (ถ้ามี)</label>
+      <textarea class="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[60px]" data-role="addon" placeholder="เช่น ทรีตเมนต์ขน เคลียร์ช่องหู ฯลฯ"></textarea>
+      <label class="text-xs text-gray-600">ข้อควรระวัง</label>
+      <textarea class="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
+    </div>`;
+  document.getElementById("petsContainer").appendChild(wrap);
+  pets.push(wrap); updateServiceOptions();
+}
+document.getElementById("toTerms").addEventListener("click",()=>{
+  if(pets.length===0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
+  let ok=false;
+  for(const wrap of pets){
+    const petName=wrap.querySelector('[data-role="petName"]').value.trim();
+    const petType=wrap.querySelector('[data-role="petType"]').value.trim();
+    const service=wrap.querySelector('[data-role="service"]').value.trim();
+    if(!petName && !petType && !service) continue;
+    if(!petName || !petType || !service) return alert("กรอก ชื่อน้อง / ประเภท / ประเภทบริการ ให้ครบในแต่ละตัว");
+    ok=true;
+  }
+  if(!ok) return alert("กรุณากรอกข้อมูลน้องอย่างน้อย 1 ตัว");
+
+  /* เงื่อนไขเพิ่มเวลาอัตโนมัติเมื่อน้อง 3 ตัว (เดิม) */
+  if (pets.length === 3) {
+    const currentTimeIndex = TIME_SLOTS.indexOf(selectedTime);
+    if (currentTimeIndex !== -1 && currentTimeIndex + 1 < TIME_SLOTS.length) {
+      const extendedSlot = TIME_SLOTS[currentTimeIndex + 1];
+      if (availability[selectedDate]) availability[selectedDate][extendedSlot] = "เต็ม (เพิ่มเวลาอัตโนมัติ)";
+    }
+  }
+  updateStep(4);
+});
+document.getElementById("agree").addEventListener("change",e=>{
+  document.getElementById("toPayment").disabled=!e.target.checked;
+});
+document.getElementById("toPayment").addEventListener("click",()=>{
+  updateStep(5);
+  const dateKey=selectedDate, timeKey=selectedTime;
+  if (!availability[dateKey]) availability[dateKey]={};
+  availability[dateKey][timeKey]="รอมัดจำ";
+  renderCalendar(); showTimes();
+  setTimeout(()=>{
+    if (availability[dateKey][timeKey]==="รอมัดจำ"){
+      availability[dateKey][timeKey]="ว่าง";
+      renderCalendar(); showTimes();
+    }
+  }, 15*60*1000);
+});
+
+/* LINE OA deeplink + ส่ง Google Script (เดิม) */
+document.getElementById("goLine").addEventListener("click",()=>{
+  const name=document.getElementById("custName").value.trim();
+  const phone=document.getElementById("custPhone").value.trim();
+  if(!selectedDate||!selectedTime) return alert("ยังไม่ได้เลือกวันเวลา");
+  if(!name||!phone) return alert("กรุณากรอกชื่อและเบอร์ในขั้นตอนที่ 2");
+
+  const petLines=[];
+  pets.forEach((wrap)=>{
+    const n=wrap.querySelector('[data-role="petName"]').value.trim();
+    const t=wrap.querySelector('[data-role="petType"]').value.trim();
+    const s=wrap.querySelector('[data-role="service"]').value.trim();
+    if(n||t||s){ petLines.push(`${n||"-"} / ${t||"-"} / ${s||"-"}`); }
+  });
+
+  const dateLabel=`${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())}`;
+  const msg=[
+    "📌 แจ้งจองคิวจากหน้าเว็บ",
+    `• วันเวลา: ${dateLabel} เวลา ${selectedTime} น.`,
+    `• ลูกค้า: ${name}`,
+    `• โทร: ${phone}`,
+    (petLines.length?`• รายละเอียดน้อง:\n   - ${petLines.join("\n   - ")}`:"• รายละเอียดน้อง: -"),
+    "— ส่งจากระบบจองคิว PO Grooming —"
+  ].join("\n");
+
+  const url=`https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?text=${encodeURIComponent(msg)}`;
+  window.location.href=url;
+
+  fetch("https://script.google.com/macros/s/AKfycbwzyFy594e9JIpxGSbhn4XeJsfPVqEmrmtWMXC5nnBKwXeS3IWua-ZnofE969UxTJGe/exec", {
+    method:"POST",
+    body:JSON.stringify({date:selectedDate,time:selectedTime,name,phone,pet:petLines.join(", ")}),
+    headers:{"Content-Type":"application/json"}
+  }).then(r=>r.json()).then(console.log).catch(console.error);
+});
+
+/* Nav & boot (เดิม) */
+document.getElementById("prevMonth").addEventListener("click",()=>{const prev=visibleMonth.subtract(1,"month"); if(prev.isBefore(START_DATE,"month"))return; visibleMonth=prev; renderCalendar();});
+document.getElementById("nextMonth").addEventListener("click",()=>{const next=visibleMonth.add(1,"month"); if(next.isAfter(END_DATE,"month"))return; visibleMonth=next; renderCalendar();});
+document.getElementById("btnReload").addEventListener("click",async()=>{await fetchSheet(); renderCalendar(); if(selectedDate) showTimes();});
+
+(async function init(){ await fetchSheet(); renderCalendar(); })();
+
+  // ===== โหลดภาษาจาก query string =====
+(function(){
+  const urlParams = new URLSearchParams(window.location.search);
+  const langParam = urlParams.get("lang");
+  if (langParam) {
+    localStorage.setItem("lang", langParam);
+    setLang(langParam);
+  } else {
+    const savedLang = localStorage.getItem("lang") || "th";
+    setLang(savedLang);
+  }
+})();
+
+</script>
+</body>
+</html>
