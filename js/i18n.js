@@ -48,8 +48,13 @@ const translations = {
     "label.notifyline": "通过 LINE 通知（打开 LINE OA）",
   }
 };
+// อ่านภาษาจาก URL ก่อน (ถ้าไม่มี ให้ใช้ค่าที่เก็บไว้ใน localStorage)
+function getLangFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("lang") || localStorage.getItem("lang") || "th";
+}
 
-let currentLang = localStorage.getItem("lang") || "th";
+let currentLang = getLangFromUrl();
 
 function setLang(lang) {
   currentLang = lang;
