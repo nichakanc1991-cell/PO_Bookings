@@ -32,14 +32,15 @@ function applyLang() {
     }
   });
 
-  // อัปเดตลิงก์ให้คง path เดิมและใส่พารามิเตอร์ lang
-  document.querySelectorAll("a[href]").forEach(a => {
-    let href = a.getAttribute("href");
-    if (href.includes(".html")) {
-      href = href.split("?")[0];
-      a.setAttribute("href", href + "?lang=" + currentLang);
-    }
-  });
+  // อัปเดตลิงก์ทั้งหมดให้แนบภาษาปัจจุบันไปด้วย
+document.querySelectorAll("a[href]").forEach(a => {
+  const href = a.getAttribute("href");
+  if (href && href.includes(".html")) {
+    const url = new URL(href, window.location.origin);
+    url.searchParams.set("lang", currentLang);
+    a.setAttribute("href", url.pathname + url.search);
+  }
+});
 }
 
 // โหลดภาษาเมื่อเปิดหน้า
