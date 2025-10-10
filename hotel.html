@@ -1,114 +1,146 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PO Cat Hotel — Room Selection</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-  <script src="js/i18n.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P.O. CAT HOTEL | Private & Premium Stay for Cats</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
+    :root {
+      --po-green: #0F3B2E;
+      --po-cream: #F2E2C4;
+      --po-gold: #D5B774;
+    }
     body {
+      background: linear-gradient(to bottom, #0F3B2E 0%, #203C2E 40%, #F7F6EE 100%);
       font-family: "Prompt", sans-serif;
-      background: linear-gradient(to bottom, #1B3B31, #F6F2E7);
-      color: #1B3B31;
-      min-height: 100vh;
+    }
+    .section-title {
+      color: var(--po-green);
+      font-weight: 700;
       text-align: center;
+      margin-bottom: 1.5rem;
     }
-    .card {
-      background: #fffaf0;
-      border: 2px solid #d6c59b;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      transition: transform 0.3s;
+    .card-border {
+      border: 4px solid var(--po-gold);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      transition: transform 0.4s ease;
     }
-    .card:hover { transform: translateY(-5px); }
-    .price { color: #1B3B31; font-weight: 600; }
+    .card-border:hover {
+      transform: translateY(-5px);
+    }
   </style>
 </head>
 
-<body>
-  <!-- Header -->
-  <header class="py-6">
-    <img src="logo-po.png" alt="PO Logo" class="mx-auto w-24 mb-3">
-    <h1 class="text-3xl font-bold text-center"
-    style="
-      background: linear-gradient(90deg, #C9A04B, #E8D7A3, #C9A04B);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 1px;">
-  PO CAT HOTEL
-</h1>
-    <p class="text-lg mt-1" 
-   style="color:#D6CBA9; font-weight:500;">
-   Private & Premium Stay for Cats 
-</p>
+<body class="text-gray-800">
 
-    <div class="mt-3 text-sm">
-      <button onclick="setLang('th')" class="mx-2">ไทย</button>|
-      <button onclick="setLang('en')" class="mx-2">English</button>|
-      <button onclick="setLang('zh')" class="mx-2">中文</button>
+  <!-- HERO SECTION -->
+  <header class="relative w-full h-[70vh] bg-[#0F3B2E] flex items-center justify-center text-center text-[#F2E2C4]">
+    <div class="relative w-11/12 md:w-3/4">
+      <!-- รูป hero (ใส่ภายหลัง) -->
+      <div class="relative w-full h-[70vh] rounded-3xl overflow-hidden border-4 border-[#D5B774] shadow-lg bg-[#0F3B2E]">
+        <img src="images/hero-hotel.jpg" alt="P.O. Cat Hotel"
+             class="object-cover w-full h-full opacity-80" />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0F3B2E]/70 via-transparent to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <h1 class="text-4xl md:text-5xl font-bold mb-2 drop-shadow-lg">P.O. CAT HOTEL</h1>
+          <p class="text-lg md:text-xl opacity-90">Private & Premium Stay for Cats</p>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto p-6">
-    <h2 class="text-2xl font-semibold text-center mt-6 mb-6"
-    data-i18n="hotel.selectroom"
-    style="
-      color: #0F3B2E;
-      text-shadow: 
-        -1px -1px 0 #D6CBA9,
-         1px -1px 0 #D6CBA9,
-        -1px  1px 0 #D6CBA9,
-         1px  1px 0 #D6CBA9;">
-  เลือกประเภทห้องพักที่ต้องการ
-</h2>
+  <!-- ABOUT HOTEL -->
+  <section class="max-w-5xl mx-auto px-4 py-16 text-center">
+    <h2 class="section-title text-3xl text-[#0F3B2E]">สิ่งอำนวยความสะดวกภายในโรงแรม</h2>
+    <p class="text-lg text-gray-700 leading-relaxed mb-10">
+      โรงแรมแมว P.O. Cat Hotel ให้บริการที่พักแมวแบบ Private ทุกห้องแยกส่วนตัว  
+      ไม่เล่นรวมกับแมวบ้านอื่น ทุกห้องมีวิวท้องฟ้า อากาศถ่ายเท ปลอดภัย อบอุ่นเหมือนอยู่บ้าน   
+      พร้อมดูแลโดยเจ้าของร้านเองตลอดการเข้าพัก เพื่อให้มั่นใจว่าน้องจะได้รับความรัก และความสบายสูงสุด 💛
+    </p>
 
+    <!-- Facilities Images -->
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] h-64">
+        <img src="images/facility-1.jpg" alt="ห้องเล่นส่วนกลาง" class="object-cover w-full h-full opacity-85">
+      </div>
+      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] h-64">
+        <img src="images/facility-2.jpg" alt="ระบบฟอกอากาศ" class="object-cover w-full h-full opacity-85">
+      </div>
+      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] h-64">
+        <img src="images/facility-3.jpg" alt="โซนถ่ายรูปน้องแมว" class="object-cover w-full h-full opacity-85">
+      </div>
+    </div>
 
+    <ul class="text-left mt-10 text-gray-700 leading-relaxed max-w-2xl mx-auto">
+      <li>・เครื่องปรับอากาศและฟอกอากาศในทุกห้อง</li>
+      <li>・พัดลมหมุนเวียนอากาศ ระบบฆ่าเชื้อโรค และทำความสะอาดทุกวัน</li>
+      <li>・พื้นที่ส่วนกลางมีของเล่น และที่ปีนป่ายสำหรับน้อง</li>
+      <li>・บริการอาหารเสริม ขนม และการดูแลรายวันโดยเจ้าของร้าน</li>
+      <li>・กล้องวงจรปิดส่วนตัวสำหรับผู้ต้องการดูน้องแบบเรียลไทม์</li>
+    </ul>
+  </section>
 
-    <div class="grid md:grid-cols-2 gap-6">
+  <!-- ROOM SELECTION -->
+  <section class="bg-[#F7F6EE] py-16">
+    <h2 class="section-title text-3xl mb-10 text-[#0F3B2E]">ประเภทห้องพัก</h2>
+
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 px-4">
 
       <!-- Standard Room -->
-      <div class="card p-4">
-        <img src="hotel2-3.jpg" alt="Standard Room" class="rounded-xl mb-3 mx-auto">
-        <h3 class="text-xl font-bold text-[#1B3B31]" data-i18n="hotel.standard">Standard Room</h3>
-        <p class="text-sm mt-1 text-[#2F453C]" data-i18n="hotel.standard.desc">
-          ขนาดห้อง 60x60x110 cm พักได้ 1 ตัว  
-          มีชามอาหาร กระบะทรายให้ พร้อมพื้นที่ส่วนกลาง ลูกค้านำอาหาร/ทรายมาเอง  
-        </p>
-        <p class="text-sm mt-1 text-[#3B4B40]">(อัปเกรดเชื่อมต่อห้องบน–ล่าง ซ้าย-ขวาได้ กรณีบ้านเดียวกัน)</p>
-        <p class="text-md font-semibold mt-2 price" data-i18n="hotel.standard.price">
-          💰 250 บาท/คืน  
-        </p>
-        <p class="text-xs text-gray-600">รายชั่วโมง 100–150 บาท</p>
-        <a href="hotel-booking.html?room=standard"
-           class="inline-block mt-3 px-4 py-2 bg-[#1B3B31] text-[#F6F2E7] rounded-xl hover:bg-[#2C5B49] transition"
-           data-i18n="hotel.select">เลือกห้องนี้</a>
+      <div class="card-border">
+        <div class="relative w-full h-64 bg-[#0F3B2E]">
+          <!-- เว้นที่สำหรับรูป -->
+          <img src="images/room-standard.jpg" alt="Standard Room"
+               class="object-cover w-full h-full opacity-90">
+        </div>
+        <div class="p-6 text-center">
+          <h3 class="text-2xl font-semibold text-[#0F3B2E] mb-2">Standard Room</h3>
+          <p class="text-gray-700">
+            ห้องพักขนาด 60×60×110 ซม. สำหรับ 1 ตัว ตกแต่งด้วยไม้ธรรมชาติ มีระบบหมุนเวียนอากาศและแสงธรรมชาติพอดี 
+            ราคาคืนละ <strong>250 บาท</strong>  
+            <br>*(ไม่รวมกล้องวงจรปิด)*
+          </p>
+        </div>
       </div>
 
       <!-- Suite Room -->
-      <div class="card p-4">
-        <img src="hotel2-4.jpg" alt="Suite Room" class="rounded-xl mb-3 mx-auto">
-        <h3 class="text-xl font-bold text-[#1B3B31]" data-i18n="hotel.suite">Suite Room</h3>
-        <p class="text-sm mt-1 text-[#2F453C]" data-i18n="hotel.suite.desc">
-          ขนาดห้อง 150x120x220 cm  
-          ห้องกระจกกว้าง มีชามอาหาร กระบะทราย พื้นที่ส่วนกลาง ลูกค้านำอาหาร/ทรายมาเอง  
-          รองรับแมวสูงสุด 3 ตัวในบ้านเดียวกัน  
-        </p>
-        <p class="text-md font-semibold mt-2 price" data-i18n="hotel.suite.price">
-          💰 500 บาท/คืน  
-        </p>
-        <p class="text-xs text-gray-600">รายชั่วโมง 150–300 บาท</p>
-        <a href="hotel-booking.html?room=suite"
-           class="inline-block mt-3 px-4 py-2 bg-[#1B3B31] text-[#F6F2E7] rounded-xl hover:bg-[#2C5B49] transition"
-           data-i18n="hotel.select">เลือกห้องนี้</a>
+      <div class="card-border">
+        <div class="relative w-full h-64 bg-[#0F3B2E]">
+          <!-- เว้นที่สำหรับรูป -->
+          <img src="images/room-suite.jpg" alt="Suite Room"
+               class="object-cover w-full h-full opacity-90">
+        </div>
+        <div class="p-6 text-center">
+          <h3 class="text-2xl font-semibold text-[#0F3B2E] mb-2">Suite Room</h3>
+          <p class="text-gray-700">
+            ห้องพักขนาด 150×120×220 ซม. กว้างขวาง โปร่ง มีระเบียงในตัว และมุมชมวิวท้องฟ้า 
+            รองรับน้องแมวสูงสุด 3 ตัว (ตัวที่ 2 และ 3 เพิ่ม 200 บาท / คืน)  
+            ราคาคืนละ <strong>500 บาท</strong>  
+            <br>*(ไม่รวมกล้องวงจรปิด)*
+          </p>
+        </div>
       </div>
     </div>
 
-    <div class="text-center mt-8">
-      <a href="index.html" class="text-[#1B3B31] hover:underline" data-i18n="hotel.backhome">← กลับหน้าหลัก</a>
-    </div>
-  </main>
+    <p class="text-center text-sm text-gray-600 mt-10">
+      บริการกล้องวงจรปิดส่วนตัว เพิ่ม 100 บาท/คืน ดูน้องได้ตลอด 24 ชั่วโมง
+    </p>
+  </section>
 
-  <footer class="text-xs text-[#2E3C34] mt-10 mb-4">© 2025 PO Grooming & Cat Hotel | Private & Premium Stay for Cats</footer>
+  <!-- BOOKING BUTTON -->
+  <div class="text-center py-16">
+    <a href="booking.html"
+       class="inline-block bg-[#0F3B2E] text-[#F2E2C4] text-lg font-semibold px-8 py-4 rounded-full hover:bg-[#164D3D] transition">
+      จองห้องพักกับเรา
+    </a>
+  </div>
+
 </body>
 </html>
