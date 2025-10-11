@@ -28,6 +28,19 @@ const translations = {
     "label.closed": "ปิด",
     "label.selecttime": "เลือกเวลา",
     "label.bookinfo": "รายละเอียดการจอง",
+    // === หน้า HOTEL ===
+    "hotel.title": "P.O. CAT HOTEL | Private & Premium Stay for Cats",
+    "hotel.name": "P.O. CAT HOTEL",
+    "hotel.subtitle": "Private & Premium Stay for Cats",
+    "hotel.facilitiesTitle": "สิ่งอำนวยความสะดวกภายในโรงแรม",
+    "hotel.about": "โรงแรมแมว P.O. Cat Hotel ให้บริการที่พักแมวแบบ Private ทุกห้องแยกส่วนตัว ไม่เล่นรวมกับแมวบ้านอื่น ทุกห้องมีวิวท้องฟ้า อากาศถ่ายเท ปลอดภัย อบอุ่นเหมือนอยู่บ้าน พร้อมดูแลโดยเจ้าของร้านเองตลอดการเข้าพัก เพื่อให้มั่นใจว่าน้องจะได้รับความรัก และความสบายสูงสุด 💛",
+    "hotel.roomTitle": "ประเภทห้องพัก",
+    "hotel.standardTitle": "Standard Room",
+    "hotel.standardDesc": "ห้องพักขนาด 60×60×110 ซม. สำหรับ 1 ตัว ตกแต่งด้วยไม้ธรรมชาติ มีระบบหมุนเวียนอากาศและแสงธรรมชาติพอดี ราคาคืนละ 250 บาท (ไม่รวมกล้องวงจรปิด)",
+    "hotel.suiteTitle": "Suite Room",
+    "hotel.suiteDesc": "ห้องพักขนาด 150×120×220 ซม. โปร่ง มีระเบียงและมุมชมวิว รองรับแมวสูงสุด 3 ตัว (ตัวที่ 2 และ 3 เพิ่ม 200 บาท / คืน) ราคาคืนละ 500 บาท (ไม่รวมกล้องวงจรปิด)",
+    "hotel.cameraNote": "บริการกล้องวงจรปิดส่วนตัว เพิ่ม 100 บาท/คืน ดูน้องได้ตลอด 24 ชั่วโมง",
+    "hotel.bookNow": "จองห้องพักกับเรา"
   },
 
   en: {
@@ -55,6 +68,19 @@ const translations = {
     "label.closed": "Closed",
     "label.selecttime": "Select Time",
     "label.bookinfo": "Booking Details",
+    // === HOTEL PAGE ===
+    "hotel.title": "P.O. CAT HOTEL | Private & Premium Stay for Cats",
+    "hotel.name": "P.O. CAT HOTEL",
+    "hotel.subtitle": "Private & Premium Stay for Cats",
+    "hotel.facilitiesTitle": "Hotel Facilities",
+    "hotel.about": "P.O. Cat Hotel offers private rooms for every cat. Each suite is separate — no shared spaces with other cats. Every room has sky views and natural airflow, ensuring comfort and safety just like home, under the gentle care of the owner.",
+    "hotel.roomTitle": "Room Types",
+    "hotel.standardTitle": "Standard Room",
+    "hotel.standardDesc": "Room size 60×60×110 cm for 1 cat. Wooden interior with proper airflow and lighting. Rate: 250 THB/night (CCTV not included).",
+    "hotel.suiteTitle": "Suite Room",
+    "hotel.suiteDesc": "Room size 150×120×220 cm with private balcony and sky view. Accommodates up to 3 cats (extra 200 THB/night per additional cat). Rate: 500 THB/night (CCTV not included).",
+    "hotel.cameraNote": "Optional private CCTV available at 100 THB/night (24-hour access).",
+    "hotel.bookNow": "Book Your Stay"
   },
 
   zh: {
@@ -82,6 +108,19 @@ const translations = {
     "label.closed": "休息",
     "label.selecttime": "选择时间",
     "label.bookinfo": "预约详情",
+     // === HOTEL PAGE ===
+    "hotel.title": "P.O. CAT HOTEL | 私人高端猫咪旅馆",
+    "hotel.name": "P.O. CAT HOTEL",
+    "hotel.subtitle": "私人高端猫咪住宿体验",
+    "hotel.facilitiesTitle": "酒店设施",
+    "hotel.about": "P.O. Cat Hotel 提供每只猫独立的私人房间，不与其他猫共用空间。每个房间都能看到天空，空气流通安全舒适，由店主亲自照顾，让每位主子都能安心入住。",
+    "hotel.roomTitle": "房型介绍",
+    "hotel.standardTitle": "标准房",
+    "hotel.standardDesc": "房间尺寸 60×60×110 厘米，适合 1 只猫。木质装饰，自然采光与通风。价格：每晚 250 泰铢（不含监控）。",
+    "hotel.suiteTitle": "套房",
+    "hotel.suiteDesc": "房间尺寸 150×120×220 厘米，带阳台和观景窗，可容纳最多 3 只猫（第 2、3 只猫加收 200 泰铢/晚）。价格：每晚 500 泰铢（不含监控）。",
+    "hotel.cameraNote": "可选私人监控服务，每晚 100 泰铢，可 24 小时查看。",
+    "hotel.bookNow": "立即预订"
   }
 };
 
