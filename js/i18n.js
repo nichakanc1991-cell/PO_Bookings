@@ -45,7 +45,19 @@ const translations = {
     "hotel.suiteTitle": "Suite Room",
     "hotel.suiteDesc": "ห้องพักขนาด 150×120×220 ซม. โปร่ง มีระเบียงและมุมชมวิว รองรับแมวสูงสุด 3 ตัว (ตัวที่ 2 และ 3 เพิ่ม 200 บาท / คืน) ราคาคืนละ 500 บาท (ไม่รวมกล้องวงจรปิด)",
     "hotel.cameraNote": "บริการกล้องวงจรปิดส่วนตัว เพิ่ม 100 บาท/คืน ดูน้องได้ตลอด 24 ชั่วโมง",
-    "hotel.bookNow": "จองห้องพักกับเรา"
+    "hotel.bookNow": "จองห้องพักกับเรา",
+    "hotel.bookingtitle": "จองห้องพักโรงแรมแมว",
+    "hotel.formtitle": "กรอกรายละเอียดการจอง",
+    "form.name": "ชื่อผู้จอง / Name",
+    "form.phone": "เบอร์ติดต่อ / Phone",
+    "form.roomtype": "เลือกประเภทห้องพัก",
+    "form.catcount": "จำนวนแมวที่เข้าพัก",
+    "form.checkin": "วันเช็กอิน",
+    "form.checkout": "วันเช็กเอาท์",
+    "form.cctv": "ต้องการกล้องวงจรปิด (+฿100/คืน)",
+    "form.total": "ยอดรวม",
+    "form.deposit": "มัดจำ 50%",
+    "form.confirm": "ยืนยันการจอง",
   },
 
   en: {
@@ -90,7 +102,19 @@ const translations = {
     "hotel.suiteTitle": "Suite Room",
     "hotel.suiteDesc": "Room size 150×120×220 cm with private balcony and sky view. Accommodates up to 3 cats (extra 200 THB/night per additional cat). Rate: 500 THB/night (CCTV not included).",
     "hotel.cameraNote": "Optional private CCTV available at 100 THB/night (24-hour access).",
-    "hotel.bookNow": "Book Your Stay"
+    "hotel.bookNow": "Book Your Stay",
+    "hotel.bookingtitle": "Cat Hotel Booking",
+    "hotel.formtitle": "Fill in your booking details",
+    "form.name": "Name",
+    "form.phone": "Phone Number",
+    "form.roomtype": "Room Type",
+    "form.catcount": "Number of Cats",
+    "form.checkin": "Check-in Date",
+    "form.checkout": "Check-out Date",
+    "form.cctv": "Add CCTV (+฿100/night)",
+    "form.total": "Total",
+    "form.deposit": "Deposit 50%",
+    "form.confirm": "Confirm Booking"
   },
 
   zh: {
@@ -135,7 +159,19 @@ const translations = {
     "hotel.suiteTitle": "套房",
     "hotel.suiteDesc": "房间尺寸 150×120×220 厘米，带阳台和观景窗，可容纳最多 3 只猫（第 2、3 只猫加收 200 泰铢/晚）。价格：每晚 500 泰铢（不含监控）。",
     "hotel.cameraNote": "可选私人监控服务，每晚 100 泰铢，可 24 小时查看。",
-    "hotel.bookNow": "立即预订"
+    "hotel.bookNow": "立即预订",
+    "hotel.bookingtitle": "猫咪酒店预订",
+    "hotel.formtitle": "填写预订资料",
+    "form.name": "姓名",
+    "form.phone": "联系电话",
+    "form.roomtype": "房型选择",
+    "form.catcount": "入住猫咪数量",
+    "form.checkin": "入住日期",
+    "form.checkout": "退房日期",
+    "form.cctv": "需要摄像头服务 (+฿100/晚)",
+    "form.total": "总价",
+    "form.deposit": "预付 50%",
+    "form.confirm": "确认预订"
   }
 };
 
