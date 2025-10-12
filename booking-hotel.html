@@ -3,187 +3,215 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>P.O. CAT HOTEL | จองห้องพักโรงแรมแมว</title>
+  <title>P.O. CAT HOTEL — ระบบจองห้องพักแมว</title>
 
   <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="js/i18n.js"></script>
+  <script src="https://cdn.tailwindcss.com?ver=3.4.1"></script>
 
-  <style>
-    :root {
-      --po-green: #0F3B2E;
-      --po-cream: #F2E2C4;
-      --po-gold: #D5B774;
+  <!-- Day.js -->
+  <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+
+  <!-- i18n -->
+  <script>
+  const translations = {
+    th: {
+      title: "กรอกข้อมูลการจองห้องพักแมว",
+      name: "ชื่อผู้จอง",
+      phone: "เบอร์ติดต่อ",
+      roomType: "เลือกประเภทห้องพัก",
+      catName: "ชื่อแมวที่เข้าพัก",
+      addCat: "+ เพิ่มชื่อแมวอีก",
+      checkin: "วันเช็คอิน",
+      checkout: "วันเช็คเอาท์",
+      confirm: "ยืนยันการจอง",
+      total: "ยอดรวมทั้งหมด",
+      deposit: "ยอดมัดจำ 30%",
+      scanQR: "สแกน QR เพื่อมัดจำ",
+      nights: "จำนวนคืน",
+      rooms: "จำนวนห้อง",
+    },
+    en: {
+      title: "Cat Hotel Booking Form",
+      name: "Name",
+      phone: "Phone",
+      roomType: "Select Room Type",
+      catName: "Cat Name",
+      addCat: "+ Add Another Cat",
+      checkin: "Check-in Date",
+      checkout: "Check-out Date",
+      confirm: "Confirm Booking",
+      total: "Total Price",
+      deposit: "Deposit 30%",
+      scanQR: "Scan QR to Pay Deposit",
+      nights: "Nights",
+      rooms: "Rooms",
+    },
+    zh: {
+      title: "貓咪旅館預訂表單",
+      name: "預訂人姓名",
+      phone: "電話",
+      roomType: "選擇房型",
+      catName: "貓咪名字",
+      addCat: "+ 新增貓咪",
+      checkin: "入住日期",
+      checkout: "退房日期",
+      confirm: "確認預訂",
+      total: "總金額",
+      deposit: "訂金 30%",
+      scanQR: "掃描 QR 支付訂金",
+      nights: "晚數",
+      rooms: "房間數",
     }
-    body { background: #F7F6EE; font-family: "Prompt", sans-serif; }
-    label { color: var(--po-green); }
-    input, select { border: 1.5px solid #D5B774; }
-  </style>
+  };
+
+  let currentLang = 'th';
+  function switchLang(lang){
+    currentLang = lang;
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      el.textContent = translations[lang][el.dataset.i18n];
+    });
+  }
+  </script>
 </head>
+<body class="bg-[#FAFAF3] text-[#2b2b2b] font-sans">
 
-<body class="text-gray-800">
-  <header class="bg-[var(--po-green)] text-[var(--po-cream)] py-6 text-center shadow-md">
-    <h1 class="text-3xl font-bold">P.O. CAT HOTEL</h1>
-    <p class="opacity-90 text-lg">Private & Premium Stay for Cats</p>
-  </header>
+  <!-- Header -->
+  <div class="bg-[#0E3C2F] text-white text-center py-6 text-xl font-bold">
+    P.O. CAT HOTEL<br>
+    <span class="text-sm opacity-80">Private & Premium Stay for Cats</span>
+  </div>
 
-  <section class="max-w-3xl mx-auto bg-white mt-10 rounded-3xl shadow-lg p-8 border-4 border-[var(--po-gold)]">
-    <h2 class="text-2xl font-semibold text-[var(--po-green)] mb-6">กรอกรายละเอียดการจอง</h2>
+  <!-- Switch Language -->
+  <div class="text-right px-6 py-3 space-x-2">
+    <button class="px-2 py-1 text-sm border rounded" onclick="switchLang('th')">ไทย</button>
+    <button class="px-2 py-1 text-sm border rounded" onclick="switchLang('en')">EN</button>
+    <button class="px-2 py-1 text-sm border rounded" onclick="switchLang('zh')">中文</button>
+  </div>
 
-    <form id="bookingForm" class="space-y-6">
+  <!-- Booking Form -->
+  <div class="max-w-lg mx-auto bg-white rounded-2xl shadow-lg p-6 mb-10 border border-[#e6dcbf]">
+    <h2 class="text-lg font-semibold mb-4 text-center" data-i18n="title">กรอกข้อมูลการจองห้องพักแมว</h2>
 
-      <!-- ข้อมูลผู้จอง -->
+    <label class="block mt-2" data-i18n="name">ชื่อผู้จอง</label>
+    <input id="name" class="w-full border rounded-lg p-2" />
+
+    <label class="block mt-3" data-i18n="phone">เบอร์ติดต่อ</label>
+    <input id="phone" class="w-full border rounded-lg p-2" />
+
+    <label class="block mt-3" data-i18n="roomType">เลือกประเภทห้องพัก</label>
+    <select id="roomType" class="w-full border rounded-lg p-2">
+      <option value="standard">Standard Room (฿250/คืน)</option>
+      <option value="suite">Suite Room (฿500/คืน)</option>
+    </select>
+
+    <!-- Cat Names -->
+    <div id="catContainer" class="mt-4">
+      <label data-i18n="catName">ชื่อแมวที่เข้าพัก</label>
+      <div class="space-y-2 mt-2">
+        <input class="cat-name w-full border rounded-lg p-2" placeholder="ชื่อแมวตัวที่ 1" />
+      </div>
+      <button onclick="addCat()" type="button" class="text-sm text-[#0E3C2F] underline mt-2" data-i18n="addCat">+ เพิ่มชื่อแมวอีก</button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mt-4">
       <div>
-        <label class="block mb-2 font-semibold">ชื่อผู้จอง / Name</label>
-        <input type="text" id="customerName" class="w-full rounded-lg p-2" required />
+        <label data-i18n="checkin">วันเช็คอิน</label>
+        <input type="date" id="checkin" class="w-full border rounded-lg p-2" />
       </div>
-
       <div>
-        <label class="block mb-2 font-semibold">เบอร์ติดต่อ / Phone</label>
-        <input type="text" id="customerPhone" class="w-full rounded-lg p-2" required />
+        <label data-i18n="checkout">วันเช็คเอาท์</label>
+        <input type="date" id="checkout" class="w-full border rounded-lg p-2" />
       </div>
+    </div>
 
-      <!-- ประเภทห้อง -->
-      <div>
-        <label class="block mb-2 font-semibold">เลือกประเภทห้องพัก</label>
-        <select id="roomType" class="w-full rounded-lg p-2">
-          <option value="standard">Standard Room (฿250/คืน)</option>
-          <option value="suite">Suite Room (฿500/คืน)</option>
-        </select>
-      </div>
+    <div class="mt-5 border-t pt-3">
+      <p id="summary" class="text-center text-[#0E3C2F] font-semibold"></p>
+      <button onclick="confirmBooking()" class="mt-4 bg-[#0E3C2F] text-white w-full py-2 rounded-xl font-semibold" data-i18n="confirm">ยืนยันการจอง</button>
+    </div>
+  </div>
 
-      <!-- จำนวนแมว -->
-      <div>
-        <label class="block mb-2 font-semibold">จำนวนแมวที่เข้าพัก</label>
-        <select id="catCount" class="w-full rounded-lg p-2">
-          <option value="1">1 ตัว</option>
-          <option value="2">2 ตัว (+฿200/คืน)</option>
-          <option value="3">3 ตัว (+฿400/คืน)</option>
-        </select>
-      </div>
+  <!-- ✅ QR Modal -->
+  <div id="qrModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-2xl max-w-sm text-center">
+      <h3 class="text-lg font-semibold mb-3" data-i18n="scanQR">สแกน QR เพื่อมัดจำ</h3>
+      <img src="https://i.imgur.com/ncP7jG2.png" alt="QR" class="mx-auto w-40 h-40 border rounded-lg" />
+      <p id="qrAmount" class="mt-3 text-sm text-gray-700"></p>
 
-      <!-- ชื่อแมว -->
-      <div id="catNamesContainer">
-        <label class="block mb-2 font-semibold">ชื่อแมวที่เข้าพัก</label>
-        <div class="space-y-2" id="catNameList">
-          <input type="text" name="catName[]" placeholder="ชื่อแมว" class="w-full rounded-lg p-2">
-        </div>
-        <button type="button" id="addCatBtn" class="mt-2 text-[var(--po-green)] underline">+ เพิ่มชื่อแมวอีก</button>
-      </div>
+      <!-- 🔰 ปุ่มแอด LINE OA -->
+      <a href="https://lin.ee/5bM7PZO" target="_blank"
+         class="mt-4 inline-block bg-[#00B900] text-white px-5 py-2 rounded-lg font-medium shadow-md hover:opacity-90 transition">
+         💬 แอด LINE OA เพื่อส่งสลิป
+      </a>
 
-      <!-- วันเวลาเข้าพัก -->
-      <div class="grid md:grid-cols-2 gap-6">
-        <div>
-          <label class="block mb-2 font-semibold">วันเช็กอิน</label>
-          <input type="date" id="checkinDate" class="w-full rounded-lg p-2 mb-2" required />
-          <select id="checkinTime" class="w-full rounded-lg p-2">
-            <option value="12">12:00</option><option value="13">13:00</option>
-            <option value="14">14:00</option><option value="15">15:00</option>
-            <option value="16">16:00</option><option value="17">17:00</option>
-            <option value="18">18:00</option><option value="19">19:00</option>
-            <option value="20">20:00</option><option value="21">21:00</option>
-            <option value="22">22:00</option><option value="23">23:00</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block mb-2 font-semibold">วันเช็กเอาท์</label>
-          <input type="date" id="checkoutDate" class="w-full rounded-lg p-2 mb-2" required />
-          <select id="checkoutTime" class="w-full rounded-lg p-2">
-            <option value="12">12:00</option><option value="13">13:00</option>
-            <option value="14">14:00</option><option value="15">15:00</option>
-            <option value="16">16:00</option><option value="17">17:00</option>
-            <option value="18">18:00</option><option value="19">19:00</option>
-            <option value="20">20:00</option><option value="21">21:00</option>
-            <option value="22">22:00</option><option value="23">23:00</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- กล้องวงจรปิด -->
-      <div>
-        <label class="inline-flex items-center space-x-2">
-          <input type="checkbox" id="cctv" class="w-5 h-5">
-          <span>ต้องการกล้องวงจรปิด (+฿100/คืน)</span>
-        </label>
-      </div>
-
-      <!-- ผลลัพธ์ -->
-      <div class="border-t pt-6 text-lg font-semibold">
-        <p id="durationText" class="text-[var(--po-green)]"></p>
-        <p>ยอดรวม: <span id="totalPrice">0</span> บาท</p>
-        <p>มัดจำ 50%: <span id="depositAmount">0</span> บาท</p>
-      </div>
-
-      <button type="submit"
-        class="w-full bg-[var(--po-green)] text-[var(--po-cream)] py-3 rounded-lg mt-6 hover:bg-[#164D3D] transition">
-        ยืนยันการจอง
-      </button>
-    </form>
-  </section>
+      <button onclick="closeQR()" class="mt-3 px-4 py-2 bg-[#0E3C2F] text-white rounded-lg">ปิด</button>
+    </div>
+  </div>
 
   <script>
-    const form = document.getElementById("bookingForm");
-    const totalEl = document.getElementById("totalPrice");
-    const depositEl = document.getElementById("depositAmount");
-    const durationText = document.getElementById("durationText");
-    const addCatBtn = document.getElementById("addCatBtn");
-    const catNameList = document.getElementById("catNameList");
-
-    addCatBtn.addEventListener("click", () => {
+    function addCat(){
+      const container = document.querySelector("#catContainer .space-y-2");
+      const count = container.querySelectorAll(".cat-name").length + 1;
       const input = document.createElement("input");
-      input.type = "text";
-      input.name = "catName[]";
-      input.placeholder = "ชื่อแมว";
-      input.className = "w-full rounded-lg p-2 mt-1";
-      catNameList.appendChild(input);
-    });
-
-    form.addEventListener("input", calculateTotal);
-
-    function calculateTotal() {
-      const room = form.roomType.value;
-      const cats = parseInt(form.catCount.value);
-      const cctv = form.cctv.checked;
-      const checkin = new Date(form.checkinDate.value);
-      const checkout = new Date(form.checkoutDate.value);
-
-      if (!checkin || !checkout || checkout <= checkin) return;
-
-      // คำนวณจำนวนวัน / คืน / ชั่วโมง
-      let msDiff = checkout - checkin;
-      let totalHours = Math.ceil(msDiff / (1000 * 60 * 60));
-      let days = Math.floor(totalHours / 24);
-      let hours = totalHours % 24;
-      let nights = days > 0 ? days - 1 : 0;
-
-      // ราคาห้อง
-      let pricePerNight = 0;
-      let total = 0;
-
-      if (room === "standard") {
-        pricePerNight = 250;
-        if (cats > 1) {
-          alert("❗ ห้อง Standard รองรับได้ 1 ตัวต่อห้องเท่านั้น ระบบจะคิดตามจำนวนห้อง");
-        }
-        total = pricePerNight * cats * (nights + 1); // คิดตามจำนวนห้อง
-      } else if (room === "suite") {
-        pricePerNight = 500 + (cats - 1) * 200;
-        total = pricePerNight * (nights + 1);
-      }
-
-      if (cctv) total += 100 * (nights + 1);
-
-      const deposit = total * 0.5;
-      durationText.textContent = `ลูกค้าจอง ${days} วัน ${nights} คืน ${hours} ชั่วโมง`;
-      totalEl.textContent = total.toLocaleString();
-      depositEl.textContent = deposit.toLocaleString();
+      input.className = "cat-name w-full border rounded-lg p-2";
+      input.placeholder = "ชื่อแมวตัวที่ " + count;
+      container.appendChild(input);
     }
 
-    form.addEventListener("submit", e => {
-      e.preventDefault();
-      alert("✅ การจองสำเร็จ! โปรดชำระมัดจำ 50% และแจ้งสลิปทาง LINE ร้านค่ะ 💚");
+    function calculatePrice(){
+      const roomType = document.getElementById("roomType").value;
+      const cats = document.querySelectorAll(".cat-name").length;
+      const checkin = new Date(document.getElementById("checkin").value);
+      const checkout = new Date(document.getElementById("checkout").value);
+      const nights = (checkout - checkin)/(1000*60*60*24);
+      if(nights <= 0 || !nights) return 0;
+
+      let price = 0;
+      let rooms = 1;
+
+      if(roomType === "standard"){
+        price = 250 * cats * nights;
+        rooms = cats;
+      } else {
+        price = (500 + (cats-1)*200) * nights;
+        rooms = 1;
+      }
+
+      const deposit = price * 0.3;
+      document.getElementById("summary").innerHTML = `
+        🛏 <b data-i18n="rooms">${translations[currentLang].rooms}</b>: ${rooms}
+        | 🌙 <b data-i18n="nights">${translations[currentLang].nights}</b>: ${nights}
+        <br>
+        💰 <b data-i18n="total">${translations[currentLang].total}</b>: ฿${price.toLocaleString()}
+        <br>
+        💵 <b data-i18n="deposit">${translations[currentLang].deposit}</b>: ฿${deposit.toLocaleString()}
+      `;
+      return {price, deposit};
+    }
+
+    document.querySelectorAll("#roomType, #checkin, #checkout, .cat-name").forEach(el=>{
+      el.addEventListener("change", calculatePrice);
     });
+
+    function confirmBooking(){
+      const {price, deposit} = calculatePrice();
+      if(!price) return alert("กรุณากรอกข้อมูลให้ครบก่อนค่ะ");
+
+      document.getElementById("qrModal").classList.remove("hidden");
+      document.getElementById("qrAmount").textContent = `ยอดมัดจำที่ต้องชำระ: ฿${deposit.toLocaleString()}`;
+
+      const msg = `📦 จองห้องพักแมวใหม่จาก ${document.getElementById("name").value}
+ประเภทห้อง: ${document.getElementById("roomType").value}
+จำนวนแมว: ${document.querySelectorAll(".cat-name").length}
+ยอดรวม: ฿${price.toLocaleString()}
+ยอดมัดจำ: ฿${deposit.toLocaleString()}`;
+
+      console.log("ส่งข้อความไป LINE OA:", msg);
+    }
+
+    function closeQR(){
+      document.getElementById("qrModal").classList.add("hidden");
+    }
   </script>
+
 </body>
 </html>
