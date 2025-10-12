@@ -25,7 +25,7 @@
       checkout: "วันเช็คเอาท์",
       confirm: "ยืนยันการจอง",
       total: "ยอดรวมทั้งหมด",
-      deposit: "ยอดมัดจำ 30%",
+      deposit: "ยอดมัดจำ 50%",
       scanQR: "สแกน QR เพื่อมัดจำ",
       nights: "จำนวนคืน",
       rooms: "จำนวนห้อง",
@@ -37,11 +37,11 @@
       roomType: "Select Room Type",
       catName: "Cat Name",
       addCat: "+ Add Another Cat",
-      checkin: "Check-in Date",
-      checkout: "Check-out Date",
+      checkin: "Check-in Date & Time",
+      checkout: "Check-out Date & Time",
       confirm: "Confirm Booking",
       total: "Total Price",
-      deposit: "Deposit 30%",
+      deposit: "Deposit 50%",
       scanQR: "Scan QR to Pay Deposit",
       nights: "Nights",
       rooms: "Rooms",
@@ -53,11 +53,11 @@
       roomType: "選擇房型",
       catName: "貓咪名字",
       addCat: "+ 新增貓咪",
-      checkin: "入住日期",
-      checkout: "退房日期",
+      checkin: "入住日期和時間",
+      checkout: "退房日期和時間",
       confirm: "確認預訂",
       total: "總金額",
-      deposit: "訂金 30%",
+      deposit: "訂金 50%",
       scanQR: "掃描 QR 支付訂金",
       nights: "晚數",
       rooms: "房間數",
@@ -73,7 +73,8 @@
   }
   </script>
 </head>
-<body class="bg-[#FAFAF3] text-[#2b2b2b] font-sans">
+
+<body class="bg-[#0E3C2F] text-[#2b2b2b] font-sans">
 
   <!-- Header -->
   <div class="bg-[#0E3C2F] text-white text-center py-6 text-xl font-bold">
@@ -82,15 +83,17 @@
   </div>
 
   <!-- Switch Language -->
-  <div class="text-right px-6 py-3 space-x-2">
+  <div class="text-right px-6 py-3 space-x-2 bg-[#F9F7F2]">
     <button class="px-2 py-1 text-sm border rounded" onclick="switchLang('th')">ไทย</button>
     <button class="px-2 py-1 text-sm border rounded" onclick="switchLang('en')">EN</button>
     <button class="px-2 py-1 text-sm border rounded" onclick="switchLang('zh')">中文</button>
   </div>
 
   <!-- Booking Form -->
-  <div class="max-w-lg mx-auto bg-white rounded-2xl shadow-lg p-6 mb-10 border border-[#e6dcbf]">
-    <h2 class="text-lg font-semibold mb-4 text-center" data-i18n="title">กรอกข้อมูลการจองห้องพักแมว</h2>
+  <div class="max-w-lg mx-auto bg-[#F9F7F2] rounded-2xl shadow-xl p-6 mb-10 border-2 border-[#D6C7A1] mt-8">
+    <h2 class="text-lg font-semibold mb-4 text-center text-[#0E3C2F]" data-i18n="title">
+      กรอกข้อมูลการจองห้องพักแมว
+    </h2>
 
     <label class="block mt-2" data-i18n="name">ชื่อผู้จอง</label>
     <input id="name" class="w-full border rounded-lg p-2" />
@@ -108,7 +111,7 @@
     <div id="catContainer" class="mt-4">
       <label data-i18n="catName">ชื่อแมวที่เข้าพัก</label>
       <div class="space-y-2 mt-2">
-        <input class="cat-name w-full border rounded-lg p-2" placeholder="ชื่อแมวตัวที่ 1" />
+        <input class="cat-name w-full border rounded-lg p-2" placeholder="ชื่อแมวตัวที่ 1" oninput="calculatePrice()" />
       </div>
       <button onclick="addCat()" type="button" class="text-sm text-[#0E3C2F] underline mt-2" data-i18n="addCat">+ เพิ่มชื่อแมวอีก</button>
     </div>
@@ -116,25 +119,27 @@
     <div class="grid grid-cols-2 gap-3 mt-4">
       <div>
         <label data-i18n="checkin">วันเช็คอิน</label>
-        <input type="date" id="checkin" class="w-full border rounded-lg p-2" />
+        <input type="datetime-local" id="checkin" class="w-full border rounded-lg p-2" />
       </div>
       <div>
         <label data-i18n="checkout">วันเช็คเอาท์</label>
-        <input type="date" id="checkout" class="w-full border rounded-lg p-2" />
+        <input type="datetime-local" id="checkout" class="w-full border rounded-lg p-2" />
       </div>
     </div>
 
     <div class="mt-5 border-t pt-3">
       <p id="summary" class="text-center text-[#0E3C2F] font-semibold"></p>
-      <button onclick="confirmBooking()" class="mt-4 bg-[#0E3C2F] text-white w-full py-2 rounded-xl font-semibold" data-i18n="confirm">ยืนยันการจอง</button>
+      <button onclick="confirmBooking()" class="mt-4 bg-[#0E3C2F] text-white w-full py-2 rounded-xl font-semibold" data-i18n="confirm">
+        ยืนยันการจอง
+      </button>
     </div>
   </div>
 
   <!-- ✅ QR Modal -->
-  <div id="qrModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-2xl max-w-sm text-center">
-      <h3 class="text-lg font-semibold mb-3" data-i18n="scanQR">สแกน QR เพื่อมัดจำ</h3>
-      <img src="https://i.imgur.com/ncP7jG2.png" alt="QR" class="mx-auto w-40 h-40 border rounded-lg" />
+  <div id="qrModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl max-w-sm text-center shadow-2xl">
+      <h3 class="text-lg font-semibold mb-3 text-[#0E3C2F]" data-i18n="scanQR">สแกน QR เพื่อมัดจำ</h3>
+      <img src="qr.png" alt="QR" class="mx-auto w-40 h-40 border rounded-lg" />
       <p id="qrAmount" class="mt-3 text-sm text-gray-700"></p>
 
       <!-- 🔰 ปุ่มแอด LINE OA -->
@@ -154,7 +159,9 @@
       const input = document.createElement("input");
       input.className = "cat-name w-full border rounded-lg p-2";
       input.placeholder = "ชื่อแมวตัวที่ " + count;
+      input.addEventListener("input", calculatePrice); // ✅ อัปเดตทันทีเมื่อพิมพ์ชื่อแมว
       container.appendChild(input);
+      calculatePrice(); // ✅ รีคำนวณใหม่ทันทีเมื่อเพิ่มช่อง
     }
 
     function calculatePrice(){
@@ -176,9 +183,10 @@
         rooms = 1;
       }
 
-      const deposit = price * 0.3;
+      const deposit = price * 0.5; // ✅ มัดจำ 50%
+
       document.getElementById("summary").innerHTML = `
-        🛏 <b data-i18n="rooms">${translations[currentLang].rooms}</b>: ${rooms}
+        🏠 <b data-i18n="rooms">${translations[currentLang].rooms}</b>: ${rooms}
         | 🌙 <b data-i18n="nights">${translations[currentLang].nights}</b>: ${nights}
         <br>
         💰 <b data-i18n="total">${translations[currentLang].total}</b>: ฿${price.toLocaleString()}
