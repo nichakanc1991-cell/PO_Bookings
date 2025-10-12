@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P.O. CAT HOTEL | จองห้องพักโรงแรมแมว</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ระบบแปลภาษา -->
+  <script src="js/i18n.js"></script>
+
+  <style>
+    :root {
+      --po-green: #0F3B2E;
+      --po-cream: #F2E2C4;
+      --po-gold: #D5B774;
+    }
+    body { background: #F7F6EE; font-family: "Prompt", sans-serif; }
+    label { color: var(--po-green); }
+    input, select { border: 1.5px solid #D5B774; }
+  </style>
+</head>
+
+<body class="text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-[var(--po-green)] text-[var(--po-cream)] py-6 text-center shadow-md">
+    <h1 class="text-3xl font-bold" data-i18n="hotel.bookingtitle">จองห้องพักโรงแรมแมว</h1>
+    <p class="opacity-90 text-lg" data-i18n="hotel.subtitle">Private & Premium Stay for Cats</p>
+
+    <div class="mt-3">
+      <button onclick="setLang('th')" class="mx-1 underline hover:text-[var(--po-gold)]">ไทย</button> |
+      <button onclick="setLang('en')" class="mx-1 underline hover:text-[var(--po-gold)]">English</button> |
+      <button onclick="setLang('zh')" class="mx-1 underline hover:text-[var(--po-gold)]">中文</button>
+    </div>
+  </header>
+
+  <!-- Booking Form -->
+  <section class="max-w-3xl mx-auto bg-white mt-10 rounded-3xl shadow-lg p-8 border-4 border-[var(--po-gold)]">
+    <h2 class="text-2xl font-semibold text-[var(--po-green)] mb-6" data-i18n="hotel.formtitle">กรอกรายละเอียดการจอง</h2>
+
+    <form id="bookingForm" class="space-y-6">
+
+      <!-- Customer Info -->
+      <div>
+        <label class="block mb-2 font-semibold" data-i18n="form.name">ชื่อผู้จอง / Name</label>
+        <input type="text" id="customerName" class="w-full rounded-lg p-2" required />
+      </div>
+
+      <div>
+        <label class="block mb-2 font-semibold" data-i18n="form.phone">เบอร์ติดต่อ / Phone</label>
+        <input type="text" id="customerPhone" class="w-full rounded-lg p-2" required />
+      </div>
+
+      <!-- Room Type -->
+      <div>
+        <label class="block mb-2 font-semibold" data-i18n="form.roomtype">เลือกประเภทห้องพัก</label>
+        <select id="roomType" class="w-full rounded-lg p-2">
+          <option value="standard" data-i18n="room.standard">Standard Room (฿250/คืน)</option>
+          <option value="suite" data-i18n="room.suite">Suite Room (฿500/คืน)</option>
+        </select>
+      </div>
+
+      <!-- Cat Count -->
+      <div id="catCountBox">
+        <label class="block mb-2 font-semibold" data-i18n="form.catcount">จำนวนแมวที่เข้าพัก</label>
+        <select id="catCount" class="w-full rounded-lg p-2">
+          <option value="1">1 ตัว</option>
+          <option value="2">2 ตัว (+฿200/คืน)</option>
+          <option value="3">3 ตัว (+฿400/คืน)</option>
+        </select>
+      </div>
+
+      <!-- Check-in / Check-out -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block mb-2 font-semibold" data-i18n="form.checkin">วันเช็กอิน</label>
+          <input type="date" id="checkinDate" class="w-full rounded-lg p-2 mb-2" required />
+          <select id="checkinTime" class="w-full rounded-lg p-2">
+            <option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option>
+            <option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option>
+            <option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option>
+            <option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option>
+            <option value="24">24:00</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block mb-2 font-semibold" data-i18n="form.checkout">วันเช็กเอาท์</label>
+          <input type="date" id="checkoutDate" class="w-full rounded-lg p-2 mb-2" required />
+          <select id="checkoutTime" class="w-full rounded-lg p-2">
+            <option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option>
+            <option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option>
+            <option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option>
+            <option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option>
+            <option value="24">24:00</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CCTV -->
+      <div>
+        <label class="inline-flex items-center space-x-2">
+          <input type="checkbox" id="cctv" class="w-5 h-5">
+          <span data-i18n="form.cctv">ต้องการกล้องวงจรปิด (+฿100/คืน)</span>
+        </label>
+      </div>
+
+      <!-- Result -->
+      <div class="border-t pt-6 text-lg font-semibold">
+        <p><span data-i18n="form.total">ยอดรวม</span>: <span id="totalPrice">0</span> บาท</p>
+        <p><span data-i18n="form.deposit">มัดจำ 50%</span>: <span id="depositAmount">0</span> บาท</p>
+      </div>
+
+      <button type="submit"
+        class="w-full bg-[var(--po-green)] text-[var(--po-cream)] py-3 rounded-lg mt-6 hover:bg-[#164D3D] transition">
+        <span data-i18n="form.confirm">ยืนยันการจอง</span>
+      </button>
+    </form>
+  </section>
+
+  <script>
+    const form = document.getElementById("bookingForm");
+    const totalEl = document.getElementById("totalPrice");
+    const depositEl = document.getElementById("depositAmount");
+
+    form.addEventListener("input", calculateTotal);
+
+    function calculateTotal() {
+      const room = form.roomType.value;
+      const cats = parseInt(form.catCount.value);
+      const cctv = form.cctv.checked;
+      const checkin = new Date(form.checkinDate.value);
+      const checkout = new Date(form.checkoutDate.value);
+      const checkinTime = parseInt(form.checkinTime.value);
+      const checkoutTime = parseInt(form.checkoutTime.value);
+
+      if (!checkin || !checkout || checkout <= checkin) return;
+
+      // จำนวนวันพักเต็ม
+      let nights = (checkout - checkin) / (1000 * 60 * 60 * 24);
+      if (nights < 0) nights = 0;
+
+      // ตรวจสอบเวลาเกิน
+      let extraHours = checkoutTime - 12;
+      if (extraHours < 0) extraHours = 0;
+
+      // ราคาต่อคืน
+      let pricePerNight = room === "standard" ? 250 : 500;
+      if (room === "suite" && cats > 1) pricePerNight += (cats - 1) * 200;
+      if (cctv) pricePerNight += 100;
+
+      // ราคาพักเต็มคืน
+      let total = pricePerNight * nights;
+
+      // คิดชั่วโมงเกิน
+      if (extraHours > 0 && extraHours <= 3) {
+        total += room === "standard" ? 100 : 150;
+      } else if (extraHours > 3 && extraHours <= 12) {
+        total += room === "standard" ? 150 : 300;
+      }
+
+      const deposit = total * 0.5;
+      totalEl.textContent = total.toLocaleString();
+      depositEl.textContent = deposit.toLocaleString();
+    }
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      alert("✅ การจองสำเร็จ! โปรดชำระมัดจำ 50% และแจ้งสลิปทาง LINE ร้านค่ะ 💚");
+    });
+
+    document.addEventListener("DOMContentLoaded", applyLang);
+  </script>
+</body>
+</html>
