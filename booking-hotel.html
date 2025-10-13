@@ -209,13 +209,13 @@
       let total = 0;
 
       if (room === "standard") {
-        if (cats > 1) {
-          showPopup("❗ ห้อง Standard รองรับได้ 1 ตัวต่อห้อง ระบบจะคิดราคาตามจำนวนห้อง");
-        }
-        total = 250 * cats * nights;
-      } else if (room === "suite") {
-        total = (500 + (cats - 1) * 200) * nights;
-      }
+  // ✅ คำนวณตามจำนวนแมวโดยตรง (ไม่มีการเตือน)
+  total = 250 * cats * nights;
+} else if (room === "suite") {
+  // ✅ ห้อง Suite: ตัวแรก 500 บาท, ตัวถัดไป +200 บาท
+  total = (500 + (cats - 1) * 200) * nights;
+}
+
 
       if (cctv) total += 100 * nights;
 
