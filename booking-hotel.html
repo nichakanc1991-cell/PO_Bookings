@@ -204,6 +204,7 @@ form.addEventListener("submit", e => {
   const total = parseInt(totalEl.textContent.replace(/,/g, "")) || 0;
   const deposit = parseInt(depositEl.textContent.replace(/,/g, "")) || 0;
 
+  // เรียกใช้ฟังก์ชัน showPopup ตัวท้ายสุด
   showPopup(
     "✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚",
     total,
@@ -211,6 +212,7 @@ form.addEventListener("submit", e => {
     bookingData
   );
 });
+
 </script>
 
 
