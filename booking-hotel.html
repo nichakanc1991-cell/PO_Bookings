@@ -141,13 +141,78 @@
   </section>
 
   <!-- Popup -->
-  <div id="popup" class="popup-bg hidden">
-    <div class="popup-box">
-      <p id="popup-message" class="text-lg leading-relaxed"></p>
-      <img src="qr.png" alt="QR โอนมัดจำ"  class="mx-auto w-60 h-60 my-4 rounded-xl border-[3px] border-[var(--po-gold)] shadow-lg bg-white p-2"/>
-      <a href="https://lin.ee/5bM7PZO" target="_blank" id="popup-btn" class="popup-btn mt-4 block">💬 แอด LINE OA เพื่อส่งสลิป</a>
-    </div>
+<div id="popup" class="popup-bg hidden">
+  <div class="popup-box">
+    <p id="popup-message" class="text-lg leading-relaxed mb-2">
+      ✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚
+    </p>
+
+    <img src="qr.png" alt="QR โอนมัดจำ" />
+
+    <p id="deposit-summary" class="text-lg font-semibold mt-2 text-[var(--po-green)]"></p>
+
+    <a id="popup-btn" target="_blank" class="popup-btn block mt-4">
+      💬 แอด LINE OA เพื่อส่งสลิป
+    </a>
   </div>
+</div>
+
+<script>
+function showPopup(message, total, deposit, bookingData) {
+  popupMsg.innerHTML = message;
+  document.getElementById("deposit-summary").innerHTML =
+    `💰 ยอดที่ต้องชำระ (มัดจำ 50%): <b>${deposit.toLocaleString()} บาท</b>`;
+
+  // สร้างข้อความสรุปส่งไป LINE
+  const text = encodeURIComponent(
+    `การจองห้องพัก P.O. CAT HOTEL
+ชื่อผู้จอง: ${bookingData.name}
+เบอร์โทร: ${bookingData.phone}
+ประเภทห้อง: ${bookingData.room}
+จำนวนแมว: ${bookingData.cats} ตัว
+วันเช็กอิน: ${bookingData.checkinDate} ${bookingData.checkinTime}:00
+วันเช็กเอาท์: ${bookingData.checkoutDate} ${bookingData.checkoutTime}:00
+ระยะเวลา: ${bookingData.duration}
+ยอดรวมทั้งหมด: ${total.toLocaleString()} บาท
+ยอดมัดจำ 50%: ${deposit.toLocaleString()} บาท
+
+แนบสลิปมัดจำเพื่อยืนยันการจองได้เลยค่ะ 💚`
+  );
+
+  // ใส่ลิงก์เปิด LINE OA พร้อมข้อความ
+  const lineUrl = `https://lin.ee/5bM7PZO?text=${text}`;
+  document.getElementById("popup-btn").href = lineUrl;
+
+  popup.classList.remove("hidden");
+}
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+
+  const bookingData = {
+    name: form.customerName.value,
+    phone: form.customerPhone.value,
+    room: form.roomType.value === "standard" ? "Standard Room" : "Suite Room",
+    cats: catNameList.querySelectorAll("input").length,
+    checkinDate: form.checkinDate.value,
+    checkinTime: form.checkinTime.value,
+    checkoutDate: form.checkoutDate.value,
+    checkoutTime: form.checkoutTime.value,
+    duration: durationText.textContent,
+  };
+
+  const total = parseInt(totalEl.textContent.replace(/,/g, "")) || 0;
+  const deposit = parseInt(depositEl.textContent.replace(/,/g, "")) || 0;
+
+  showPopup(
+    "✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚",
+    total,
+    deposit,
+    bookingData
+  );
+});
+</script>
+
 
   <script>
     const form = document.getElementById("bookingForm");
@@ -194,41 +259,172 @@
 
     form.addEventListener("input", calculateTotal);
 
-    function calculateTotal() {
-      const room = form.roomType.value;
-      const cats = catNameList.querySelectorAll("input").length;
-      const cctv = form.cctv.checked;
-      const checkin = new Date(form.checkinDate.value);
-      const checkout = new Date(form.checkoutDate.value);
+   function calculateTotal() {
+  const room = form.roomType.value;
+  const cats = catNameList.querySelectorAll("input").length;
+  const cctv = form.cctv.checked;
 
-      if (!checkin || !checkout || checkout <= checkin) return;
+  const checkinDate = new Date(form.checkinDate.value);
+  const checkoutDate = new Date(form.checkoutDate.value);
+  const checkinHour = parseInt(form.checkinTime.value || 12);
+  const checkoutHour = parseInt(form.checkoutTime.value || 12);
 
-      const diffDays = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
-      const nights = diffDays > 0 ? diffDays : 1;
+  // ตั้งเวลาให้ครบ
+  checkinDate.setHours(checkinHour, 0, 0);
+  checkoutDate.setHours(checkoutHour, 0, 0);
 
-      let total = 0;
+  if (!form.checkinDate.value || !form.checkoutDate.value) return;
+  if (checkoutDate <= checkinDate) return;
 
-      if (room === "standard") {
-  // ✅ คำนวณตามจำนวนแมวโดยตรง (ไม่มีการเตือน)
-  total = 250 * cats * nights;
-} else if (room === "suite") {
-  // ✅ ห้อง Suite: ตัวแรก 500 บาท, ตัวถัดไป +200 บาท
-  total = (500 + (cats - 1) * 200) * nights;
+  // รวมเวลาทั้งหมดเป็นชั่วโมง
+  const diffHours = (checkoutDate - checkinDate) / (1000 * 60 * 60);
+  const fullDays = Math.floor(diffHours / 24);
+  const remainHours = diffHours % 24;
+
+  // ฟังก์ชันคำนวณราคาตามชั่วโมง
+  function getRate(roomType, hours) {
+    if (roomType === "standard") {
+      if (hours <= 3) return 50;
+      if (hours <= 12) return 150;
+      return 250;
+    } else if (roomType === "suite") {
+      if (hours <= 3) return 100;
+      if (hours <= 12) return 300;
+      return 500;
+    }
+  }
+
+  let total = 0;
+
+  // 🟢 ห้อง Standard: คูณตามจำนวนแมวทุกช่วง
+  if (room === "standard") {
+    const dailyRate = getRate("standard", 24) * cats * fullDays;
+    const extraRate = remainHours > 0 ? getRate("standard", remainHours) * cats : 0;
+    total = dailyRate + extraRate;
+
+  // 🟣 ห้อง Suite: ตัวแรกคิดราคาตามเรท, ตัวต่อไป +200 ต่อรอบ
+  } else if (room === "suite") {
+    // ราคาพื้นฐาน (ตัวแรก)
+    const baseRatePerDay = getRate("suite", 24);
+    const baseExtra = remainHours > 0 ? getRate("suite", remainHours) : 0;
+
+    // คิดเพิ่มตัวละ 200 ต่อรอบ (เต็มวัน + รอบชั่วโมง)
+    const extraCatsRate = (cats - 1) * 200 * (fullDays + (remainHours > 0 ? 1 : 0));
+
+    total = (baseRatePerDay * fullDays) + baseExtra + extraCatsRate;
+  }
+
+  // กล้อง CCTV (+100 บาท/คืนหรือรอบ)
+  if (cctv) total += 100 * (fullDays + (remainHours > 0 ? 1 : 0));
+
+  const deposit = total * 0.5;
+
+  durationText.textContent =
+    `ระยะเวลาเข้าพัก: ${fullDays} วัน ${Math.round(remainHours)} ชั่วโมง (${Math.round(diffHours)} ชม. รวมทั้งหมด)`;
+  totalEl.textContent = total.toLocaleString();
+  depositEl.textContent = deposit.toLocaleString();
 }
 
-
-      if (cctv) total += 100 * nights;
-
-      const deposit = total * 0.5;
-      durationText.textContent = `ระยะเวลาเข้าพัก: ${nights} คืน`;
-      totalEl.textContent = total.toLocaleString();
-      depositEl.textContent = deposit.toLocaleString();
-    }
 
     form.addEventListener("submit", e => {
       e.preventDefault();
       showPopup("✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚");
     });
   </script>
+  <!-- โหลด html2canvas -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<!-- ปุ่มดาวน์โหลดใบเสร็จ -->
+<div class="text-center mt-4">
+  <button id="downloadReceipt" class="popup-btn hidden">📄 ดาวน์โหลดใบเสร็จยืนยันการจอง</button>
+</div>
+
+<!-- Template ใบเสร็จ (ซ่อนอยู่) -->
+<div id="receipt-template" class="hidden bg-[#F7F6EE] text-[#0F3B2E] w-[400px] p-6 rounded-2xl border-4 border-[#D5B774] text-[16px] leading-relaxed">
+  <div class="text-center mb-4">
+    <img src="logo-po.png" alt="PO GROOMING Logo" class="mx-auto w-24 mb-2">
+    <h2 class="text-2xl font-bold">PO GROOMING & CAT HOTEL</h2>
+    <p class="text-sm opacity-80">Private & Premium Stay for Cats</p>
+    <p id="receiptDate" class="text-sm mt-1"></p>
+  </div>
+
+  <hr class="border-[#D5B774] my-3">
+
+  <div id="receiptContent" class="space-y-1 text-[15px]"></div>
+
+  <hr class="border-[#D5B774] my-3">
+
+  <div class="mt-3 text-center text-[15px]">
+    <p>ขอบคุณที่ไว้วางใจให้เราดูแลน้องเหมียวของคุณ 💚</p>
+    <p class="font-semibold mt-2">PO GROOMING & CAT HOTEL</p>
+    <p>LINE: @po_grooming</p>
+  </div>
+</div>
+
+<script>
+const downloadBtn = document.getElementById("downloadReceipt");
+
+downloadBtn.addEventListener("click", () => {
+  const receipt = document.getElementById("receipt-template");
+  html2canvas(receipt, { scale: 3 }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = `PO_CAT_HOTEL_Receipt_${form.customerName.value}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+});
+
+// แก้ฟังก์ชัน showPopup เดิมให้เพิ่มส่วนสร้างใบเสร็จ
+function showPopup(message, total, deposit, bookingData) {
+  popupMsg.innerHTML = message;
+  document.getElementById("deposit-summary").innerHTML =
+    `💰 ยอดที่ต้องชำระ (มัดจำ 50%): <b>${deposit.toLocaleString()} บาท</b>`;
+
+  // สร้างข้อความสรุปส่ง LINE
+  const text = encodeURIComponent(
+    `การจองห้องพัก P.O. CAT HOTEL
+ชื่อผู้จอง: ${bookingData.name}
+เบอร์โทร: ${bookingData.phone}
+ประเภทห้อง: ${bookingData.room}
+จำนวนแมว: ${bookingData.cats} ตัว
+วันเช็กอิน: ${bookingData.checkinDate} ${bookingData.checkinTime}:00
+วันเช็กเอาท์: ${bookingData.checkoutDate} ${bookingData.checkoutTime}:00
+ระยะเวลา: ${bookingData.duration}
+ยอดรวมทั้งหมด: ${total.toLocaleString()} บาท
+ยอดมัดจำ 50%: ${deposit.toLocaleString()} บาท
+
+แนบสลิปมัดจำเพื่อยืนยันการจองได้เลยค่ะ 💚`
+  );
+
+  const lineUrl = `https://lin.ee/5bM7PZO?text=${text}`;
+  document.getElementById("popup-btn").href = lineUrl;
+
+  // 🔹 เติมข้อมูลในใบเสร็จ
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" });
+  document.getElementById("receiptDate").textContent = `วันที่ออกใบเสร็จ: ${dateStr}`;
+
+  const receiptContent = document.getElementById("receiptContent");
+  receiptContent.innerHTML = `
+    <p>ชื่อผู้จอง: ${bookingData.name}</p>
+    <p>เบอร์ติดต่อ: ${bookingData.phone}</p>
+    <p>ประเภทห้อง: ${bookingData.room}</p>
+    <p>จำนวนแมว: ${bookingData.cats} ตัว</p>
+    <p>วันเช็กอิน: ${bookingData.checkinDate} ${bookingData.checkinTime}:00</p>
+    <p>วันเช็กเอาท์: ${bookingData.checkoutDate} ${bookingData.checkoutTime}:00</p>
+    <p>ระยะเวลาเข้าพัก: ${bookingData.duration}</p>
+    <hr class="border-[#D5B774] my-3">
+    <p><b>ยอดรวมทั้งหมด:</b> ${total.toLocaleString()} บาท</p>
+    <p><b>มัดจำ 50% ที่ชำระแล้ว:</b> ${deposit.toLocaleString()} บาท</p>
+    <p><b>สถานะ:</b> ✅ รอชำระส่วนที่เหลือในวันเข้าพัก</p>
+  `;
+
+  // แสดงปุ่มดาวน์โหลด
+  downloadBtn.classList.remove("hidden");
+
+  popup.classList.remove("hidden");
+}
+</script>
+
 </body>
 </html>
