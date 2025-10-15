@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>P.O. CAT HOTEL | Private & Premium Stay for Cats</title>
+  <title data-i18n="hotel.title">P.O. CAT HOTEL | Private & Premium Stay for Cats</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/i18n.js"></script>
 
   <style>
     :root {
@@ -41,16 +42,23 @@
 <body class="text-gray-800">
 
   <!-- HERO SECTION -->
-  <header class="relative w-full h-[70vh] bg-[#0F3B2E] flex items-center justify-center text-center text-[#F2E2C4]">
-    <div class="relative w-11/12 md:w-3/4">
-      <!-- รูป hero (ใส่ภายหลัง) -->
-      <div class="relative w-full h-[70vh] rounded-3xl overflow-hidden border-4 border-[#D5B774] shadow-lg bg-[#0F3B2E]">
-        <img src="images/hero-hotel.jpg" alt="P.O. Cat Hotel"
+  <header class="relative w-full bg-[#0F3B2E] text-[#F2E2C4] pb-8">
+    <div class="relative w-11/12 md:w-3/4 mx-auto pt-6">
+      <!-- ปุ่มภาษา -->
+      <div class="text-center mb-4">
+        <button onclick="setLang('th')" class="mx-2 text-[#F2E2C4] underline hover:text-[#D5B774]">ไทย</button>
+        <button onclick="setLang('en')" class="mx-2 text-[#F2E2C4] underline hover:text-[#D5B774]">English</button>
+        <button onclick="setLang('zh')" class="mx-2 text-[#F2E2C4] underline hover:text-[#D5B774]">中文</button>
+      </div>
+
+      <!-- รูป hero -->
+      <div class="relative w-full aspect-[16/9] rounded-3xl overflow-hidden border-4 border-[#D5B774] shadow-lg bg-[#0F3B2E]">
+        <img src="hero-hotel.png" alt="P.O. Cat Hotel"
              class="object-cover w-full h-full opacity-80" />
         <div class="absolute inset-0 bg-gradient-to-t from-[#0F3B2E]/70 via-transparent to-transparent"></div>
         <div class="absolute bottom-6 left-6">
-          <h1 class="text-4xl md:text-5xl font-bold mb-2 drop-shadow-lg">P.O. CAT HOTEL</h1>
-          <p class="text-lg md:text-xl opacity-90">Private & Premium Stay for Cats</p>
+          <h1 class="text-4xl md:text-5xl font-bold mb-2 drop-shadow-lg" data-i18n="hotel.name">P.O. CAT HOTEL</h1>
+          <p class="text-lg md:text-xl opacity-90" data-i18n="hotel.subtitle">Private & Premium Stay for Cats</p>
         </div>
       </div>
     </div>
@@ -58,8 +66,8 @@
 
   <!-- ABOUT HOTEL -->
   <section class="max-w-5xl mx-auto px-4 py-16 text-center">
-    <h2 class="section-title text-3xl text-[#0F3B2E]">สิ่งอำนวยความสะดวกภายในโรงแรม</h2>
-    <p class="text-lg text-gray-700 leading-relaxed mb-10">
+    <h2 class="section-title text-3xl text-[#F2E2C4]" data-i18n="hotel.facilitiesTitle">สิ่งอำนวยความสะดวกภายในโรงแรม</h2>
+    <p class="text-lg text-[#F2E2C4] leading-relaxed mb-10" data-i18n="hotel.about">
       โรงแรมแมว P.O. Cat Hotel ให้บริการที่พักแมวแบบ Private ทุกห้องแยกส่วนตัว  
       ไม่เล่นรวมกับแมวบ้านอื่น ทุกห้องมีวิวท้องฟ้า อากาศถ่ายเท ปลอดภัย อบอุ่นเหมือนอยู่บ้าน   
       พร้อมดูแลโดยเจ้าของร้านเองตลอดการเข้าพัก เพื่อให้มั่นใจว่าน้องจะได้รับความรัก และความสบายสูงสุด 💛
@@ -67,18 +75,18 @@
 
     <!-- Facilities Images -->
     <div class="grid md:grid-cols-3 gap-6">
-      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] h-64">
-        <img src="images/facility-1.jpg" alt="ห้องเล่นส่วนกลาง" class="object-cover w-full h-full opacity-85">
+      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] aspect-[4/3]">
+        <img src="facility-1.png" alt="ห้องเล่นส่วนกลาง" class="object-cover w-full h-full opacity-85">
       </div>
-      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] h-64">
-        <img src="images/facility-2.jpg" alt="ระบบฟอกอากาศ" class="object-cover w-full h-full opacity-85">
+      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] aspect-[4/3]">
+        <img src="facility-2.png" alt="ระบบฟอกอากาศ" class="object-cover w-full h-full opacity-85">
       </div>
-      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] h-64">
-        <img src="images/facility-3.jpg" alt="โซนถ่ายรูปน้องแมว" class="object-cover w-full h-full opacity-85">
+      <div class="relative rounded-3xl overflow-hidden border-4 border-[#D5B774] bg-[#0F3B2E] aspect-[4/3]">
+        <img src="facility-3.png" alt="โซนถ่ายรูปน้องแมว" class="object-cover w-full h-full opacity-85">
       </div>
     </div>
 
-    <ul class="text-left mt-10 text-gray-700 leading-relaxed max-w-2xl mx-auto">
+    <ul class="text-left mt-10 text-[#F2E2C4] leading-relaxed max-w-2xl mx-auto" data-i18n="hotel.facilitiesList">
       <li>・เครื่องปรับอากาศและฟอกอากาศในทุกห้อง</li>
       <li>・พัดลมหมุนเวียนอากาศ ระบบฆ่าเชื้อโรค และทำความสะอาดทุกวัน</li>
       <li>・พื้นที่ส่วนกลางมีของเล่น และที่ปีนป่ายสำหรับน้อง</li>
@@ -89,22 +97,20 @@
 
   <!-- ROOM SELECTION -->
   <section class="bg-[#F7F6EE] py-16">
-    <h2 class="section-title text-3xl mb-10 text-[#0F3B2E]">ประเภทห้องพัก</h2>
+    <h2 class="section-title text-3xl mb-10 text-[#0F3B2E]" data-i18n="hotel.roomTitle">ประเภทห้องพัก</h2>
 
     <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 px-4">
 
       <!-- Standard Room -->
       <div class="card-border">
-        <div class="relative w-full h-64 bg-[#0F3B2E]">
-          <!-- เว้นที่สำหรับรูป -->
-          <img src="images/room-standard.jpg" alt="Standard Room"
-               class="object-cover w-full h-full opacity-90">
+        <div class="relative w-full aspect-[3/2] bg-[#0F3B2E]">
+          <img src="images/room-standard.jpg" alt="Standard Room" class="object-cover w-full h-full opacity-90">
         </div>
         <div class="p-6 text-center">
-          <h3 class="text-2xl font-semibold text-[#0F3B2E] mb-2">Standard Room</h3>
-          <p class="text-gray-700">
+          <h3 class="text-2xl font-semibold text-[#0F3B2E] mb-2" data-i18n="hotel.standardTitle">Standard Room</h3>
+          <p class="text-gray-700" data-i18n="hotel.standardDesc">
             ห้องพักขนาด 60×60×110 ซม. สำหรับ 1 ตัว ตกแต่งด้วยไม้ธรรมชาติ มีระบบหมุนเวียนอากาศและแสงธรรมชาติพอดี 
-            ราคาคืนละ <strong>350 บาท</strong>  
+            ราคาคืนละ <strong>250 บาท</strong>  
             <br>*(ไม่รวมกล้องวงจรปิด)*
           </p>
         </div>
@@ -112,14 +118,12 @@
 
       <!-- Suite Room -->
       <div class="card-border">
-        <div class="relative w-full h-64 bg-[#0F3B2E]">
-          <!-- เว้นที่สำหรับรูป -->
-          <img src="images/room-suite.jpg" alt="Suite Room"
-               class="object-cover w-full h-full opacity-90">
+        <div class="relative w-full aspect-[3/2] bg-[#0F3B2E]">
+          <img src="images/room-suite.jpg" alt="Suite Room" class="object-cover w-full h-full opacity-90">
         </div>
         <div class="p-6 text-center">
-          <h3 class="text-2xl font-semibold text-[#0F3B2E] mb-2">Suite Room</h3>
-          <p class="text-gray-700">
+          <h3 class="text-2xl font-semibold text-[#0F3B2E] mb-2" data-i18n="hotel.suiteTitle">Suite Room</h3>
+          <p class="text-gray-700" data-i18n="hotel.suiteDesc">
             ห้องพักขนาด 150×120×220 ซม. กว้างขวาง โปร่ง มีระเบียงในตัว และมุมชมวิวท้องฟ้า 
             รองรับน้องแมวสูงสุด 3 ตัว (ตัวที่ 2 และ 3 เพิ่ม 200 บาท / คืน)  
             ราคาคืนละ <strong>500 บาท</strong>  
@@ -129,7 +133,7 @@
       </div>
     </div>
 
-    <p class="text-center text-sm text-gray-600 mt-10">
+    <p class="text-center text-sm text-gray-600 mt-10" data-i18n="hotel.cameraNote">
       บริการกล้องวงจรปิดส่วนตัว เพิ่ม 100 บาท/คืน ดูน้องได้ตลอด 24 ชั่วโมง
     </p>
   </section>
@@ -137,7 +141,8 @@
   <!-- BOOKING BUTTON -->
   <div class="text-center py-16">
     <a href="booking.html"
-       class="inline-block bg-[#0F3B2E] text-[#F2E2C4] text-lg font-semibold px-8 py-4 rounded-full hover:bg-[#164D3D] transition">
+       class="inline-block bg-[#0F3B2E] text-[#F2E2C4] text-lg font-semibold px-8 py-4 rounded-full hover:bg-[#164D3D] transition"
+       data-i18n="hotel.bookNow">
       จองห้องพักกับเรา
     </a>
   </div>
