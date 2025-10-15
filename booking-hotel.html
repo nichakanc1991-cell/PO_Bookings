@@ -241,11 +241,6 @@ form.addEventListener("submit", e => {
       });
     }
 
-    function showPopup(message) {
-      popupMsg.innerHTML = message;
-      popup.classList.remove("hidden");
-    }
-
     addCatBtn.addEventListener("click", () => {
       const count = catNameList.querySelectorAll("input").length + 1;
       const input = document.createElement("input");
