@@ -6,10 +6,8 @@
   <title>ใบเสร็จการจอง | PO CAT HOTEL</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root {
-      --po-green:#0F3B2E; --po-cream:#F2E2C4; --po-gold:#D5B774;
-    }
-    body{background:#F7F6EE;font-family:"Prompt",sans-serif;}
+    :root { --po-green:#0F3B2E; --po-cream:#F2E2C4; --po-gold:#D5B774; }
+    body { background:#F7F6EE; font-family:"Prompt",sans-serif; }
   </style>
 </head>
 
@@ -40,20 +38,33 @@
     <p>LINE: @po_grooming</p>
   </div>
 
-  <a id="lineSend" target="_blank"
-    class="mt-6 bg-[var(--po-green)] text-[var(--po-cream)] px-6 py-3 rounded-full font-semibold hover:bg-[#164D3D] transition">
-    💬 แจ้งสลิปและใบเสร็จใน LINE
-  </a>
+  <div class="flex flex-col gap-3 mt-6">
+    <a id="lineSend" target="_blank"
+      class="bg-[var(--po-green)] text-[var(--po-cream)] px-6 py-3 rounded-full font-semibold hover:bg-[#164D3D] transition text-center">
+      💬 แจ้งสลิปและใบเสร็จใน LINE
+    </a>
+
+    <button onclick="window.print()" class="border border-[var(--po-gold)] px-6 py-3 rounded-full hover:bg-[var(--po-gold)] hover:text-[var(--po-green)] transition">
+      🖨 พิมพ์ใบเสร็จ
+    </button>
+  </div>
 
   <script>
     const p = new URLSearchParams(location.search);
     const get = k => decodeURIComponent(p.get(k) || "-");
-    const name = get("name"), phone = get("phone"), room = get("room"), cats = get("cats"), checkin = get("checkin"), checkout = get("checkout"), deposit = get("deposit"), total = get("total");
+    const name = get("name"), phone = get("phone"), room = get("room"),
+          cats = get("cats"), checkin = get("checkin"), checkout = get("checkout"),
+          deposit = get("deposit"), total = get("total");
+
+    if (name === "-") {
+      alert("กรุณาจองห้องก่อนเข้าดูใบเสร็จ");
+      window.location.href = "booking-hotel-final.html";
+    }
 
     document.getElementById("name").textContent = name;
     document.getElementById("phone").textContent = phone;
     document.getElementById("room").textContent = room;
-    document.getElementById("cats").textContent = cats;
+    document.getElementById("cats").innerHTML = cats.split(", ").join("<br>");
     document.getElementById("checkin").textContent = checkin;
     document.getElementById("checkout").textContent = checkout;
     document.getElementById("deposit").textContent = deposit;
@@ -64,7 +75,7 @@
       "วันที่ออกใบเสร็จ: " + today.toLocaleDateString("th-TH", {year:'numeric',month:'long',day:'numeric'});
 
     const text = encodeURIComponent(`📋 แจ้งสลิปและใบเสร็จห้องพัก PO CAT HOTEL\nชื่อผู้จอง: ${name}\nเบอร์: ${phone}\nชื่อแมว: ${cats}\nห้อง: ${room}\nยอดมัดจำ: ${deposit} บาท`);
-    document.getElementById("lineSend").href = `https://line.me/R/oaMessage/@po_grooming/?${text}`;
+    document.getElementById("lineSend").href = `https://line.me/R/oaMessage/@po_grooming/?text=${text}`;
   </script>
 </body>
 </html>
