@@ -335,13 +335,25 @@ popupDownloadBtn.className = "popup-btn popup-extra mt-2";
 popupDownloadBtn.textContent = "📄 ดาวน์โหลดใบเสร็จยืนยันการจอง";
 popupDownloadBtn.onclick = () => {
   const receipt = document.getElementById("receipt-template");
-  html2canvas(receipt, { scale: 3 }).then(canvas => {
-    const link = document.createElement("a");
-    link.download = `PO_CAT_HOTEL_Receipt_${bookingData.name}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  });
+  
+  // ✅ แสดงก่อน capture
+  receipt.classList.remove("hidden");
+
+  // ✅ รอให้ render เสร็จก่อนจับภาพ
+  setTimeout(() => {
+    html2canvas(receipt, { scale: 3, useCORS: true }).then(canvas => {
+      const link = document.createElement("a");
+      // เปลี่ยนชื่อไฟล์ให้รองรับภาษาไทย
+      const safeName = bookingData.name.replace(/[^\wก-๙]/g, "_");
+      link.download = `PO_CAT_HOTEL_Receipt_${safeName}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      // ✅ ซ่อนกลับหลัง capture
+      receipt.classList.add("hidden");
+    });
+  }, 500); // รอ render ครึ่งวินาที
 };
+
 popupBox.appendChild(popupDownloadBtn);
 
 
