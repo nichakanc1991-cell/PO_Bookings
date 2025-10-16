@@ -157,63 +157,6 @@
   </div>
 </div>
 
-<script>
-function showPopup(message, total, deposit, bookingData) {
-  popupMsg.innerHTML = message;
-  document.getElementById("deposit-summary").innerHTML =
-    `💰 ยอดที่ต้องชำระ (มัดจำ 50%): <b>${deposit.toLocaleString()} บาท</b>`;
-
-  // สร้างข้อความสรุปส่งไป LINE
-  const text = encodeURIComponent(
-    `การจองห้องพัก P.O. CAT HOTEL
-ชื่อผู้จอง: ${bookingData.name}
-เบอร์โทร: ${bookingData.phone}
-ประเภทห้อง: ${bookingData.room}
-จำนวนแมว: ${bookingData.cats} ตัว
-วันเช็กอิน: ${bookingData.checkinDate} ${bookingData.checkinTime}:00
-วันเช็กเอาท์: ${bookingData.checkoutDate} ${bookingData.checkoutTime}:00
-ระยะเวลา: ${bookingData.duration}
-ยอดรวมทั้งหมด: ${total.toLocaleString()} บาท
-ยอดมัดจำ 50%: ${deposit.toLocaleString()} บาท
-
-แนบสลิปมัดจำเพื่อยืนยันการจองได้เลยค่ะ 💚`
-  );
-
-  // ใส่ลิงก์เปิด LINE OA พร้อมข้อความ
-  const lineUrl = `https://lin.ee/5bM7PZO?text=${text}`;
-  document.getElementById("popup-btn").href = lineUrl;
-
-  popup.classList.remove("hidden");
-}
-
-form.addEventListener("submit", e => {
-  e.preventDefault();
-
-  const bookingData = {
-    name: form.customerName.value,
-    phone: form.customerPhone.value,
-    room: form.roomType.value === "standard" ? "Standard Room" : "Suite Room",
-    cats: catNameList.querySelectorAll("input").length,
-    checkinDate: form.checkinDate.value,
-    checkinTime: form.checkinTime.value,
-    checkoutDate: form.checkoutDate.value,
-    checkoutTime: form.checkoutTime.value,
-    duration: durationText.textContent,
-  };
-
-  const total = parseInt(totalEl.textContent.replace(/,/g, "")) || 0;
-  const deposit = parseInt(depositEl.textContent.replace(/,/g, "")) || 0;
-
-  // เรียกใช้ฟังก์ชัน showPopup ตัวท้ายสุด
-  showPopup(
-    "✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚",
-    total,
-    deposit,
-    bookingData
-  );
-});
-
-</script>
 
 
   <script>
@@ -368,6 +311,7 @@ downloadBtn.addEventListener("click", () => {
 
 // แก้ฟังก์ชัน showPopup เดิมให้เพิ่มส่วนสร้างใบเสร็จ
 function showPopup(message, total, deposit, bookingData) {
+  const popupMsg = document.getElementById("popup-message");
   popupMsg.innerHTML = message;
   document.getElementById("deposit-summary").innerHTML =
     `💰 ยอดที่ต้องชำระ (มัดจำ 50%): <b>${deposit.toLocaleString()} บาท</b>`;
@@ -416,6 +360,38 @@ function showPopup(message, total, deposit, bookingData) {
 
   popup.classList.remove("hidden");
 }
+// 🟢 จัดการการกดยืนยันการจอง
+form.addEventListener("submit", e => {
+  e.preventDefault(); // ป้องกัน reload หน้า
+
+  const bookingData = {
+    name: form.customerName.value,
+    phone: form.customerPhone.value,
+    room: form.roomType.value === "standard" ? "Standard Room" : "Suite Room",
+    cats: catNameList.querySelectorAll("input").length,
+    checkinDate: form.checkinDate.value,
+    checkinTime: form.checkinTime.value,
+    checkoutDate: form.checkoutDate.value,
+    checkoutTime: form.checkoutTime.value,
+    duration: durationText.textContent,
+  };
+
+  const total = parseInt(totalEl.textContent.replace(/,/g, "")) || 0;
+  const deposit = parseInt(depositEl.textContent.replace(/,/g, "")) || 0;
+
+  showPopup(
+    "✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚",
+    total,
+    deposit,
+    bookingData
+  );
+});
+
+  <button id="downloadReceipt" type="button" class="popup-btn hidden">
+  📄 ดาวน์โหลดใบเสร็จยืนยันการจอง
+</button>
+
+  
 </script>
 
 </body>
