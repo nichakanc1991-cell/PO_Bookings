@@ -4,10 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>P.O. CAT HOTEL | จองห้องพักโรงแรมแมว</title>
-
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
     :root {
       --po-green: #0F3B2E;
@@ -15,59 +12,57 @@
       --po-gold: #D5B774;
     }
     body { background: #F7F6EE; font-family: "Prompt", sans-serif; }
-    label { color: var(--po-green); }
-    input, select { border: 1.5px solid #D5B774; }
+    input, select { border: 1.5px solid var(--po-gold); }
 
-    /* Popup */
     .popup-bg {
       position: fixed; inset: 0;
-      background: rgba(15,59,46,0.6);
+      background: rgba(15, 59, 46, 0.6);
       display: flex; align-items: center; justify-content: center;
-      z-index: 999; backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
+      z-index: 50;
     }
     .popup-box {
       background: var(--po-cream);
       border: 3px solid var(--po-gold);
       border-radius: 1rem;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-      padding: 2rem 2.5rem;
-      text-align: center;
+      padding: 2rem;
       max-width: 400px;
       color: var(--po-green);
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
       animation: fadeIn 0.3s ease;
     }
-    @keyframes fadeIn { from {opacity:0; transform:scale(0.95);} to {opacity:1; transform:scale(1);} }
+    @keyframes fadeIn { from {opacity:0;transform:scale(0.9);} to {opacity:1;transform:scale(1);} }
     .popup-btn {
-      margin-top: 1.5rem;
       background: var(--po-green);
       color: var(--po-cream);
-      padding: 0.6rem 1.5rem;
       border-radius: 9999px;
+      padding: 0.6rem 1.2rem;
       font-weight: 600;
-      transition: background 0.3s;
+      transition: all 0.3s;
     }
     .popup-btn:hover { background: #164D3D; }
   </style>
 </head>
 
-<body class="text-gray-800">
-  <header class="bg-[var(--po-green)] text-[var(--po-cream)] py-6 text-center shadow-md">
+<body class="text-[var(--po-green)]">
+  <header class="bg-[var(--po-green)] text-[var(--po-cream)] py-6 text-center">
     <h1 class="text-3xl font-bold">P.O. CAT HOTEL</h1>
-    <p class="opacity-90 text-lg">Private & Premium Stay for Cats</p>
+    <p>Private & Premium Stay for Cats</p>
   </header>
 
   <section class="max-w-3xl mx-auto bg-white mt-6 rounded-3xl shadow-lg p-8 border-4 border-[var(--po-gold)]">
-    <h2 class="text-2xl font-semibold text-[var(--po-green)] mb-6">กรอกรายละเอียดการจอง</h2>
+    <h2 class="text-2xl font-semibold mb-6">กรอกรายละเอียดการจอง</h2>
 
     <form id="bookingForm" class="space-y-6">
       <div>
-        <label class="block mb-2 font-semibold">ชื่อผู้จอง / Name</label>
-        <input type="text" id="customerName" class="w-full rounded-lg p-2" required />
+        <label class="block mb-2 font-semibold">ชื่อผู้จอง</label>
+        <input type="text" id="customerName" class="w-full rounded-lg p-2" required>
       </div>
 
       <div>
-        <label class="block mb-2 font-semibold">เบอร์ติดต่อ / Phone</label>
-        <input type="text" id="customerPhone" class="w-full rounded-lg p-2" required />
+        <label class="block mb-2 font-semibold">เบอร์ติดต่อ</label>
+        <input type="text" id="customerPhone" class="w-full rounded-lg p-2" required>
       </div>
 
       <div>
@@ -80,45 +75,31 @@
 
       <div id="catNamesContainer">
         <label class="block mb-2 font-semibold">ชื่อแมวที่เข้าพัก</label>
-        <div class="space-y-2" id="catNameList">
+        <div id="catNameList" class="space-y-2">
           <input type="text" name="catName[]" placeholder="ชื่อแมวตัวที่ 1" class="w-full rounded-lg p-2">
         </div>
-        <button type="button" id="addCatBtn" class="mt-2 text-[var(--po-green)] underline">+ เพิ่มชื่อแมวอีก</button>
+        <button type="button" id="addCatBtn" class="text-[var(--po-green)] underline mt-2">+ เพิ่มชื่อแมว</button>
       </div>
 
       <div class="grid md:grid-cols-2 gap-6">
         <div>
           <label class="block mb-2 font-semibold">วันเช็กอิน</label>
-          <input type="date" id="checkinDate" class="w-full rounded-lg p-2 mb-2" required />
+          <input type="date" id="checkinDate" class="w-full rounded-lg p-2 mb-2" required>
           <select id="checkinTime" class="w-full rounded-lg p-2">
             <option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option>
-            <option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option>
-            <option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option>
-            <option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option>
           </select>
         </div>
-
         <div>
           <label class="block mb-2 font-semibold">วันเช็กเอาท์</label>
-          <input type="date" id="checkoutDate" class="w-full rounded-lg p-2 mb-2" required />
+          <input type="date" id="checkoutDate" class="w-full rounded-lg p-2 mb-2" required>
           <select id="checkoutTime" class="w-full rounded-lg p-2">
             <option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option>
-            <option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option>
-            <option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option>
-            <option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option>
           </select>
         </div>
       </div>
 
-      <div>
-        <label class="inline-flex items-center space-x-2">
-          <input type="checkbox" id="cctv" class="w-5 h-5">
-          <span>ต้องการกล้องวงจรปิด (+฿100/คืน)</span>
-        </label>
-      </div>
-
-      <div class="border-t pt-6 text-lg font-semibold">
-        <p id="durationText" class="text-[var(--po-green)]"></p>
+      <div class="border-t pt-4 font-semibold">
+        <p id="durationText"></p>
         <p>ยอดรวม: <span id="totalPrice">0</span> บาท</p>
         <p>มัดจำ 50%: <span id="depositAmount">0</span> บาท</p>
       </div>
@@ -130,29 +111,26 @@
     </form>
   </section>
 
-  <!-- Popup -->
+  <!-- Popup QR -->
   <div id="popup" class="popup-bg hidden">
     <div class="popup-box">
-      <p id="popup-message" class="text-lg leading-relaxed mb-2">
-        ✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚
-      </p>
-      <img src="qr.png" alt="QR โอนมัดจำ" class="mx-auto my-3" />
-      <p id="deposit-summary" class="text-lg font-semibold mt-2 text-[var(--po-green)]"></p>
-      <a id="popup-btn" target="_blank" class="popup-btn block mt-4">💬 ส่งข้อความยืนยันทาง LINE</a>
+      <h3 class="text-xl font-bold mb-2">💚 ชำระมัดจำ</h3>
+      <img src="images/qr-payment.png" alt="QR" class="w-56 mx-auto rounded-lg mb-3">
+      <p id="deposit-summary" class="text-lg font-semibold"></p>
+      <a id="lineConfirm" target="_blank" class="popup-btn block mt-4">💬 แจ้งโอนใน LINE</a>
+      <button id="nextPage" class="popup-btn block mt-3 bg-[var(--po-gold)] text-[var(--po-green)]">➡ ถัดไป</button>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
     const form = document.getElementById("bookingForm");
     const totalEl = document.getElementById("totalPrice");
     const depositEl = document.getElementById("depositAmount");
     const durationText = document.getElementById("durationText");
+    const popup = document.getElementById("popup");
     const addCatBtn = document.getElementById("addCatBtn");
     const catNameList = document.getElementById("catNameList");
-    const popup = document.getElementById("popup");
 
-    // เพิ่มช่องกรอกชื่อแมว
     addCatBtn.addEventListener("click", () => {
       const count = catNameList.querySelectorAll("input").length + 1;
       const input = document.createElement("input");
@@ -163,106 +141,42 @@
       catNameList.appendChild(input);
     });
 
-    // คำนวณราคา
-    form.addEventListener("input", calculateTotal);
     function calculateTotal() {
       const room = form.roomType.value;
       const cats = catNameList.querySelectorAll("input").length;
-      const cctv = form.cctv.checked;
       const checkinDate = new Date(form.checkinDate.value);
       const checkoutDate = new Date(form.checkoutDate.value);
-      const checkinHour = parseInt(form.checkinTime.value || 12);
-      const checkoutHour = parseInt(form.checkoutTime.value || 12);
-      checkinDate.setHours(checkinHour, 0, 0);
-      checkoutDate.setHours(checkoutHour, 0, 0);
-      if (!form.checkinDate.value || !form.checkoutDate.value || checkoutDate <= checkinDate) return;
-      const diffHours = (checkoutDate - checkinDate) / (1000 * 60 * 60);
-      const fullDays = Math.floor(diffHours / 24);
-      const remainHours = diffHours % 24;
-
-      function getRate(roomType, hours) {
-        if (roomType === "standard") {
-          if (hours <= 3) return 50;
-          if (hours <= 12) return 150;
-          return 250;
-        } else {
-          if (hours <= 3) return 100;
-          if (hours <= 12) return 300;
-          return 500;
-        }
-      }
-
-      let total = 0;
-      if (room === "standard") {
-        total = getRate("standard", 24) * cats * fullDays +
-                (remainHours > 0 ? getRate("standard", remainHours) * cats : 0);
-      } else {
-        const baseRate = getRate("suite", 24) * fullDays + (remainHours > 0 ? getRate("suite", remainHours) : 0);
-        const extraCatsRate = (cats - 1) * 200 * (fullDays + (remainHours > 0 ? 1 : 0));
-        total = baseRate + extraCatsRate;
-      }
-      if (cctv) total += 100 * (fullDays + (remainHours > 0 ? 1 : 0));
-
+      if (!form.checkinDate.value || !form.checkoutDate.value) return;
+      const diffDays = (checkoutDate - checkinDate) / (1000 * 3600 * 24);
+      const days = diffDays > 0 ? diffDays : 1;
+      const total = (room === "standard" ? 250 : 500) * days;
       const deposit = total * 0.5;
-      durationText.textContent = `ระยะเวลาเข้าพัก: ${fullDays} วัน ${Math.round(remainHours)} ชั่วโมง`;
-      totalEl.textContent = total.toLocaleString();
-      depositEl.textContent = deposit.toLocaleString();
+      durationText.textContent = `ระยะเวลาเข้าพัก: ${days} วัน`;
+      totalEl.textContent = total;
+      depositEl.textContent = deposit;
     }
 
-    // แสดง popup และเด้งไปใบเสร็จ
+    form.addEventListener("input", calculateTotal);
+
     form.addEventListener("submit", e => {
       e.preventDefault();
-      const catInputs = [...catNameList.querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean);
-      const catNames = catInputs.join(", ");
-      const bookingData = {
-        name: form.customerName.value.trim(),
-        phone: form.customerPhone.value.trim(),
-        room: form.roomType.value === "standard" ? "Standard Room" : "Suite Room",
-        cats: catInputs.length,
-        catNames: catNames,
-        checkinDate: form.checkinDate.value,
-        checkinTime: form.checkinTime.value,
-        checkoutDate: form.checkoutDate.value,
-        checkoutTime: form.checkoutTime.value,
-        duration: durationText.textContent,
-      };
+      const name = form.customerName.value.trim();
+      const phone = form.customerPhone.value.trim();
+      const room = form.roomType.value === "standard" ? "Standard Room" : "Suite Room";
+      const catNames = [...catNameList.querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean).join(", ");
+      const checkinDate = form.checkinDate.value;
+      const checkoutDate = form.checkoutDate.value;
+      const total = parseInt(totalEl.textContent);
+      const deposit = parseInt(depositEl.textContent);
 
-      const total = parseInt(totalEl.textContent.replace(/,/g, "")) || 0;
-      const deposit = parseInt(depositEl.textContent.replace(/,/g, "")) || 0;
-      const room = bookingData.room;
-      const nights = durationText.textContent;
-
-      if (!bookingData.name || !bookingData.phone || !bookingData.checkinDate || !bookingData.checkoutDate) {
-        alert("กรุณากรอกข้อมูลให้ครบก่อนยืนยันการจองค่ะ 💚");
-        return;
-      }
-
-      // สรุปข้อความสำหรับส่ง LINE
-      const text = encodeURIComponent(
-`📋 ข้อมูลการจองห้องพัก P.O. CAT HOTEL
-ชื่อผู้จอง: ${bookingData.name}
-เบอร์โทร: ${bookingData.phone}
-ชื่อแมว: ${bookingData.catNames}
-ประเภทห้อง: ${bookingData.room}
-วันเช็กอิน: ${bookingData.checkinDate} ${bookingData.checkinTime}:00
-วันเช็กเอาท์: ${bookingData.checkoutDate} ${bookingData.checkoutTime}:00
-${bookingData.duration}
-ยอดรวม: ${total.toLocaleString()} บาท
-มัดจำ 50%: ${deposit.toLocaleString()} บาท`);
-
-      document.getElementById("popup-btn").href =
-        `https://line.me/R/oaMessage/@po_grooming/?${text}`;
-
-      document.getElementById("deposit-summary").innerHTML =
-        `💰 ยอดที่ต้องชำระ (มัดจำ 50%): <b>${deposit.toLocaleString()} บาท</b>`;
-
+      const text = encodeURIComponent(`📋 แจ้งโอนมัดจำห้องพัก PO CAT HOTEL\nชื่อผู้จอง: ${name}\nเบอร์: ${phone}\nชื่อแมว: ${catNames}\nห้อง: ${room}\nยอดมัดจำ: ${deposit} บาท`);
+      document.getElementById("lineConfirm").href = `https://line.me/R/oaMessage/@po_grooming/?${text}`;
+      document.getElementById("deposit-summary").innerHTML = `ยอดมัดจำ: <b>${deposit} บาท</b>`;
       popup.classList.remove("hidden");
 
-      // เด้งไปหน้าใบเสร็จหลังแสดง popup 1.5 วิ
-      setTimeout(() => {
-        window.location.href =
-          `receipt.html?deposit=${deposit}&room=${encodeURIComponent(room)}&nights=${encodeURIComponent(nights)}&cat=${encodeURIComponent(catNames)}`;
-      }, 1500);
+      document.getElementById("nextPage").onclick = () => {
+        window.location.href = `receipt.html?name=${encodeURIComponent(name)}&phone=${phone}&room=${encodeURIComponent(room)}&cats=${catNames}&deposit=${deposit}&total=${total}&checkin=${checkinDate}&checkout=${checkoutDate}`;
+      };
     });
   </script>
 </body>
