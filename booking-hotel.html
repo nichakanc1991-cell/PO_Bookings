@@ -293,7 +293,9 @@ function showPopup(message, total, deposit, bookingData) {
 📎 กรุณาแนบใบเสร็จและสลิปโอนพร้อมข้อความนี้เพื่อยืนยันการจองค่ะ 💚`);
 
   // ✅ ปุ่มแอด LINE
-  document.getElementById("popup-btn").href = `https://lin.ee/5bM7PZO`;
+  document.getElementById("popup-btn").href =
+  `https://line.me/R/oaMessage/@po_grooming/?${text}`;
+
 
   // ✅ วันที่ออกใบเสร็จ
   const now = new Date();
@@ -341,17 +343,26 @@ popupDownloadBtn.onclick = () => {
 
   // ✅ รอให้ render เสร็จก่อนจับภาพ
   setTimeout(() => {
-    html2canvas(receipt, { scale: 3, useCORS: true }).then(canvas => {
-      const link = document.createElement("a");
-      // เปลี่ยนชื่อไฟล์ให้รองรับภาษาไทย
-      const safeName = bookingData.name.replace(/[^\wก-๙]/g, "_");
-      link.download = `PO_CAT_HOTEL_Receipt_${safeName}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-      // ✅ ซ่อนกลับหลัง capture
-      receipt.classList.add("hidden");
-    });
-  }, 500); // รอ render ครึ่งวินาที
+  html2canvas(receipt, {
+    scale: 3,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    logging: false
+  }).then(canvas => {
+    const safeName = bookingData.name.replace(/[^\wก-๙]/g, "_");
+    const link = document.createElement("a");
+    link.download = `PO_CAT_HOTEL_Receipt_${safeName}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+    receipt.classList.add("hidden");
+  }).catch(err => {
+    console.error("❌ html2canvas error:", err);
+    alert("เกิดข้อผิดพลาดในการสร้างภาพใบเสร็จ กรุณาลองอีกครั้งค่ะ");
+    receipt.classList.add("hidden");
+  });
+}, 800); // รอ render 0.8 วิ
+
 };
 
 popupBox.appendChild(popupDownloadBtn);
