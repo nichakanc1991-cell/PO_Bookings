@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ใบเสร็จการจอง | P.O. Cat Hotel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --po-green: #0F3B2E;
+      --po-cream: #F2E2C4;
+      --po-gold: #D5B774;
+    }
+    body { background: #F7F6EE; font-family: "Prompt", sans-serif; }
+  </style>
+</head>
+
+<body class="text-[var(--po-green)] flex flex-col items-center justify-center py-10 px-4">
+
+  <div id="receipt" class="bg-[var(--po-cream)] border-4 border-[var(--po-gold)] rounded-2xl p-6 text-center shadow-xl max-w-md">
+    <h2 class="text-2xl font-bold mb-3">✅ การจองสำเร็จ!</h2>
+    <p class="text-lg mb-2">กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚</p>
+
+    <div class="border-4 border-[var(--po-gold)] rounded-xl p-4 bg-white mb-4">
+      <img src="images/qr-payment.png" alt="QR ชำระเงิน" class="mx-auto w-52 mb-4 rounded-lg">
+      <p class="text-lg font-semibold">ณิชกานต์ ชลันนุรักษ์</p>
+      <p class="text-sm text-gray-700">ธนาคารไทยพาณิชย์ | PromptPay</p>
+    </div>
+
+    <p class="font-semibold text-xl mb-1">💰 ยอดที่ต้องชำระ (50%): <span id="deposit">250</span> บาท</p>
+    <p class="text-sm text-gray-600 room-info">จองห้องพักแบบ Suite Room (2 คืน)</p>
+
+    <div class="mt-4 text-sm text-gray-700 border-t pt-2">
+      <p>📅 วันที่เช็กอิน: 21 ต.ค. 2025</p>
+      <p>📅 วันที่เช็กเอาท์: 23 ต.ค. 2025</p>
+    </div>
+
+    <p class="mt-6 text-sm text-gray-600">ขอบคุณที่ไว้วางใจให้เราดูแลน้องแมวของคุณ 🐾</p>
+  </div>
+
+  <button id="saveReceiptBtn"
+    class="mt-6 bg-[var(--po-green)] text-[var(--po-cream)] px-6 py-3 rounded-full font-semibold hover:bg-[#164D3D] transition">
+    📄 บันทึกใบเสร็จเป็นรูป
+  </button>
+
+  <p class="text-center text-sm text-gray-700 bg-[#F2E2C4]/70 rounded-lg px-3 py-2 mt-4">
+    📱 หากเปิดจาก LINE แล้วไม่เห็นภาพโหลดขึ้น  
+    โปรดรอสักครู่ ระบบจะสร้างรูปให้โดยอัตโนมัติ
+  </p>
+
+  <script>
+    // ✅ อ่านค่าจาก URL
+    const params = new URLSearchParams(window.location.search);
+    const deposit = params.get("deposit");
+    const room = params.get("room");
+    const nights = params.get("nights");
+
+    if (deposit) document.getElementById("deposit").textContent = deposit;
+    if (room && nights) {
+      document.querySelector(".room-info").textContent = `จองห้องพักแบบ ${room} (${nights} คืน)`;
+    }
+
+    // ✅ เมื่อกดปุ่มจะบันทึกใบเสร็จเป็นรูป
+    document.getElementById("saveReceiptBtn").addEventListener("click", () => {
+      const target = document.getElementById("receipt");
+      html2canvas(target, { scale: 2, useCORS: true }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "PO_Cat_Hotel_Receipt.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    });
+  </script>
+</body>
+</html>
