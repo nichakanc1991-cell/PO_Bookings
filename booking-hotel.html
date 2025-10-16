@@ -269,14 +269,17 @@
     }
 
     // 📜 แสดง popup และสร้างใบเสร็จ
-    function showPopup(message, total, deposit, bookingData) {
-      const popupMsg = document.getElementById("popup-message");
-      popupMsg.innerHTML = message;
-      document.getElementById("deposit-summary").innerHTML =
-        `💰 ยอดที่ต้องชำระ (มัดจำ 50%): <b>${deposit.toLocaleString()} บาท</b>`;
+function showPopup(message, total, deposit, bookingData) {
+  const popupMsg = document.getElementById("popup-message");
+  popupMsg.innerHTML = message;
 
-      const text = encodeURIComponent(
-`การจองห้องพัก P.O. CAT HOTEL
+  // ✅ สรุปยอดมัดจำ
+  document.getElementById("deposit-summary").innerHTML =
+    `💰 ยอดที่ต้องชำระ (มัดจำ 50%): <b>${deposit.toLocaleString()} บาท</b>`;
+
+  // ✅ เตรียมข้อความส่ง LINE
+  const text = encodeURIComponent(
+`📋 ข้อมูลการจองห้องพัก P.O. CAT HOTEL
 ชื่อผู้จอง: ${bookingData.name}
 เบอร์โทร: ${bookingData.phone}
 ประเภทห้อง: ${bookingData.room}
@@ -285,27 +288,67 @@
 วันเช็กเอาท์: ${bookingData.checkoutDate} ${bookingData.checkoutTime}:00
 ระยะเวลา: ${bookingData.duration}
 ยอดรวมทั้งหมด: ${total.toLocaleString()} บาท
-ยอดมัดจำ 50%: ${deposit.toLocaleString()} บาท`);
-      document.getElementById("popup-btn").href = `https://lin.ee/5bM7PZO?text=${text}`;
+ยอดมัดจำ 50%: ${deposit.toLocaleString()} บาท
 
-      const now = new Date();
-      document.getElementById("receiptDate").textContent = `วันที่ออกใบเสร็จ: ${now.toLocaleDateString("th-TH")}`;
-      document.getElementById("receiptContent").innerHTML = `
-        <p>ชื่อผู้จอง: ${bookingData.name}</p>
-        <p>เบอร์ติดต่อ: ${bookingData.phone}</p>
-        <p>ประเภทห้อง: ${bookingData.room}</p>
-        <p>จำนวนแมว: ${bookingData.cats} ตัว</p>
-        <p>วันเช็กอิน: ${bookingData.checkinDate} ${bookingData.checkinTime}:00</p>
-        <p>วันเช็กเอาท์: ${bookingData.checkoutDate} ${bookingData.checkoutTime}:00</p>
-        <p>ระยะเวลาเข้าพัก: ${bookingData.duration}</p>
-        <hr class="border-[#D5B774] my-3">
-        <p><b>ยอดรวมทั้งหมด:</b> ${total.toLocaleString()} บาท</p>
-        <p><b>มัดจำ 50% ที่ชำระแล้ว:</b> ${deposit.toLocaleString()} บาท</p>
-        <p><b>สถานะ:</b> ✅ รอชำระส่วนที่เหลือในวันเข้าพัก</p>`;
+📎 กรุณาแนบใบเสร็จและสลิปโอนพร้อมข้อความนี้เพื่อยืนยันการจองค่ะ 💚`);
 
-      popup.classList.remove("hidden");
-      downloadBtn.classList.remove("hidden");
-    }
+  // ✅ ปุ่มแอด LINE
+  document.getElementById("popup-btn").href = `https://lin.ee/5bM7PZO`;
+
+  // ✅ วันที่ออกใบเสร็จ
+  const now = new Date();
+  document.getElementById("receiptDate").textContent =
+    `วันที่ออกใบเสร็จ: ${now.toLocaleDateString("th-TH", {year:"numeric",month:"long",day:"numeric"})}`;
+
+  // ✅ เนื้อหาใบเสร็จ
+  document.getElementById("receiptContent").innerHTML = `
+    <p>ชื่อผู้จอง: ${bookingData.name}</p>
+    <p>เบอร์ติดต่อ: ${bookingData.phone}</p>
+    <p>ประเภทห้อง: ${bookingData.room}</p>
+    <p>จำนวนแมว: ${bookingData.cats} ตัว</p>
+    <p>วันเช็กอิน: ${bookingData.checkinDate} ${bookingData.checkinTime}:00</p>
+    <p>วันเช็กเอาท์: ${bookingData.checkoutDate} ${bookingData.checkoutTime}:00</p>
+    <p>ระยะเวลาเข้าพัก: ${bookingData.duration}</p>
+    <hr class="border-[#D5B774] my-3">
+    <p><b>ยอดรวมทั้งหมด:</b> ${total.toLocaleString()} บาท</p>
+    <p><b>มัดจำ 50% ที่ชำระแล้ว:</b> ${deposit.toLocaleString()} บาท</p>
+    <p><b>สถานะ:</b> ✅ รอชำระส่วนที่เหลือในวันเข้าพัก</p>`;
+
+  // ✅ เพิ่มปุ่มคัดลอกข้อความสรุปและดาวน์โหลดใบเสร็จ
+  const popupBox = popup.querySelector(".popup-box");
+
+  // ลบปุ่มเก่าออกก่อนกันซ้ำ
+  popupBox.querySelectorAll(".popup-extra").forEach(e => e.remove());
+
+  // ปุ่มคัดลอกข้อความ
+  const copyBtn = document.createElement("button");
+  copyBtn.className = "popup-btn popup-extra mt-3 bg-[#D5B774] text-[#0F3B2E]";
+  copyBtn.textContent = "📋 คัดลอกข้อความสรุป";
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(decodeURIComponent(text));
+    alert("คัดลอกข้อความสรุปแล้ว! กรุณาแปะในแชต LINE OA เพื่อยืนยันการจองค่ะ 💚");
+  };
+
+ // ปุ่มดาวน์โหลดใบเสร็จ (ภายใน popup)
+const popupDownloadBtn = document.createElement("button");
+popupDownloadBtn.className = "popup-btn popup-extra mt-2";
+popupDownloadBtn.textContent = "📄 ดาวน์โหลดใบเสร็จยืนยันการจอง";
+popupDownloadBtn.onclick = () => {
+  const receipt = document.getElementById("receipt-template");
+  html2canvas(receipt, { scale: 3 }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = `PO_CAT_HOTEL_Receipt_${bookingData.name}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+};
+popupBox.appendChild(popupDownloadBtn);
+
+
+  // ✅ แสดง popup
+  popup.classList.remove("hidden");
+}
+
 
     // ✅ ยืนยันการจอง
     form.addEventListener("submit", e => {
