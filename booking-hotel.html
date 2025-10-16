@@ -131,14 +131,19 @@
     const addCatBtn = document.getElementById("addCatBtn");
     const catNameList = document.getElementById("catNameList");
 
+    // default วันที่ปัจจุบัน
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("checkinDate").value = today;
+
     addCatBtn.addEventListener("click", () => {
       const count = catNameList.querySelectorAll("input").length + 1;
       const input = document.createElement("input");
       input.type = "text";
       input.name = "catName[]";
       input.placeholder = "ชื่อแมวตัวที่ " + count;
-      input.className = "w-full rounded-lg p-2 mt-1";
+      input.className = "w-full rounded-lg p-2 mt-1 transition duration-300 ease-in-out border border-[var(--po-gold)] focus:ring-2 focus:ring-[var(--po-green)]";
       catNameList.appendChild(input);
+      input.scrollIntoView({behavior:"smooth",block:"center"});
     });
 
     function calculateTotal() {
@@ -147,11 +152,21 @@
       const checkinDate = new Date(form.checkinDate.value);
       const checkoutDate = new Date(form.checkoutDate.value);
       if (!form.checkinDate.value || !form.checkoutDate.value) return;
+
       const diffDays = (checkoutDate - checkinDate) / (1000 * 3600 * 24);
-      const days = diffDays > 0 ? diffDays : 1;
-      const total = (room === "standard" ? 250 : 500) * days;
+      if (diffDays <= 0) {
+        durationText.textContent = "";
+        totalEl.textContent = 0;
+        depositEl.textContent = 0;
+        return;
+      }
+
+      const days = diffDays;
+      const pricePerNight = room === "standard" ? 250 : 500;
+      const total = pricePerNight * days * cats;
       const deposit = total * 0.5;
-      durationText.textContent = `ระยะเวลาเข้าพัก: ${days} วัน`;
+
+      durationText.textContent = `ระยะเวลาเข้าพัก: ${days} วัน (${cats} ตัว)`;
       totalEl.textContent = total;
       depositEl.textContent = deposit;
     }
@@ -163,19 +178,25 @@
       const name = form.customerName.value.trim();
       const phone = form.customerPhone.value.trim();
       const room = form.roomType.value === "standard" ? "Standard Room" : "Suite Room";
-      const catNames = [...catNameList.querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean).join(", ");
+      const catNames = [...catNameList.querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean);
       const checkinDate = form.checkinDate.value;
       const checkoutDate = form.checkoutDate.value;
       const total = parseInt(totalEl.textContent);
       const deposit = parseInt(depositEl.textContent);
 
-      const text = encodeURIComponent(`📋 แจ้งโอนมัดจำห้องพัก PO CAT HOTEL\nชื่อผู้จอง: ${name}\nเบอร์: ${phone}\nชื่อแมว: ${catNames}\nห้อง: ${room}\nยอดมัดจำ: ${deposit} บาท`);
-      document.getElementById("lineConfirm").href = `https://line.me/R/oaMessage/@po_grooming/?${text}`;
+      if (catNames.length === 0) return alert("กรุณากรอกชื่อแมวอย่างน้อย 1 ตัว");
+      if (!/^[0-9]{9,10}$/.test(phone)) return alert("กรุณากรอกเบอร์โทรให้ถูกต้อง");
+      if (!total || !deposit) return alert("กรุณาเลือกวันที่ให้ถูกต้อง");
+
+      const catsText = catNames.join(", ");
+      const text = encodeURIComponent(`📋 แจ้งโอนมัดจำห้องพัก PO CAT HOTEL\nชื่อผู้จอง: ${name}\nเบอร์: ${phone}\nชื่อแมว: ${catsText}\nห้อง: ${room}\nยอดมัดจำ: ${deposit} บาท`);
+      document.getElementById("lineConfirm").href = `https://line.me/R/oaMessage/@po_grooming/?text=${text}`;
       document.getElementById("deposit-summary").innerHTML = `ยอดมัดจำ: <b>${deposit} บาท</b>`;
       popup.classList.remove("hidden");
 
       document.getElementById("nextPage").onclick = () => {
-        window.location.href = `receipt.html?name=${encodeURIComponent(name)}&phone=${phone}&room=${encodeURIComponent(room)}&cats=${catNames}&deposit=${deposit}&total=${total}&checkin=${checkinDate}&checkout=${checkoutDate}`;
+        document.getElementById("nextPage").disabled = true;
+        window.location.href = `receipt-final.html?name=${encodeURIComponent(name)}&phone=${phone}&room=${encodeURIComponent(room)}&cats=${encodeURIComponent(catsText)}&deposit=${deposit}&total=${total}&checkin=${checkinDate}&checkout=${checkoutDate}`;
       };
     });
   </script>
