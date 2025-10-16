@@ -42,6 +42,12 @@
       transition: all 0.3s;
     }
     .popup-btn:hover { background: #164D3D; }
+    .cat-item button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
   </style>
 </head>
 
@@ -169,15 +175,48 @@
     document.getElementById("checkinDate").value = today;
 
     addCatBtn.addEventListener("click", () => {
-      const count = catNameList.querySelectorAll("input").length + 1;
-      const input = document.createElement("input");
-      input.type = "text";
-      input.name = "catName[]";
-      input.placeholder = "ชื่อแมวตัวที่ " + count;
-      input.className = "w-full rounded-lg p-2 mt-1 transition duration-300 ease-in-out border border-[var(--po-gold)] focus:ring-2 focus:ring-[var(--po-green)]";
-      catNameList.appendChild(input);
-      input.scrollIntoView({behavior:"smooth",block:"center"});
-    });
+  const count = catNameList.querySelectorAll(".cat-item").length + 1;
+
+  // กล่องเก็บ input + ปุ่มลบ
+  const wrapper = document.createElement("div");
+  wrapper.className = "cat-item flex items-center gap-2";
+
+  // ช่องกรอกชื่อแมว
+  const input = document.createElement("input");
+  input.type = "text";
+  input.name = "catName[]";
+  input.placeholder = "ชื่อแมวตัวที่ " + count;
+  input.className = "flex-1 rounded-lg p-2 mt-1 border border-[var(--po-gold)] focus:ring-2 focus:ring-[var(--po-green)]";
+
+  // ปุ่มลบ ❌
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.textContent = "✖";
+  removeBtn.className = "text-red-500 text-lg font-bold hover:text-red-700 mt-1";
+
+  // ลบเมื่อคลิก
+  removeBtn.addEventListener("click", () => {
+    wrapper.remove();
+    updateCatPlaceholders();
+    calculateTotal(); // อัปเดตราคารวมใหม่
+  });
+
+  // รวมเข้าด้วยกัน
+  wrapper.appendChild(input);
+  wrapper.appendChild(removeBtn);
+  catNameList.appendChild(wrapper);
+
+  input.scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
+// ฟังก์ชันอัปเดต placeholder ให้เรียงลำดับใหม่หลังลบ
+function updateCatPlaceholders() {
+  const cats = catNameList.querySelectorAll("input[name='catName[]']");
+  cats.forEach((input, i) => {
+    input.placeholder = "ชื่อแมวตัวที่ " + (i + 1);
+  });
+}
+
 
     function calculateTotal() {
   const room = form.roomType.value;
@@ -232,10 +271,44 @@
       depositEl.textContent = 0;
       return;
     }
-  } else if (room === "standard") {
-    // ห้อง Standard ยังใช้สูตรเดิมไปก่อน
-    total = rate * cats;
+  } 
+ else if (room === "standard") {
+  let basePrice = 250;
+  let total = 0;
+  const optionSelect = document.getElementById("standardOption");
+  const option = optionSelect ? optionSelect.value : "same";
+  const days = Math.ceil(diffHours / 24) || 1; // ป้องกันวัน 0
+  
+  if (cats === 1) {
+    // 🐱 1 ตัว = 1 ห้อง
+    total = basePrice * days;
+
+  } else if (cats === 2) {
+    // 🐱🐱 2 ตัว
+    if (option === "same") {
+      // รวมในห้องเดียว
+      total = (basePrice + 150) * days;
+    } else {
+      // เปิดเพิ่มอีก 1 ห้อง
+      total = (basePrice * 2) * days;
+    }
+
+  } else if (cats === 3) {
+    // 🐱🐱🐱 3 ตัว = ต้องใช้ 2 ห้อง
+    // ห้องแรก 2 ตัวรวม (+150) + ห้องที่สอง 1 ตัว
+    total = ((basePrice + 150) + basePrice) * days;
+
+  } else if (cats > 3) {
+    alert("ห้อง Standard รองรับสูงสุด 3 ตัวเท่านั้น");
+    totalEl.textContent = 0;
+    depositEl.textContent = 0;
+    return;
   }
+
+  const deposit = total * 0.5;
+  totalEl.textContent = total.toLocaleString("th-TH");
+  depositEl.textContent = deposit.toLocaleString("th-TH");
+}
 
   const deposit = total * 0.5;
 
