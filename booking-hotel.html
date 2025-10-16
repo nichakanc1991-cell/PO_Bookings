@@ -72,6 +72,15 @@
           <option value="suite">Suite Room (฿500/คืน)</option>
         </select>
       </div>
+      
+      <div>
+  <label class="block mb-2 font-semibold">ต้องการพักรวมในห้องเดียวหรือเปิดเพิ่ม</label>
+  <select id="standardOption" class="w-full rounded-lg p-2">
+    <option value="same">รวมในห้องเดียว (+150 บาท)</option>
+    <option value="separate">เปิดเพิ่ม (+250 บาท)</option>
+  </select>
+</div>
+
 
       <div id="catNamesContainer">
         <label class="block mb-2 font-semibold">ชื่อแมวที่เข้าพัก</label>
@@ -205,8 +214,31 @@
   }
 
   // ✅ รวมจำนวนแมว
-  const total = rate * cats;
+    // ✅ คำนวณตามจำนวนแมวในแต่ละห้อง
+  let total = 0;
+
+  if (room === "suite") {
+    // ห้อง Suite: จำกัดไม่เกิน 3 ตัว
+    if (cats === 1) {
+      total = rate * (500 / 500); // ใช้ rate ของช่วงเวลา (3ชม/12ชม/รายวัน) แต่ยึดอัตราส่วนเดียวกัน
+      total = 500 * Math.ceil(diffHours / 24); // ถ้าคิดรายวัน
+    } else if (cats === 2) {
+      total = 700 * Math.ceil(diffHours / 24);
+    } else if (cats === 3) {
+      total = 900 * Math.ceil(diffHours / 24);
+    } else if (cats > 3) {
+      alert("ห้อง Suite พักได้สูงสุด 3 ตัวเท่านั้น");
+      totalEl.textContent = 0;
+      depositEl.textContent = 0;
+      return;
+    }
+  } else if (room === "standard") {
+    // ห้อง Standard ยังใช้สูตรเดิมไปก่อน
+    total = rate * cats;
+  }
+
   const deposit = total * 0.5;
+
 
   // ✅ แสดงผล
   durationText.textContent = `ระยะเวลาเข้าพัก: ${diffHours.toFixed(1)} ชม. (${cats} ตัว)`;
@@ -214,6 +246,7 @@
   depositEl.textContent = deposit.toLocaleString();
 }
 
+    
     form.addEventListener("input", calculateTotal);
     ["checkinTime", "checkoutTime"].forEach(id => 
   document.getElementById(id).addEventListener("change", calculateTotal)
@@ -246,6 +279,23 @@
         window.location.href = `receipt.html?name=${encodeURIComponent(name)}&phone=${phone}&room=${encodeURIComponent(room)}&cats=${encodeURIComponent(catsText)}&deposit=${deposit}&total=${total}&checkin=${checkinDate}&checkout=${checkoutDate}`;
       };
     });
+
+    // ซ่อน/แสดงตัวเลือกเฉพาะเมื่อเลือกห้อง Standard
+const roomTypeSelect = document.getElementById("roomType");
+const standardOptionDiv = document.querySelector("div #standardOption").parentElement;
+
+function toggleStandardOption() {
+  if (roomTypeSelect.value === "standard") {
+    standardOptionDiv.style.display = "block";
+  } else {
+    standardOptionDiv.style.display = "none";
+  }
+}
+
+// เรียกใช้เมื่อเปิดหน้า + เมื่อมีการเปลี่ยนห้อง
+toggleStandardOption();
+roomTypeSelect.addEventListener("change", toggleStandardOption);
+
   </script>
 </body>
 </html>
