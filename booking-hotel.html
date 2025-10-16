@@ -171,31 +171,54 @@
     });
 
     function calculateTotal() {
-      const room = form.roomType.value;
-      const cats = catNameList.querySelectorAll("input").length;
-      const checkinDate = new Date(form.checkinDate.value);
-      const checkoutDate = new Date(form.checkoutDate.value);
-      if (!form.checkinDate.value || !form.checkoutDate.value) return;
+  const room = form.roomType.value;
+  const cats = catNameList.querySelectorAll("input").length;
+  const checkinDateValue = form.checkinDate.value;
+  const checkoutDateValue = form.checkoutDate.value;
+  const checkinTimeValue = form.checkinTime.value;
+  const checkoutTimeValue = form.checkoutTime.value;
 
-      const diffDays = (checkoutDate - checkinDate) / (1000 * 3600 * 24);
-      if (diffDays <= 0) {
-        durationText.textContent = "";
-        totalEl.textContent = 0;
-        depositEl.textContent = 0;
-        return;
-      }
+  if (!checkinDateValue || !checkoutDateValue) return;
+// ✅ รวมวันที่และเวลาเข้าไว้ในตัวเดียว
+  const checkin = new Date(`${checkinDateValue}T${checkinTimeValue.padStart(2, "0")}:00:00`);
+  const checkout = new Date(`${checkoutDateValue}T${checkoutTimeValue.padStart(2, "0")}:00:00`);
+  const diffMs = checkout - checkin;
+  const diffHours = diffMs / (1000 * 60 * 60);
 
-      const days = diffDays;
-      const pricePerNight = room === "standard" ? 250 : 500;
-      const total = pricePerNight * days * cats;
-      const deposit = total * 0.5;
+  if (diffHours <= 0) {
+    durationText.textContent = "";
+    totalEl.textContent = 0;
+    depositEl.textContent = 0;
+    return;
+  }
 
-      durationText.textContent = `ระยะเวลาเข้าพัก: ${days} วัน (${cats} ตัว)`;
-      totalEl.textContent = total;
-      depositEl.textContent = deposit;
-    }
+  // ✅ คำนวณเรตราคาตามช่วงเวลา
+  let rate;
+  if (diffHours <= 3) {
+    rate = room === "standard" ? 50 : 150;   // 3 ชั่วโมง
+  } else if (diffHours <= 12) {
+    rate = room === "standard" ? 150 : 300;   // 12 ชั่วโมง
+  } else {
+    // มากกว่า 12 ชม. ให้คิดเป็นรายวัน
+    const days = Math.ceil(diffHours / 24);
+    rate = (room === "standard" ? 250 : 500) * days;
+  }
+
+  // ✅ รวมจำนวนแมว
+  const total = rate * cats;
+  const deposit = total * 0.5;
+
+  // ✅ แสดงผล
+  durationText.textContent = `ระยะเวลาเข้าพัก: ${diffHours.toFixed(1)} ชม. (${cats} ตัว)`;
+  totalEl.textContent = total.toLocaleString();
+  depositEl.textContent = deposit.toLocaleString();
+}
 
     form.addEventListener("input", calculateTotal);
+    ["checkinTime", "checkoutTime"].forEach(id => 
+  document.getElementById(id).addEventListener("change", calculateTotal)
+);
+
 
     form.addEventListener("submit", e => {
       e.preventDefault();
