@@ -374,6 +374,8 @@ popupBox.appendChild(popupDownloadBtn);
 
 
     // ✅ ยืนยันการจอง
+    window.location.href = `receipt.html?deposit=${deposit}&room=${encodeURIComponent(room)}&nights=${nights}`;
+
     form.addEventListener("submit", e => {
       e.preventDefault();
       const bookingData = {
@@ -389,11 +391,17 @@ popupBox.appendChild(popupDownloadBtn);
       };
       const total = parseInt(totalEl.textContent.replace(/,/g, "")) || 0;
       const deposit = parseInt(depositEl.textContent.replace(/,/g, "")) || 0;
+      const room = form.roomType.value === "standard" ? "Standard Room" : "Suite Room";
+      const nights = durationText.textContent;
       if (!bookingData.name || !bookingData.phone || !bookingData.checkinDate || !bookingData.checkoutDate) {
         alert("กรุณากรอกข้อมูลให้ครบก่อนยืนยันการจองค่ะ 💚");
         return;
       }
       showPopup("✅ การจองสำเร็จ!<br>กรุณาชำระมัดจำ 50% และส่งสลิปทาง LINE OA ร้านค่ะ 💚", total, deposit, bookingData);
+      // ✅ หลังจากแสดง popup แล้วให้เปลี่ยนหน้าไปยังใบเสร็จ
+setTimeout(() => {
+  window.location.href = `receipt.html?deposit=${deposit}&room=${encodeURIComponent(room)}&nights=${nights}`;
+}, 1500);
     });
 
     // 📥 ดาวน์โหลดใบเสร็จ
