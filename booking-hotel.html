@@ -224,7 +224,7 @@ function updateCatPlaceholders() {
 }
 
 
-    function calculateTotal() {
+function calculateTotal() {
   const room = form.roomType.value;
   const cats = catNameList.querySelectorAll("input").length;
   const checkinDateValue = form.checkinDate.value;
@@ -233,7 +233,7 @@ function updateCatPlaceholders() {
   const checkoutTimeValue = form.checkoutTime.value;
 
   if (!checkinDateValue || !checkoutDateValue) return;
-// ✅ รวมวันที่และเวลาเข้าไว้ในตัวเดียว
+
   const checkin = new Date(`${checkinDateValue}T${checkinTimeValue.padStart(2, "0")}:00:00`);
   const checkout = new Date(`${checkoutDateValue}T${checkoutTimeValue.padStart(2, "0")}:00:00`);
   const diffMs = checkout - checkin;
@@ -245,39 +245,43 @@ function updateCatPlaceholders() {
     depositEl.textContent = 0;
     return;
   }
-      // ✅ ส่วนนี้คือ key จุดใหม่ที่ต้องเพิ่ม!
+
   const standardOptionSelect = document.getElementById("standardOption");
   const standardOption = standardOptionSelect ? standardOptionSelect.value : null;
 
   let total = 0;
   let deposit = 0;
 
+  // ✅ ถ้าเวลาน้อยกว่า 12 ชม. ใช้เรตชั่วโมงแทน
+  let hourlyRate = 0;
+  if (diffHours <= 3) hourlyRate = room === "standard" ? 50 : 150;
+  else if (diffHours <= 12) hourlyRate = room === "standard" ? 150 : 300;
+
+  const days = hourlyRate ? 1 : Math.ceil(diffHours / 24) || 1; // ถ้ามีเรตชั่วโมงให้คิดเป็น 1 ครั้ง
+
   // ---- ห้อง SUITE ----
   if (room === "suite") {
-    const basePrice = 500;
-    const days = Math.ceil(diffHours / 24) || 1;
-    if (cats === 1) total = basePrice * days;
-    else if (cats === 2) total = (basePrice + 200) * days;
-    else if (cats === 3) total = (basePrice + 400) * days;
+    if (cats === 1) total = (hourlyRate || 500) * days;
+    else if (cats === 2) total = (hourlyRate ? hourlyRate * 1.4 : 700) * days;
+    else if (cats === 3) total = (hourlyRate ? hourlyRate * 1.8 : 900) * days;
     else if (cats > 3) return alert("ห้อง Suite รองรับสูงสุด 3 ตัว");
+  }
 
   // ---- ห้อง STANDARD ----
-  } else if (room === "standard") {
-    const basePrice = 250;
-    const days = Math.ceil(diffHours / 24) || 1;
+  else if (room === "standard") {
+    const basePrice = hourlyRate || 250;
 
     if (cats === 1) {
       total = basePrice * days;
-
     } else if (cats === 2) {
-      if (standardOption === "same") {
-        total = (basePrice + 150) * days; // รวมในห้องเดียว
-      } else if (standardOption === "separate") {
-        total = (basePrice * 2) * days; // เปิดเพิ่มอีกห้อง
-      }
-
+      total =
+        standardOption === "same"
+          ? (basePrice + (hourlyRate ? 30 : 150)) * days
+          : (basePrice * 2) * days;
     } else if (cats === 3) {
-      total = ((basePrice + 150) + basePrice) * days; // 2+1 ห้อง
+      total = ((basePrice + (hourlyRate ? 30 : 150)) + basePrice) * days;
+    } else if (cats > 3) {
+      return alert("ห้อง Standard รองรับสูงสุด 3 ตัวเท่านั้น");
     }
   }
 
@@ -287,90 +291,13 @@ function updateCatPlaceholders() {
   depositEl.textContent = deposit.toLocaleString("th-TH");
 }
 
-  // ✅ คำนวณเรตราคาตามช่วงเวลา
-  let rate;
-  if (diffHours <= 3) {
-    rate = room === "standard" ? 50 : 150;   // 3 ชั่วโมง
-  } else if (diffHours <= 12) {
-    rate = room === "standard" ? 150 : 300;   // 12 ชั่วโมง
-  } else {
-    // มากกว่า 12 ชม. ให้คิดเป็นรายวัน
-    const days = Math.ceil(diffHours / 24);
-    rate = (room === "standard" ? 250 : 500) * days;
-  }
 
-  // ✅ รวมจำนวนแมว
-    // ✅ คำนวณตามจำนวนแมวในแต่ละห้อง
-  let total = 0;
+// ✅ เรียกคำนวณใหม่ทุกครั้งที่มีการกรอกหรือเปลี่ยนค่าในฟอร์ม
+form.addEventListener("input", calculateTotal);
+document.getElementById("checkinTime").addEventListener("change", calculateTotal);
+document.getElementById("checkoutTime").addEventListener("change", calculateTotal);
+document.getElementById("standardOption").addEventListener("change", calculateTotal);
 
-  if (room === "suite") {
-    // ห้อง Suite: จำกัดไม่เกิน 3 ตัว
-    if (cats === 1) {
-      total = rate * (500 / 500); // ใช้ rate ของช่วงเวลา (3ชม/12ชม/รายวัน) แต่ยึดอัตราส่วนเดียวกัน
-      total = 500 * Math.ceil(diffHours / 24); // ถ้าคิดรายวัน
-    } else if (cats === 2) {
-      total = 700 * Math.ceil(diffHours / 24);
-    } else if (cats === 3) {
-      total = 900 * Math.ceil(diffHours / 24);
-    } else if (cats > 3) {
-      alert("ห้อง Suite พักได้สูงสุด 3 ตัวเท่านั้น");
-      totalEl.textContent = 0;
-      depositEl.textContent = 0;
-      return;
-    }
-  } 
- else if (room === "standard") {
-  let basePrice = 250;
-  let total = 0;
-  const optionSelect = document.getElementById("standardOption");
-  const option = optionSelect ? optionSelect.value : "same";
-  const days = Math.ceil(diffHours / 24) || 1; // ป้องกันวัน 0
-  
-  if (cats === 1) {
-    // 🐱 1 ตัว = 1 ห้อง
-    total = basePrice * days;
-
-  } else if (cats === 2) {
-    // 🐱🐱 2 ตัว
-    if (option === "same") {
-      // รวมในห้องเดียว
-      total = (basePrice + 150) * days;
-    } else {
-      // เปิดเพิ่มอีก 1 ห้อง
-      total = (basePrice * 2) * days;
-    }
-
-  } else if (cats === 3) {
-    // 🐱🐱🐱 3 ตัว = ต้องใช้ 2 ห้อง
-    // ห้องแรก 2 ตัวรวม (+150) + ห้องที่สอง 1 ตัว
-    total = ((basePrice + 150) + basePrice) * days;
-
-  } else if (cats > 3) {
-    alert("ห้อง Standard รองรับสูงสุด 3 ตัวเท่านั้น");
-    totalEl.textContent = 0;
-    depositEl.textContent = 0;
-    return;
-  }
-
-  const deposit = total * 0.5;
-  totalEl.textContent = total.toLocaleString("th-TH");
-  depositEl.textContent = deposit.toLocaleString("th-TH");
-}
-
-  const deposit = total * 0.5;
-
-
-  // ✅ แสดงผล
-  durationText.textContent = `ระยะเวลาเข้าพัก: ${diffHours.toFixed(1)} ชม. (${cats} ตัว)`;
-  totalEl.textContent = total.toLocaleString();
-  depositEl.textContent = deposit.toLocaleString();
-}
-
-    
-    form.addEventListener("input", calculateTotal);
-    ["checkinTime", "checkoutTime"].forEach(id => 
-  document.getElementById(id).addEventListener("change", calculateTotal)
-);
 
 
     form.addEventListener("submit", e => {
@@ -402,7 +329,8 @@ function updateCatPlaceholders() {
 
     // ซ่อน/แสดงตัวเลือกเฉพาะเมื่อเลือกห้อง Standard
 const roomTypeSelect = document.getElementById("roomType");
-const standardOptionDiv = document.querySelector("div #standardOption").parentElement;
+const standardOptionDiv = document.getElementById("standardOption").parentElement;
+
 
 function toggleStandardOption() {
   if (roomTypeSelect.value === "standard") {
