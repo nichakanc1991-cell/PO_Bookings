@@ -57,7 +57,7 @@ const translations = {
     "form.cctv": "ต้องการกล้องวงจรปิด (+฿100/คืน)",
     "form.total": "ยอดรวม",
     "form.deposit": "มัดจำ 50%",
-    "form.confirm": "ยืนยันการจอง",
+    "form.confirm": "ยืนยันการจอง"
   },
 
   en: {
@@ -174,6 +174,23 @@ const translations = {
     "form.confirm": "确认预订"
   }
 };
+
+// ===== Multi-language handler =====
+function setLang(lang) {
+  try {
+    fetch(`./i18n/${lang}.json`)
+      .then(r => r.json())
+      .then(data => {
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+          const key = el.getAttribute("data-i18n");
+          if (data[key]) el.textContent = data[key];
+        });
+        console.log("Language set:", lang);
+      });
+  } catch (err) {
+    console.error("Error loading language:", err);
+  }
+}
 
 let currentLang = localStorage.getItem("lang") || "th";
 
