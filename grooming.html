@@ -31,6 +31,10 @@
       --po-cream:#f8f4e7;     /* ครีมไล่พื้นหลังล่าง */
     }
     .slot-active{background:#e6efe9;border-color:#93c5b1;color:#1f3933}
+    
+  #monthTitle { color: #fff !important; }
+  .calendar-header div { color: #fff !important; }
+    
   </style>
 </head>
 
@@ -67,9 +71,10 @@
           <button id="nextMonth" class="p-2 rounded-lg border border-[color:var(--po-border)] hover:bg-white">›</button>
         </div>
 
-        <div class="grid grid-cols-7 text-center text-xs text-[color:var(--po-olive)] mb-1 font-medium">
-          <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
-        </div>
+        <div class="grid grid-cols-7 text-center text-xs mb-1 font-medium calendar-header">
+  <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+</div>
+
         <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
 
         <div class="mt-3 flex flex-wrap gap-3 text-xs text-gray-700">
@@ -217,10 +222,14 @@ const syncBadge=document.getElementById("syncBadge");
 
 /* ===== Helpers (เดิม) ===== */
 const buddhistYear=y=>y+543;
-const monthTitle=d=>{
-  const th=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-  return `${th[d.month()]} ${buddhistYear(d.year())}`;
+const monthTitle = d => {
+  const en = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  return `${en[d.month()]} ${d.year()}`;
 };
+
 
 /* (เดิม) – ปรับให้ครบ self-contained: normalizeDate */
 function normalizeDate(cell){
@@ -589,12 +598,48 @@ document.getElementById("goLine").addEventListener("click",()=>{
   const url=`https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?text=${encodeURIComponent(msg)}`;
   window.location.href=url;
 
-  fetch("https://script.google.com/macros/s/AKfycbwzyFy594e9JIpxGSbhn4XeJsfPVqEmrmtWMXC5nnBKwXeS3IWua-ZnofE969UxTJGe/exec", {
-    method:"POST",
-    body:JSON.stringify({date:selectedDate,time:selectedTime,name,phone,pet:petLines.join(", ")}),
-    headers:{"Content-Type":"application/json"}
-  }).then(r=>r.json()).then(console.log).catch(console.error);
+  document.getElementById("goLine").addEventListener("click", () => {
+  const name = document.getElementById("custName").value.trim();
+  const phone = document.getElementById("custPhone").value.trim();
+  if (!selectedDate || !selectedTime) return alert("ยังไม่ได้เลือกวันเวลา");
+  if (!name || !phone) return alert("กรุณากรอกชื่อและเบอร์ในขั้นตอนที่ 2");
+
+  const petLines = pets.map(wrap => {
+    const n = wrap.querySelector('[data-role="petName"]').value.trim();
+    const t = wrap.querySelector('[data-role="petType"]').value.trim();
+    const s = wrap.querySelector('[data-role="service"]').value.trim();
+    return `${n || "-"} / ${t || "-"} / ${s || "-"}`;
+  }).filter(Boolean);
+
+  const dateLabel = dayjs(selectedDate).format("DD/MM/YYYY");
+  const msg = [
+    "📌 แจ้งจองคิวจากหน้าเว็บ",
+    `• วันเวลา: ${dateLabel} เวลา ${selectedTime} น.`,
+    `• ลูกค้า: ${name}`,
+    `• โทร: ${phone}`,
+    `• รายละเอียดน้อง:\n   - ${petLines.join("\n   - ")}`,
+    "— ส่งจากระบบจองคิว PO Grooming —"
+  ].join("\n");
+
+  // 1️⃣ เปิด LINE
+  const url = `https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?text=${encodeURIComponent(msg)}`;
+  window.open(url, "_blank");
+
+  // 2️⃣ ส่งข้อมูลไป Google Apps Script (ให้สร้าง endpoint ที่เขียนลง Calendar ด้วย)
+  fetch("https://script.google.com/macros/s/AKfycbxYRWhaDnfPIXDKh6DO49R48IY44CpwGoVF_mLBq-8geG7t_kfiquXL2Yaggics4eTz/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      type: "calendar",              // <== ใช้แยกจาก type เดิม
+      date: selectedDate,
+      time: selectedTime,
+      name,
+      phone,
+      pet: petLines.join(", ")
+    }),
+    headers: { "Content-Type": "application/json" }
+  }).then(r => r.json()).then(console.log).catch(console.error);
 });
+
 
 /* Nav & boot (เดิม) */
 document.getElementById("prevMonth").addEventListener("click",()=>{const prev=visibleMonth.subtract(1,"month"); if(prev.isBefore(START_DATE,"month"))return; visibleMonth=prev; renderCalendar();});
