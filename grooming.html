@@ -626,7 +626,6 @@ document.getElementById("nextMonth").addEventListener("click",()=>{const next=vi
 document.getElementById("btnReload").addEventListener("click",async()=>{await fetchSheet(); renderCalendar(); if(selectedDate) showTimes();});
 
 (async function init(){ await fetchSheet(); renderCalendar(); })();
-
   // ===== โหลดภาษาจาก query string =====
 (function(){
   const urlParams = new URLSearchParams(window.location.search);
