@@ -47,6 +47,12 @@
   border: none;
   cursor: pointer;
 }
+    .cat-item button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
 
   </style>
 </head>
@@ -239,6 +245,47 @@ function updateCatPlaceholders() {
     depositEl.textContent = 0;
     return;
   }
+      // ✅ ส่วนนี้คือ key จุดใหม่ที่ต้องเพิ่ม!
+  const standardOptionSelect = document.getElementById("standardOption");
+  const standardOption = standardOptionSelect ? standardOptionSelect.value : null;
+
+  let total = 0;
+  let deposit = 0;
+
+  // ---- ห้อง SUITE ----
+  if (room === "suite") {
+    const basePrice = 500;
+    const days = Math.ceil(diffHours / 24) || 1;
+    if (cats === 1) total = basePrice * days;
+    else if (cats === 2) total = (basePrice + 200) * days;
+    else if (cats === 3) total = (basePrice + 400) * days;
+    else if (cats > 3) return alert("ห้อง Suite รองรับสูงสุด 3 ตัว");
+
+  // ---- ห้อง STANDARD ----
+  } else if (room === "standard") {
+    const basePrice = 250;
+    const days = Math.ceil(diffHours / 24) || 1;
+
+    if (cats === 1) {
+      total = basePrice * days;
+
+    } else if (cats === 2) {
+      if (standardOption === "same") {
+        total = (basePrice + 150) * days; // รวมในห้องเดียว
+      } else if (standardOption === "separate") {
+        total = (basePrice * 2) * days; // เปิดเพิ่มอีกห้อง
+      }
+
+    } else if (cats === 3) {
+      total = ((basePrice + 150) + basePrice) * days; // 2+1 ห้อง
+    }
+  }
+
+  deposit = total * 0.5;
+  durationText.textContent = `ระยะเวลาเข้าพัก: ${diffHours.toFixed(1)} ชม. (${cats} ตัว)`;
+  totalEl.textContent = total.toLocaleString("th-TH");
+  depositEl.textContent = deposit.toLocaleString("th-TH");
+}
 
   // ✅ คำนวณเรตราคาตามช่วงเวลา
   let rate;
