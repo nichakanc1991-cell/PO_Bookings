@@ -644,158 +644,128 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
     setLang(savedLang);
   }
 })();
-/* ====== PATCH : SMART BOOKING LOGIC by Luna ====== */
 
-/* ─────────────── 1. TIME RULES ─────────────── */
-function checkTimeRules(time) {
-  // เงื่อนไขพิเศษตามช่วงเวลา
+ /* ========= SMART SERVICE RULES by Luna ========= */
+
+/* --- 1. กำหนดกฎเวลาเปิดคิว --- */
+function handleTimeRules(time) {
+  // เวลา 13.00 : รับเฉพาะหมา
   if (time === "13:00") {
-    alert("⏰ เวลา 13:00 เปิดรับเฉพาะน้องหมาเท่านั้น\n\nระยะเวลาการให้บริการ:\n- อาบน้ำหรือตัดขนอย่างเดียว = 2 ชม.\n- อาบน้ำและตัดขน = 3 ชม.\n- บริการเสริมอย่างเดียว = 1 ชม.");
+    alert("⏰ เวลา 13.00 เปิดรับเฉพาะน้องหมาเท่านั้น\n\nระยะเวลาการให้บริการ:\n• อาบน้ำ/ตัดขน = 2 ชม.\n• อาบน้ำ + ตัดขน = 3 ชม.\n• บริการเสริม = 1 ชม.");
+    // disable ทุก service ที่ไม่ใช่หมา
+    pets.forEach(wrap=>{
+      const selType = wrap.querySelector('[data-role="petType"]');
+      const selServ = wrap.querySelector('[data-role="service"]');
+      if(selType && selType.value !== "สุนัข"){
+        selType.value = "";
+        alert("รอบ 13.00 เปิดเฉพาะสุนัข — กรุณาเลือกใหม่");
+      }
+    });
   }
 
-  if (time === "18:00") {
+  // เวลา 14–17 : เงื่อนไขปกติ (ไม่ต้องทำอะไร)
+  if (["14:00","15:00","16:00","17:00"].includes(time)){
+    console.log("ช่วง 14–17 ให้บริการปกติ");
+  }
+
+  // เวลา 18.00 : ตรวจ 19.00 ว่างไหม
+  if (time === "18:00"){
     const nextSlot = "19:00";
     const daySlots = availability[selectedDate] || {};
-    const nextStatus = daySlots[nextSlot] ?? "ว่าง";
-    if (nextStatus === "ว่าง") {
-      // ทุกบริการจองได้
-      console.log("18:00 เปิดรับทุกบริการเพราะ 19:00 ว่าง");
-    } else {
-      alert("⏰ เวลา 18:00 ขณะนี้รับเฉพาะบริการเสริมอย่างเดียว (1 ชั่วโมง)");
-      pets.forEach(wrap => {
-        const sel = wrap.querySelector('[data-role="service"]');
-        [...sel.options].forEach(opt => {
-          const label = opt.value.trim();
-          opt.disabled = label !== "บริการเสริมอย่างเดียว";
+    const nextFree = (daySlots[nextSlot] ?? "ว่าง") === "ว่าง";
+    if(nextFree){
+      alert("⏰ เวลา 18.00 – 19.00 เปิดรับทุกบริการ");
+    }else{
+      alert("⏰ เวลา 18.00 เปิดรับเฉพาะ ‘บริการเสริมอย่างเดียว’ (1 ชม.)");
+      pets.forEach(wrap=>{
+        const sel=wrap.querySelector('[data-role="service"]');
+        [...sel.options].forEach(opt=>{
+          opt.disabled = opt.value.trim() !== "บริการเสริมอย่างเดียว";
         });
       });
     }
   }
 
-  if (time === "19:00") {
-    // ทุกบริการยกเว้นอาบน้ำและตัดขน
-    pets.forEach(wrap => {
-      const sel = wrap.querySelector('[data-role="service"]');
-      [...sel.options].forEach(opt => {
-        const label = opt.value.trim();
-        opt.disabled = label === "อาบน้ำและตัดขน";
+  // เวลา 19.00 : ห้าม ‘อาบน้ำ และ ตัดขน’
+  if (time === "19:00"){
+    alert("⏰ เวลา 19.00 เปิดรับทุกบริการ ยกเว้น ‘อาบน้ำ และ ตัดขน’");
+    pets.forEach(wrap=>{
+      const sel=wrap.querySelector('[data-role="service"]');
+      [...sel.options].forEach(opt=>{
+        opt.disabled = opt.value.trim() === "อาบน้ำและตัดขน";
       });
     });
-    alert("⏰ เวลา 19:00 เปิดรับทุกบริการ ยกเว้นอาบน้ำและตัดขน");
   }
 }
 
-// เรียกใช้เมื่อเลือกเวลา
-const originalShowTimes = showTimes;
-showTimes = function() {
-  originalShowTimes();
-  const grid = document.getElementById("timeGrid");
-  [...grid.children].forEach(btn => {
-    btn.addEventListener("click", () => {
-      checkTimeRules(btn.textContent.trim());
-    });
+/* hook เข้าตอนกดเลือกเวลา */
+const _oldShowTimes = showTimes;
+showTimes = function(){
+  _oldShowTimes();
+  const grid=document.getElementById("timeGrid");
+  [...grid.children].forEach(btn=>{
+    btn.addEventListener("click",()=>handleTimeRules(btn.textContent.trim()));
   });
 };
 
-/* ─────────────── 2. SHOW PRICE IMAGE BY PET TYPE ─────────────── */
-function bindPetTypeListener(select) {
-  select.addEventListener("change", e => {
-    const type = e.target.value.trim();
-    const priceCat = document.getElementById("priceCat");
-    const priceDog = document.getElementById("priceDog");
-    const optionImage = document.getElementById("optionImage");
-    priceCat.classList.add("hidden");
+
+/* --- 2. แสดงรูป price-dog / price-cat ตามประเภท --- */
+function bindTypeImage(select){
+  select.addEventListener("change",e=>{
+    const t=e.target.value;
+    const priceDog=document.getElementById("priceDog");
+    const priceCat=document.getElementById("priceCat");
+    const optionImg=document.getElementById("optionImage");
     priceDog.classList.add("hidden");
-    optionImage.classList.add("hidden");
+    priceCat.classList.add("hidden");
+    optionImg.classList.add("hidden");
+    if(t==="สุนัข"){ priceDog.classList.remove("hidden"); optionImg.classList.remove("hidden"); }
+    else if(t==="แมว"){ priceCat.classList.remove("hidden"); optionImg.classList.remove("hidden"); }
+  });
+}
 
-    if (type === "สุนัข") {
-      priceDog.classList.remove("hidden");
-      optionImage.classList.remove("hidden");
-    } else if (type === "แมว") {
-      priceCat.classList.remove("hidden");
-      optionImage.classList.remove("hidden");
+/* ผูก listener หลัง addPetForm */
+const _oldAddPetForm=addPetForm;
+addPetForm=function(){
+  _oldAddPetForm();
+  const last=pets[pets.length-1];
+  const sel=last.querySelector('[data-role="petType"]');
+  bindTypeImage(sel);
+};
+
+
+/* --- 3. เพิ่มกล่องกรอก “บริการเสริมที่ต้องการทำ” (มีอยู่แล้วในโค้ดเดิม แต่กันเผื่อ) --- */
+// ถ้าไม่มี textarea addon ให้เพิ่ม
+function ensureAddonBox(){
+  pets.forEach(wrap=>{
+    if(!wrap.querySelector('[data-role="addon"]')){
+      const box=document.createElement("textarea");
+      box.dataset.role="addon";
+      box.placeholder="เช่น ทรีตเมนต์ขน เคลียร์ช่องหู ฯลฯ";
+      box.className="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[60px]";
+      wrap.appendChild(box);
     }
   });
 }
 
-// แทรกเข้าในฟังก์ชัน addPetForm หลังสร้าง select petType
-const oldAddPetForm = addPetForm;
-addPetForm = function() {
-  oldAddPetForm();
-  const latestPet = pets[pets.length - 1];
-  const selectType = latestPet.querySelector('[data-role="petType"]');
-  bindPetTypeListener(selectType);
-};
 
-/* ─────────────── 3. CALCULATE EXTRA TIME BY NUMBER OF PETS ─────────────── */
-function adjustTimeByPets() {
-  const petCount = pets.length;
-  let extraMsg = "";
-
-  if (petCount >= 3) {
-    // ถ้ามี 3 ตัว และบริการเป็นอาบน้ำหรือตัดขน
-    const allServices = pets.map(w => w.querySelector('[data-role="service"]').value.trim());
-    if (allServices.every(s => s === "อาบน้ำ" || s === "ตัดขน")) {
-      extraMsg = "จำนวน 3 ตัว ใช้เวลาเพิ่มเป็น 3 ชั่วโมง";
-    }
-  } else if (petCount === 2) {
-    const allServices = pets.map(w => w.querySelector('[data-role="service"]').value.trim());
-    if (allServices.every(s => s === "อาบน้ำและตัดขน")) {
-      extraMsg = "จำนวน 2 ตัว (อาบน้ำและตัดขน) ใช้เวลาเพิ่มเป็น 4 ชั่วโมง";
-    }
+/* --- 4. คำนวณเวลาเพิ่มอัตโนมัติเมื่อมี 2-3 ตัว --- */
+function adjustDurationByCount(){
+  const n=pets.length;
+  if(n===0) return;
+  const allServices=pets.map(w=>w.querySelector('[data-role="service"]').value.trim());
+  if(n>=3 && allServices.every(s=>s==="อาบน้ำ"||s==="ตัดขน")){
+    alert("🕒 จำนวนน้อง 3 ตัว (อาบน้ำ/ตัดขน) ใช้เวลา 3 ชั่วโมง");
   }
-
-  if (extraMsg) alert("🕒 " + extraMsg);
-}
-
-// ผูกเข้ากับปุ่ม toTerms (หลังตรวจสอบน้อง)
-const oldToTerms = document.getElementById("toTerms").onclick;
-document.getElementById("toTerms").addEventListener("click", () => {
-  adjustTimeByPets();
-});
-
-/* ─────────────── 4. GOOGLE SHEET + CALENDAR AUTO SYNC ─────────────── */
-async function sendToGoogle(name, phone, petsData) {
-  const payload = {
-    name,
-    phone,
-    pets: petsData,
-    date: selectedDate,
-    time: selectedTime,
-    timestamp: new Date().toISOString()
-  };
-
-  try {
-    const res = await fetch(
-      "https://script.google.com/macros/s/AKfycbz6c4LU-SIfcBMg0xSeR6ahUkpwBTKKS8Xqd34hZLfco8hBPdGeyrOqFxMTfPjeKqy3/exec",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "sheet_calendar", data: payload })
-      }
-    );
-    const out = await res.json();
-    console.log("ส่งข้อมูลไปยัง Google Sheet/Calendar แล้ว:", out);
-  } catch (err) {
-    console.error("❌ ส่งข้อมูลผิดพลาด:", err);
+  if(n===2 && allServices.every(s=>s==="อาบน้ำและตัดขน")){
+    alert("🕒 น้อง 2 ตัว (อาบน้ำ และ ตัดขน) ใช้เวลา 4 ชั่วโมง");
   }
 }
 
-/* ─────────────── 5. INJECT ส่งข้อมูลหลังเปิด LINE OA ─────────────── */
-const oldGoLine = document.getElementById("goLine").onclick;
-document.getElementById("goLine").addEventListener("click", async () => {
-  const name = document.getElementById("custName").value.trim();
-  const phone = document.getElementById("custPhone").value.trim();
-  const petsData = pets.map(wrap => ({
-    petName: wrap.querySelector('[data-role="petName"]').value.trim(),
-    petType: wrap.querySelector('[data-role="petType"]').value.trim(),
-    breed: wrap.querySelector('[data-role="breed"]').value.trim(),
-    service: wrap.querySelector('[data-role="service"]').value.trim(),
-    addon: wrap.querySelector('[data-role="addon"]').value.trim(),
-    notes: wrap.querySelector('[data-role="notes"]').value.trim()
-  }));
-  await sendToGoogle(name, phone, petsData);
-});
+/* hook เข้าปุ่ม ‘ถัดไป’ ก่อนหน้าเงื่อนไขเดิม */
+const _oldToTerms=document.getElementById("toTerms").onclick;
+document.getElementById("toTerms").addEventListener("click",()=>adjustDurationByCount());
+
 
 </script>
 </body>
