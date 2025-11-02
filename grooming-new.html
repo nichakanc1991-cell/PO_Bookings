@@ -647,6 +647,7 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
 
 /* === ระบบควบคุมประเภทบริการอัตโนมัติ (สำหรับเวลา 18.00–19.00) === */
 
+/* === ระบบควบคุมประเภทบริการอัตโนมัติ (เวลา 17.00–18.00) === */
 function updateServiceOptionsForEvening(time) {
   const daySlots = availability[selectedDate] || {};
 
@@ -654,15 +655,14 @@ function updateServiceOptionsForEvening(time) {
     const select = wrap.querySelector('[data-role="service"]');
     if (!select) return;
 
-    // เริ่มต้นเปิดให้เลือกทั้งหมดก่อน
+    // เปิดให้เลือกทุกบริการก่อน
     [...select.options].forEach(opt => (opt.disabled = false));
 
-    // --- เงื่อนไขเวลา 18.00 ---
-    if (time === "18:00") {
-      const isNextFree = (daySlots["19:00"] ?? "ว่าง") === "ว่าง";
-
+    // --- เงื่อนไขเวลา 17.00 ---
+    if (time === "17:00") {
+      const isNextFree = (daySlots["18:00"] ?? "ว่าง") === "ว่าง";
       if (!isNextFree) {
-        // ถ้า 19.00 ไม่ว่าง → จำกัดเฉพาะบริการเสริม
+        // ถ้า 18.00 ไม่ว่าง → จำกัดเฉพาะบริการเสริม
         [...select.options].forEach(opt => {
           if (opt.value.trim() !== "บริการเสริมอย่างเดียว") {
             opt.disabled = true;
@@ -672,15 +672,14 @@ function updateServiceOptionsForEvening(time) {
       }
     }
 
-    // --- เงื่อนไขเวลา 19.00 ---
-    if (time === "19:00") {
-      // ปิดเฉพาะอาบน้ำและตัดขนรวม
+    // --- เงื่อนไขเวลา 18.00 ---
+    if (time === "18:00") {
       [...select.options].forEach(opt => {
         if (opt.value.trim() === "อาบน้ำและตัดขน") {
           opt.disabled = true;
         }
       });
-      // ถ้าเลือกอาบน้ำและตัดขนไว้ ให้เคลียร์ค่า
+      // ถ้าเลือกอาบน้ำและตัดขนไว้ ให้ล้างค่า
       if (select.value === "อาบน้ำและตัดขน") {
         select.value = "";
       }
