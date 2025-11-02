@@ -210,143 +210,388 @@
 </main>
 
 <script>
-/* ===== CONFIG (เดิม + ปรับ) ===== */
-const SHEET_GVIZ_JSON = "https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/gviz/tq?tqx=out:json&gid=0";
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
-const LINE_OA_ID = "@po_grooming";
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6c4LU-SIfcBMg0xSeR6ahUkpwBTKKS8Xqd34hZLfco8hBPdGeyrOqFxMTfPjeKqy3/exec";
+/* ===== CONFIG (เดิม) ===== */
+const SHEET_GVIZ_JSON="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/gviz/tq?tqx=out:json&gid=0";
+const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
+const LINE_OA_ID="@po_grooming";
 
-const START_DATE = dayjs.tz("2025-11-01");
-const END_DATE = dayjs.tz("2025-12-31");
-const TIME_SLOTS = ["14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+const START_DATE=dayjs.tz("2025-10-01");
+const END_DATE=dayjs.tz("2025-12-31");
+const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00","19:00"];
 
-/* ===== STATE ===== */
-let visibleMonth = START_DATE.startOf("month");
-let selectedDate = null, selectedTime = null;
-let availability = {};
-const pets = [];
-const syncBadge = document.getElementById("syncBadge");
+/* ===== STATE (เดิม) ===== */
+let visibleMonth=START_DATE.startOf("month");
+let selectedDate=null, selectedTime=null;
+let availability={};
+const pets=[];
+const syncBadge=document.getElementById("syncBadge");
 
-/* ===== PRICE TABLE HANDLER ===== */
-function showPriceTable(petType) {
-  const cat = document.getElementById("priceCat");
-  const dog = document.getElementById("priceDog");
-  const opt = document.getElementById("optionImage");
+/* ===== Helpers (เดิม) ===== */
+const buddhistYear=y=>y+543;
+const monthTitle = d => {
+  const en = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  return `${en[d.month()]} ${d.year()}`;
+};
 
-  cat.classList.add("hidden");
-  dog.classList.add("hidden");
-  opt.classList.remove("hidden");
 
-  if (petType.includes("แมว")) {
-    cat.classList.remove("hidden");
-  } else if (petType.includes("สุนัข")) {
-    dog.classList.remove("hidden");
+/* (เดิม) – ปรับให้ครบ self-contained: normalizeDate */
+function normalizeDate(cell){
+  // รับได้ทั้ง date object ของ gviz, timestamp, สตริงรูปแบบต่างๆ
+  const raw = (cell && typeof cell==="object" && ("v" in cell || "f" in cell)) ? (cell.f ?? cell.v) : cell;
+  if (raw==null) return null;
+
+  // gviz date: Date(2025,9,25)
+  if (typeof raw==="string" && /Date\(\d+,\d+,\d+\)/.test(raw)){
+    const [y,m,d] = raw.match(/\d+/g).map(Number);
+    return dayjs.tz({year:y,month:m,day:d});
   }
+
+  // ISO / YYYY-MM-DD
+  if (typeof raw==="string" && /^\d{4}-\d{2}-\d{2}/.test(raw)) return dayjs.tz(raw);
+
+  // DD/MM/YYYY หรือ MM/DD/YYYY (พยายามแกะ)
+  if (typeof raw==="string" && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)){
+    const [a,b,y]=raw.split("/").map(Number);
+    // เดาว่าเป็น D/M/Y
+    const d1 = dayjs.tz({year:y,month:b-1,day:a});
+    if (d1.isValid()) return d1;
+  }
+
+  // timestamp หรือ Date
+  const d = dayjs.tz(raw);
+  return d.isValid()? d : null;
 }
 
-/* ===== SERVICE RULES ===== */
+/* (เดิม) */
+function normalizeTime(cell){
+  const raw = (cell && typeof cell==="object" && ("v" in cell || "f" in cell)) ? (cell.f ?? cell.v) : cell;
+  if (raw==null) return null;
+
+  if (Array.isArray(raw) && raw.length>=2){
+    const hh=String(Number(raw[0])||0).padStart(2,"0");
+    const mm=String(Number(raw[1])||0).padStart(2,"0");
+    return `${hh}:${mm}`;
+  }
+  if (typeof raw==="number" && raw>=0 && raw<1){
+    const totalMinutes=Math.round(raw*24*60);
+    const hh=String(Math.floor(totalMinutes/60)).padStart(2,"0");
+    const mm=String(totalMinutes%60).padStart(2,"0");
+    return `${hh}:${mm}`;
+  }
+  let s=String(raw).trim();
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.slice(0,5).padStart(5,"0");
+  const ampm=s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (ampm){
+    let hh=+ampm[1], mm=ampm[2]; const isPM=/pm/i.test(ampm[3]);
+    if (isPM && hh<12) hh+=12; if (!isPM && hh===12) hh=0;
+    return String(hh).padStart(2,"0")+":"+mm;
+  }
+  if (/^\d{1,2}$/.test(s)) return String(+s).padStart(2,"0")+":00";
+  return s.slice(0,5);
+}
+
+/* (เดิม) */
+function mapStatus(val){
+  const s=(typeof val==="boolean"?(val?"true":"false"):(val??"")).toString().trim().toLowerCase();
+  if(s==="true"||s.includes("ว่าง")) return "ว่าง";
+  if(s==="false"||s.includes("เต็ม")) return "เต็ม";
+  if(s.includes("ปิด")) return "ปิด";
+  if(s.includes("รอมัดจำ") || s.includes("pending")) return "รอมัดจำ";
+  return "ว่าง";
+}
+
+/* ===== Rules (เดิม) ===== */
 const SERVICE_DURATION = {
   "บริการเสริมอย่างเดียว": 1,
   "อาบน้ำ": 2,
   "ตัดขน": 2,
   "อาบน้ำและตัดขน": 3,
 };
-const ALWAYS_ALLOW_ALL_AT = ["18:00"]; // ✅ แก้เป็น 18:00 เท่านั้น
-const ONLY_SHORT_SERVICE_AT = ["19:00"]; // ✅ 19:00 ได้เฉพาะ 1–2 ชม.
+const ALWAYS_ALLOW_ALL_AT = ["19:00"];
 
-/* ===== คำนวณเวลาว่าง ===== */
-function contiguousFreeSlots(dateStr, startTime) {
+function contiguousFreeSlots(dateStr, startTime){
   if (!dateStr || !startTime) return 0;
-  const daySlots = availability[dateStr] || {};
-  const idx = TIME_SLOTS.indexOf(startTime);
-  if (idx < 0) return 0;
-  let n = 0;
-  for (let i = idx; i < TIME_SLOTS.length; i++) {
-    const t = TIME_SLOTS[i];
-    const v = (daySlots[t] ?? "ว่าง");
-    if (v === "เต็ม" || v === "ปิด") break;
+  const daySlots=availability[dateStr]||{};
+  const idx=TIME_SLOTS.indexOf(startTime);
+  if (idx<0) return 0;
+  let n=0;
+  for (let i=idx;i<TIME_SLOTS.length;i++){
+    const t=TIME_SLOTS[i];
+    const v=(daySlots[t]??"ว่าง");
+    if (v==="เต็ม"||v==="ปิด") break;
     n++;
   }
   return n;
 }
-
-/* ===== ตรวจสอบบริการที่เลือกได้ ===== */
-function canBookService(serviceName, dateStr, startTime) {
+function canBookService(serviceName, dateStr, startTime){
   if (ALWAYS_ALLOW_ALL_AT.includes(startTime)) return true;
-  if (ONLY_SHORT_SERVICE_AT.includes(startTime))
-    return ["อาบน้ำ", "ตัดขน", "บริการเสริมอย่างเดียว"].includes(serviceName);
-
-  const need = SERVICE_DURATION[serviceName] ?? 0;
-  const free = contiguousFreeSlots(dateStr, startTime);
-  return free >= need;
+  const need=SERVICE_DURATION[serviceName]??0;
+  const free=contiguousFreeSlots(dateStr,startTime);
+  return free>=need;
 }
-
-/* ===== อัปเดตเมนูบริการ ===== */
-function updateServiceOptions() {
-  const dateStr = selectedDate, startTime = selectedTime;
-  pets.forEach(wrap => {
-    const select = wrap.querySelector('[data-role="service"]');
-    if (!select) return;
-    [...select.options].forEach(opt => {
-      const label = opt.value.trim();
-      if (!label) return;
-      opt.disabled = !canBookService(label, dateStr, startTime);
+function updateServiceOptions(){
+  const dateStr=selectedDate, startTime=selectedTime;
+  const allowAll=!dateStr||!startTime||ALWAYS_ALLOW_ALL_AT.includes(startTime);
+  pets.forEach(wrap=>{
+    const select=wrap.querySelector('[data-role="service"]'); if(!select) return;
+    [...select.options].forEach(opt=>{
+      const label=opt.value.trim(); if(!label) return;
+      opt.disabled = allowAll ? false : !canBookService(label,dateStr,startTime);
     });
-    const cur = select.value.trim();
-    if (cur && select.querySelector(`option[value="${cur}"]`)?.disabled) {
-      select.value = "";
-    }
+    const cur=select.value.trim();
+    if(cur && select.querySelector(`option[value="${cur}"]`)?.disabled){ select.value=""; }
+    select.title = allowAll ? "เลือกบริการได้ทุกชนิด" : "ระบบจำกัดบริการตามเวลาว่างต่อเนื่องของช่วงที่เลือก";
   });
 }
 
-/* ===== STEP: เพิ่มข้อมูลน้อง ===== */
-function addPetForm() {
-  const idx = pets.length + 1;
-  const wrap = document.createElement("div");
-  wrap.className = "p-3 border border-[color:var(--po-border)] rounded-xl";
-  wrap.innerHTML = `
+/* ===== Parsers (เดิม) ===== */
+function parseGviz(text){
+  const obj=JSON.parse(text.substring(text.indexOf("{"),text.lastIndexOf("}")+1));
+  const cols=obj.table.cols||[];
+  const labels=cols.map(c=>(c.label||"").toLowerCase());
+  const types=cols.map(c=>(c.type||"").toLowerCase());
+  let dateIdx=labels.indexOf("date");
+  let timeIdx=labels.indexOf("time");
+  let statusIdx=labels.indexOf("status");
+  if(dateIdx===-1) dateIdx=types.indexOf("date");
+  if(timeIdx===-1) timeIdx=types.indexOf("timeofday");
+  if(timeIdx===-1) timeIdx=(dateIdx!==1?1:0);
+  if(statusIdx===-1) statusIdx=[0,1,2].find(i=>i!==dateIdx&&i!==timeIdx)??2;
+  if(dateIdx<0||timeIdx<0||statusIdx<0){console.error("Resolve GViz columns failed",{labels,types});return {};}
+  const out={};
+  for(const r of (obj.table.rows||[])){
+    const c=r.c||[];
+    const d=normalizeDate(c[dateIdx]); const t=normalizeTime(c[timeIdx]); const s=c[statusIdx]?.v??c[statusIdx]?.f??"";
+    if(!d||!d.isValid?.()||!t) continue;
+    const key=d.format("YYYY-MM-DD"); if(!out[key]) out[key]={}; out[key][t]=mapStatus(s);
+  }
+  return out;
+}
+function parseCsv(text){
+  const lines=text.replace(/\r/g,"").split("\n").filter(Boolean);
+  const header=lines[0].split(",").map(s=>s.trim().toLowerCase());
+  const iD=header.indexOf("date"), iT=header.indexOf("time"), iS=header.indexOf("status");
+  const out={};
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(",").map(s=>s.trim());
+    const dRaw=cols[iD], tRaw=cols[iT], s=cols[iS]; if(!dRaw||!tRaw) continue;
+    let d=null;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(dRaw)) d=dayjs.tz(dRaw);
+    else if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dRaw)){const[m,dd,y]=dRaw.split("/").map(Number); d=dayjs.tz({year:y,month:m-1,day:dd});}
+    else d=dayjs.tz(dRaw);
+    if(!d||!d.isValid()) continue;
+    const key=d.format("YYYY-MM-DD");
+    const t=normalizeTime(tRaw); if(!t) continue;
+    if(!out[key]) out[key]={}; out[key][t]=mapStatus(s);
+  }
+  return out;
+}
+
+/* ===== Fetch Sheet (เดิม) ===== */
+async function fetchSheet(){
+  syncBadge.textContent="กำลังโหลด…"; syncBadge.className="px-2 py-1 rounded bg-yellow-100 text-yellow-800";
+  try{
+    const r=await fetch(SHEET_GVIZ_JSON+"&ts="+Date.now(),{cache:"no-store"});
+    if(!r.ok) throw new Error("GVIZ "+r.status);
+    availability=parseGviz(await r.text());
+    syncBadge.textContent="โหลดสำเร็จ (gviz) "+dayjs().format("HH:mm");
+    syncBadge.className="px-2 py-1 rounded bg-green-100 text-green-800";
+  }catch(e1){
+    console.warn("GVIZ fail → CSV",e1);
+    try{
+      const r2=await fetch(SHEET_CSV_URL+"&ts="+Date.now(),{cache:"no-store"});
+      if(!r2.ok) throw new Error("CSV "+r2.status);
+      availability=parseCsv(await r2.text());
+      syncBadge.textContent="โหลดสำเร็จ (csv) "+dayjs().format("HH:mm");
+      syncBadge.className="px-2 py-1 rounded bg-green-100 text-green-800";
+    }catch(e2){
+      console.error("โหลดชีตผิดพลาด:",e2);
+      syncBadge.textContent="โหลดข้อมูลไม่สำเร็จ";
+      syncBadge.className="px-2 py-1 rounded bg-red-100 text-red-800";
+      availability={};
+    }
+  }
+}
+
+/* ===== UI Calendar (เดิม) ===== */
+function getDayStatus(dateStr){
+  const daySlots=availability[dateStr]||{};
+  let free=0, full=0, pending=0, closed=false;
+  for(const t of TIME_SLOTS){
+    const v=(daySlots[t]??"ว่าง");
+    if(v==="ปิด"){closed=true;break;}
+    if(v==="เต็ม") full++;
+    else if(v==="รอมัดจำ") pending++;
+    else free++;
+  }
+  if(closed) return "gray";
+  if(free===0 && pending>0) return "yellow";
+  if(free===0) return "red";
+  if(full===0 && pending===0) return "green";
+  return "yellow";
+}
+function renderCalendar(){
+  document.getElementById("monthTitle").textContent=monthTitle(visibleMonth);
+  const start=visibleMonth.startOf("month").startOf("week");
+  const end=visibleMonth.endOf("month").endOf("week");
+  const grid=document.getElementById("calendarGrid"); grid.innerHTML="";
+  let d=start.clone();
+  while(d.isBefore(end)||d.isSame(end,"day")){
+    const dateStr=d.format("YYYY-MM-DD");
+    const inRange=d.isAfter(START_DATE.subtract(1,"day"))&&d.isBefore(END_DATE.add(1,"day"));
+    const isCurMonth=d.month()===visibleMonth.month();
+    const status=inRange?getDayStatus(dateStr):"gray";
+    const btn=document.createElement("button");
+    btn.type="button"; btn.disabled=!inRange||status==="gray";
+    btn.className="aspect-square rounded-xl border border-[color:var(--po-border)] text-sm flex flex-col items-center justify-center gap-1 "+
+      (dateStr===selectedDate?"bg-indigo-50 border-indigo-300":"bg-white hover:bg-gray-50")+
+      (!isCurMonth?" opacity-50":"")+(!inRange||status==="gray"?" opacity-40 cursor-not-allowed":"");
+    btn.innerHTML=`<div class="leading-none">${d.date()}</div>
+      <span class="inline-block w-2.5 h-2.5 rounded-full ${status==='green'?'bg-green-500':status==='yellow'?'bg-yellow-500':status==='red'?'bg-red-500':'bg-gray-400'}"></span>`;
+    btn.addEventListener("click",()=>{ if(btn.disabled) return; selectedDate=dateStr; selectedTime=null; showTimes(); renderCalendar(); updateStep(2);});
+    grid.appendChild(btn);
+    d=d.add(1,"day");
+  }
+}
+function showTimes(){
+  const box=document.getElementById("timeBox");
+  if(!selectedDate){ box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  document.getElementById("chosenDateLabel").textContent=`(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
+  const grid=document.getElementById("timeGrid"); grid.innerHTML="";
+  const daySlots=availability[selectedDate]||{};
+  TIME_SLOTS.forEach(t=>{
+    const v=(daySlots[t]??"ว่าง");
+    const taken=(v==="เต็ม")||(v==="ปิด");
+    const isPending=(v==="รอมัดจำ");
+
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.textContent=t;
+    btn.disabled=taken || isPending;
+    btn.className="py-3 rounded-xl border border-[color:var(--po-border)] text-sm font-medium "+
+      (taken?"bg-gray-100 text-gray-400 cursor-not-allowed":
+       isPending?"bg-yellow-100 text-yellow-700 cursor-wait":
+       "bg-white hover:bg-[var(--po-card)]");
+    btn.addEventListener("click",()=>{[...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2); updateServiceOptions();});
+    grid.appendChild(btn);
+  });
+}
+
+/* ===== Steps & actions (เดิม) ===== */
+function updateStep(step){
+  for(let i=1;i<=5;i++){
+    const li=document.getElementById(`step${i}`);
+    if(i<step) li.className="flex items-start gap-2 text-green-700";
+    else if(i===step) li.className="flex items-start gap-2";
+    else li.className="flex items-start gap-2 text-gray-600";
+  }
+  document.getElementById("formCustomer").classList.toggle("hidden",step!==2);
+  document.getElementById("formPets").classList.toggle("hidden",step!==3);
+  document.getElementById("formTerms").classList.toggle("hidden",step!==4);
+  document.getElementById("formPay").classList.toggle("hidden",step!==5);
+}
+document.getElementById("toPets").addEventListener("click",()=>{
+  const name=document.getElementById("custName").value.trim();
+  const phone=document.getElementById("custPhone").value.trim();
+  if(!selectedDate||!selectedTime) return alert("กรุณาเลือกวันและเวลาหน้าแรก");
+  if(!name||!phone) return alert("กรุณากรอกชื่อและเบอร์โทร");
+  if(pets.length===0) addPetForm();
+  updateStep(3);
+  updateServiceOptions();
+});
+document.getElementById("addPet").addEventListener("click",()=>{
+  if(pets.length>=3) return alert("เพิ่มได้สูงสุด 3 ตัว");
+  addPetForm();
+});
+function addPetForm(){
+  const idx=pets.length+1;
+  const wrap=document.createElement("div");
+  wrap.className="p-3 border border-[color:var(--po-border)] rounded-xl";
+  wrap.innerHTML=`
     <div class="text-sm font-medium mb-2 text-[var(--po-forest)]">น้องตัวที่ ${idx}</div>
     <div class="grid gap-2">
       <label class="text-xs text-gray-600">ชื่อน้อง *</label>
       <input class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="petName" placeholder="เช่น อุ๋งอุ๋ง" />
       <label class="text-xs text-gray-600">ประเภท *</label>
-      <select class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="petType" onchange="showPriceTable(this.value)">
+      <select class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="petType">
         <option value="">เลือกประเภท</option>
-        <option>สุนัข</option><option>แมว</option><option>อื่นๆ</option>
+        <option>สุนัข</option><option>แมว</option><option>กระต่าย</option><option>อื่นๆ</option>
       </select>
       <label class="text-xs text-gray-600">สายพันธุ์ (ไม่บังคับ)</label>
-      <input class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="breed" />
+      <input class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="breed" placeholder="เช่น Poodle / Scottish Fold" />
       <label class="text-xs text-gray-600">ประเภทบริการ *</label>
       <select class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="service">
         <option value="">เลือกบริการ</option>
-        <option>อาบน้ำ</option><option>ตัดขน</option>
-        <option>อาบน้ำและตัดขน</option><option>บริการเสริมอย่างเดียว</option>
+        <option>อาบน้ำ</option><option>ตัดขน</option><option>อาบน้ำและตัดขน</option><option>บริการเสริมอย่างเดียว</option>
       </select>
-      <label class="text-xs text-gray-600">บริการเสริมเพิ่มเติม</label>
-      <textarea class="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[60px]" data-role="addon"></textarea>
+      <label class="text-xs text-gray-600">บริการเสริมเพิ่มเติมที่ต้องการ (ถ้ามี)</label>
+      <textarea class="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[60px]" data-role="addon" placeholder="เช่น ทรีตเมนต์ขน เคลียร์ช่องหู ฯลฯ"></textarea>
       <label class="text-xs text-gray-600">ข้อควรระวัง</label>
-      <textarea class="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[70px]" data-role="notes"></textarea>
+      <textarea class="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
     </div>`;
   document.getElementById("petsContainer").appendChild(wrap);
-  pets.push(wrap);
-  updateServiceOptions();
+  pets.push(wrap); updateServiceOptions();
 }
+document.getElementById("toTerms").addEventListener("click",()=>{
+  if(pets.length===0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
+  let ok=false;
+  for(const wrap of pets){
+    const petName=wrap.querySelector('[data-role="petName"]').value.trim();
+    const petType=wrap.querySelector('[data-role="petType"]').value.trim();
+    const service=wrap.querySelector('[data-role="service"]').value.trim();
+    if(!petName && !petType && !service) continue;
+    if(!petName || !petType || !service) return alert("กรอก ชื่อน้อง / ประเภท / ประเภทบริการ ให้ครบในแต่ละตัว");
+    ok=true;
+  }
+  if(!ok) return alert("กรุณากรอกข้อมูลน้องอย่างน้อย 1 ตัว");
 
-/* ===== ส่งข้อมูลเข้า Google Sheet และ LINE OA ===== */
+  /* เงื่อนไขเพิ่มเวลาอัตโนมัติเมื่อน้อง 3 ตัว (เดิม) */
+  if (pets.length === 3) {
+    const currentTimeIndex = TIME_SLOTS.indexOf(selectedTime);
+    if (currentTimeIndex !== -1 && currentTimeIndex + 1 < TIME_SLOTS.length) {
+      const extendedSlot = TIME_SLOTS[currentTimeIndex + 1];
+      if (availability[selectedDate]) availability[selectedDate][extendedSlot] = "เต็ม (เพิ่มเวลาอัตโนมัติ)";
+    }
+  }
+  updateStep(4);
+});
+document.getElementById("agree").addEventListener("change",e=>{
+  document.getElementById("toPayment").disabled=!e.target.checked;
+});
+document.getElementById("toPayment").addEventListener("click",()=>{
+  updateStep(5);
+  const dateKey=selectedDate, timeKey=selectedTime;
+  if (!availability[dateKey]) availability[dateKey]={};
+  availability[dateKey][timeKey]="รอมัดจำ";
+  renderCalendar(); showTimes();
+  setTimeout(()=>{
+    if (availability[dateKey][timeKey]==="รอมัดจำ"){
+      availability[dateKey][timeKey]="ว่าง";
+      renderCalendar(); showTimes();
+    }
+  }, 15*60*1000);
+});
+
+/* LINE OA deeplink + ส่ง Google Script */
 document.getElementById("goLine").addEventListener("click", async () => {
   const name = document.getElementById("custName").value.trim();
   const phone = document.getElementById("custPhone").value.trim();
   if (!selectedDate || !selectedTime) return alert("ยังไม่ได้เลือกวันเวลา");
   if (!name || !phone) return alert("กรุณากรอกชื่อและเบอร์ในขั้นตอนที่ 2");
 
+  // รวมข้อมูลน้องๆ
   const petLines = pets.map(wrap => {
     const n = wrap.querySelector('[data-role="petName"]').value.trim();
     const t = wrap.querySelector('[data-role="petType"]').value.trim();
     const s = wrap.querySelector('[data-role="service"]').value.trim();
     return `${n || "-"} / ${t || "-"} / ${s || "-"}`;
-  });
+  }).filter(Boolean);
 
-  const dateLabel = `${dayjs(selectedDate).format("DD/MM")}/${dayjs(selectedDate).year() + 543}`;
+  const dateLabel = `${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())}`;
   const msg = [
     "📌 แจ้งจองคิวจากหน้าเว็บ",
     `• วันเวลา: ${dateLabel} เวลา ${selectedTime} น.`,
@@ -356,10 +601,14 @@ document.getElementById("goLine").addEventListener("click", async () => {
     "— ส่งจากระบบจองคิว PO Grooming —"
   ].join("\n");
 
+  // ✅ เปิด LINE OA
+  const url = `https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?text=${encodeURIComponent(msg)}`;
+  window.open(url, "_blank");
+
+  // ✅ ส่งข้อมูลไป Google Apps Script
   try {
-    await fetch(SCRIPT_URL, {
+    const res = await fetch("https://script.google.com/macros/s/AKfycbz6c4LU-SIfcBMg0xSeR6ahUkpwBTKKS8Xqd34hZLfco8hBPdGeyrOqFxMTfPjeKqy3/exec", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "calendar",
         date: selectedDate,
@@ -368,71 +617,92 @@ document.getElementById("goLine").addEventListener("click", async () => {
         phone,
         pet: petLines.join(", ")
       }),
+      headers: { "Content-Type": "application/json" }
     });
+    console.log(await res.json());
   } catch (err) {
-    console.error("ส่งข้อมูลไปชีตผิดพลาด:", err);
+    console.error("ส่งข้อมูลไป Google Script ผิดพลาด:", err);
   }
-
-  const url = `https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?text=${encodeURIComponent(msg)}`;
-  window.open(url, "_blank");
 });
-  /* ===== โหลดข้อมูลจาก Google Sheet ===== */
-async function fetchSheet() {
-  syncBadge.textContent = "กำลังโหลด…";
-  syncBadge.className = "px-2 py-1 rounded bg-yellow-100 text-yellow-800";
-  try {
-    const res = await fetch(SHEET_GVIZ_JSON + "&ts=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) throw new Error("GVIZ " + res.status);
-    const text = await res.text();
 
-    // แปลงข้อมูลจาก gviz เป็น object
-    const json = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
-    const rows = json.table.rows;
-    availability = {};
 
-    rows.forEach(r => {
-      const c = r.c;
-      if (!c || !c[0] || !c[1]) return;
-      const dRaw = c[0].f || c[0].v;
-      const tRaw = c[1].f || c[1].v;
-      const sRaw = c[2]?.f || c[2]?.v || "ว่าง";
+/* Nav & boot (เดิม) */
+document.getElementById("prevMonth").addEventListener("click",()=>{const prev=visibleMonth.subtract(1,"month"); if(prev.isBefore(START_DATE,"month"))return; visibleMonth=prev; renderCalendar();});
+document.getElementById("nextMonth").addEventListener("click",()=>{const next=visibleMonth.add(1,"month"); if(next.isAfter(END_DATE,"month"))return; visibleMonth=next; renderCalendar();});
+document.getElementById("btnReload").addEventListener("click",async()=>{await fetchSheet(); renderCalendar(); if(selectedDate) showTimes();});
 
-      // แปลงวันที่
-      const match = /Date\((\d+),(\d+),(\d+)\)/.exec(dRaw);
-      if (!match) return;
-      const d = dayjs.tz({ year: +match[1], month: +match[2], day: +match[3] }).format("YYYY-MM-DD");
-
-      // แปลงเวลา
-      let t = "";
-      if (Array.isArray(tRaw)) {
-        const [h, m] = tRaw;
-        t = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-      } else if (typeof tRaw === "string") {
-        t = tRaw.slice(0, 5);
-      }
-
-      if (!availability[d]) availability[d] = {};
-      availability[d][t] = sRaw.includes("เต็ม") ? "เต็ม"
-                        : sRaw.includes("ปิด") ? "ปิด"
-                        : sRaw.includes("รอมัดจำ") ? "รอมัดจำ"
-                        : "ว่าง";
-    });
-
-    syncBadge.textContent = "โหลดสำเร็จ " + dayjs().format("HH:mm");
-    syncBadge.className = "px-2 py-1 rounded bg-green-100 text-green-800";
-  } catch (err) {
-    console.error("โหลดชีตผิดพลาด:", err);
-    syncBadge.textContent = "โหลดไม่สำเร็จ";
-    syncBadge.className = "px-2 py-1 rounded bg-red-100 text-red-800";
-    availability = {};
+(async function init(){ await fetchSheet(); renderCalendar(); })();
+  // ===== โหลดภาษาจาก query string =====
+(function(){
+  const urlParams = new URLSearchParams(window.location.search);
+  const langParam = urlParams.get("lang");
+  if (langParam) {
+    localStorage.setItem("lang", langParam);
+    setLang(langParam);
+  } else {
+    const savedLang = localStorage.getItem("lang") || "th";
+    setLang(savedLang);
   }
-}
-/* ===== ส่วนอื่นใช้ของเดิมทั้งหมด ===== */
-document.getElementById("prevMonth").addEventListener("click",()=>{const prev=visibleMonth.subtract(1,"month");if(prev.isBefore(START_DATE,"month"))return;visibleMonth=prev;renderCalendar();});
-document.getElementById("nextMonth").addEventListener("click",()=>{const next=visibleMonth.add(1,"month");if(next.isAfter(END_DATE,"month"))return;visibleMonth=next;renderCalendar();});
-document.getElementById("btnReload").addEventListener("click",async()=>{await fetchSheet();renderCalendar();if(selectedDate)showTimes();});
-(async function init(){await fetchSheet();renderCalendar();})();
-</script>
+})();
 
+/* === ระบบควบคุมประเภทบริการอัตโนมัติ (สำหรับเวลา 18.00–19.00) === */
+
+function updateServiceOptionsForEvening(time) {
+  const daySlots = availability[selectedDate] || {};
+
+  pets.forEach(wrap => {
+    const select = wrap.querySelector('[data-role="service"]');
+    if (!select) return;
+
+    // เริ่มต้นเปิดให้เลือกทั้งหมดก่อน
+    [...select.options].forEach(opt => (opt.disabled = false));
+
+    // --- เงื่อนไขเวลา 18.00 ---
+    if (time === "18:00") {
+      const isNextFree = (daySlots["19:00"] ?? "ว่าง") === "ว่าง";
+
+      if (!isNextFree) {
+        // ถ้า 19.00 ไม่ว่าง → จำกัดเฉพาะบริการเสริม
+        [...select.options].forEach(opt => {
+          if (opt.value.trim() !== "บริการเสริมอย่างเดียว") {
+            opt.disabled = true;
+          }
+        });
+        select.value = "บริการเสริมอย่างเดียว";
+      }
+    }
+
+    // --- เงื่อนไขเวลา 19.00 ---
+    if (time === "19:00") {
+      // ปิดเฉพาะอาบน้ำและตัดขนรวม
+      [...select.options].forEach(opt => {
+        if (opt.value.trim() === "อาบน้ำและตัดขน") {
+          opt.disabled = true;
+        }
+      });
+      // ถ้าเลือกอาบน้ำและตัดขนไว้ ให้เคลียร์ค่า
+      if (select.value === "อาบน้ำและตัดขน") {
+        select.value = "";
+      }
+    }
+  });
+}
+
+/* hook เข้ากับปุ่มเวลาในตาราง */
+const _oldShowTimesEvening = showTimes;
+showTimes = function () {
+  _oldShowTimesEvening();
+  const grid = document.getElementById("timeGrid");
+  if (!grid) return;
+  [...grid.children].forEach(btn => {
+    btn.addEventListener("click", () => {
+      const chosen = btn.textContent.trim();
+      updateServiceOptionsForEvening(chosen);
+    });
+  });
+};
+
+
+</script>
 </body>
 </html>
