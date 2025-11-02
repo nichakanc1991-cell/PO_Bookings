@@ -215,7 +215,7 @@ const SHEET_GVIZ_JSON="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT
 const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
 const LINE_OA_ID="@po_grooming";
 
-const START_DATE=dayjs.tz("2025-10-01");
+const START_DATE=dayjs.tz("2025-11-01");
 const END_DATE=dayjs.tz("2025-12-31");
 const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00","19:00"];
 
@@ -645,8 +645,7 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
   }
 })();
 
-/* === ระบบควบคุมประเภทบริการอัตโนมัติ (สำหรับเวลา 18.00–19.00) === */
-
+/* === ระบบควบคุมประเภทบริการอัตโนมัติ (เวลา 18.00–19.00) === */
 function updateServiceOptionsForEvening(time) {
   const daySlots = availability[selectedDate] || {};
 
@@ -654,10 +653,10 @@ function updateServiceOptionsForEvening(time) {
     const select = wrap.querySelector('[data-role="service"]');
     if (!select) return;
 
-    // เริ่มต้นเปิดให้เลือกทั้งหมดก่อน
+    // เปิดการเลือกทุกตัวก่อน
     [...select.options].forEach(opt => (opt.disabled = false));
 
-    // --- เงื่อนไขเวลา 18.00 ---
+    // ----- เงื่อนไขเวลา 18.00 -----
     if (time === "18:00") {
       const isNextFree = (daySlots["19:00"] ?? "ว่าง") === "ว่าง";
 
@@ -672,21 +671,44 @@ function updateServiceOptionsForEvening(time) {
       }
     }
 
-    // --- เงื่อนไขเวลา 19.00 ---
+    // ----- เงื่อนไขเวลา 19.00 -----
     if (time === "19:00") {
-      // ปิดเฉพาะอาบน้ำและตัดขนรวม
       [...select.options].forEach(opt => {
         if (opt.value.trim() === "อาบน้ำและตัดขน") {
-          opt.disabled = true;
+          opt.disabled = true;  // ห้ามเลือก
         }
       });
-      // ถ้าเลือกอาบน้ำและตัดขนไว้ ให้เคลียร์ค่า
+      // ถ้าเลือกไว้แล้วให้รีเซ็ตค่า
       if (select.value === "อาบน้ำและตัดขน") {
         select.value = "";
       }
     }
   });
 }
+
+/* --- Hook เข้ากับปุ่มเวลาในตาราง --- */
+const _oldShowTimesEvening = showTimes;
+showTimes = function () {
+  _oldShowTimesEvening();
+  const grid = document.getElementById("timeGrid");
+  if (!grid) return;
+  [...grid.children].forEach(btn => {
+    btn.addEventListener("click", () => {
+      const chosen = btn.textContent.trim();
+      selectedTime = chosen; // ✅ เก็บเวลาที่เลือกไว้
+      updateServiceOptionsForEvening(chosen);
+    });
+  });
+};
+
+/* --- Hook ตอนเพิ่มฟอร์มสัตว์เลี้ยง เพื่อเช็กเวลาอีกครั้ง --- */
+const _oldAddPetFormEvening = addPetForm;
+addPetForm = function () {
+  _oldAddPetFormEvening();
+  if (selectedTime === "18:00" || selectedTime === "19:00") {
+    updateServiceOptionsForEvening(selectedTime);
+  }
+};
 
 /* hook เข้ากับปุ่มเวลาในตาราง */
 const _oldShowTimesEvening = showTimes;
