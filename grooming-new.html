@@ -645,11 +645,9 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
   }
 })();
 
-/* === ระบบควบคุมประเภทบริการอัตโนมัติ (สำหรับเวลา 18.00–19.00) === */
-
-/* === ระบบควบคุมประเภทบริการอัตโนมัติ (เวลา 17.00–18.00) === */
-function updateServiceOptionsForEvening(time) {
-  const daySlots = availability[selectedDate] || {};
+/* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันเสถียรสุด) === */
+function updateServiceOptionsForEvening(dateStr, time) {
+  const daySlots = availability[dateStr] || {};
 
   pets.forEach(wrap => {
     const select = wrap.querySelector('[data-role="service"]');
@@ -668,7 +666,10 @@ function updateServiceOptionsForEvening(time) {
             opt.disabled = true;
           }
         });
-        select.value = "บริการเสริมอย่างเดียว";
+        // ถ้าเคยเลือกบริการอื่นไว้ → รีเซ็ตเป็นว่าง
+        if (select.value && select.value !== "บริการเสริมอย่างเดียว") {
+          select.value = "";
+        }
       }
     }
 
@@ -679,7 +680,7 @@ function updateServiceOptionsForEvening(time) {
           opt.disabled = true;
         }
       });
-      // ถ้าเลือกอาบน้ำและตัดขนไว้ ให้ล้างค่า
+      // ถ้าเคยเลือกอาบน้ำและตัดขนไว้ → รีเซ็ตค่า
       if (select.value === "อาบน้ำและตัดขน") {
         select.value = "";
       }
@@ -687,7 +688,7 @@ function updateServiceOptionsForEvening(time) {
   });
 }
 
-/* hook เข้ากับปุ่มเวลาในตาราง */
+/* === Hook เข้ากับปุ่มเวลาในตารางแบบเสถียร === */
 const _oldShowTimesEvening = showTimes;
 showTimes = function () {
   _oldShowTimesEvening();
@@ -696,10 +697,12 @@ showTimes = function () {
   [...grid.children].forEach(btn => {
     btn.addEventListener("click", () => {
       const chosen = btn.textContent.trim();
-      updateServiceOptionsForEvening(chosen);
+      updateServiceOptionsForEvening(selectedDate, chosen);
+      updateServiceOptions(); // เรียกใช้ระบบตรวจเวลาต่อเนื่องเดิมด้วย
     });
   });
 };
+
 
 
 </script>
