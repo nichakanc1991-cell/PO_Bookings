@@ -215,7 +215,7 @@ const SHEET_GVIZ_JSON="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT
 const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
 const LINE_OA_ID="@po_grooming";
 
-const START_DATE=dayjs.tz("2025-11-01");
+const START_DATE=dayjs.tz("2025-10-01");
 const END_DATE=dayjs.tz("2025-12-31");
 const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00"];
 
@@ -645,57 +645,50 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
   }
 })();
 
-/* === ระบบควบคุมประเภทบริการอัตโนมัติ (เวลา 18.00–19.00) === */
-function updateServiceOptionsForEvening(time) {
-  const daySlots = availability[selectedDate] || {};
+/* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันเสถียรสุด) === */
+function updateServiceOptionsForEvening(dateStr, time) {
+  const daySlots = availability[dateStr] || {};
 
   pets.forEach(wrap => {
     const select = wrap.querySelector('[data-role="service"]');
     if (!select) return;
 
-    // เปิดการเลือกทุกตัวก่อน
+    // เปิดให้เลือกทุกบริการก่อน
     [...select.options].forEach(opt => (opt.disabled = false));
 
-    // ----- เงื่อนไขเวลา 18.00 -----
-    if (time === "18:00") {
-      const isNextFree = (daySlots["19:00"] ?? "ว่าง") === "ว่าง";
-
+    // --- เงื่อนไขเวลา 17.00 ---
+    if (time === "17:00") {
+      const isNextFree = (daySlots["18:00"] ?? "ว่าง") === "ว่าง";
       if (!isNextFree) {
-        // ถ้า 19.00 ไม่ว่าง → จำกัดเฉพาะบริการเสริม
+        // ถ้า 18.00 ไม่ว่าง → จำกัดเฉพาะบริการเสริม
         [...select.options].forEach(opt => {
           if (opt.value.trim() !== "บริการเสริมอย่างเดียว") {
             opt.disabled = true;
           }
         });
-        select.value = "บริการเสริมอย่างเดียว";
+        // ถ้าเคยเลือกบริการอื่นไว้ → รีเซ็ตเป็นว่าง
+        if (select.value && select.value !== "บริการเสริมอย่างเดียว") {
+          select.value = "";
+        }
       }
     }
 
-    // ----- เงื่อนไขเวลา 19.00 -----
-    if (time === "19:00") {
+    // --- เงื่อนไขเวลา 18.00 ---
+    if (time === "18:00") {
       [...select.options].forEach(opt => {
         if (opt.value.trim() === "อาบน้ำและตัดขน") {
-          opt.disabled = true;  // ห้ามเลือก
+          opt.disabled = true;
         }
       });
-      // ถ้าเลือกไว้แล้วให้รีเซ็ตค่า
+      // ถ้าเคยเลือกอาบน้ำและตัดขนไว้ → รีเซ็ตค่า
       if (select.value === "อาบน้ำและตัดขน") {
         select.value = "";
       }
     }
   });
 }
-  // if (time === "19:00") {
-//   [...select.options].forEach(opt => {
-//     if (opt.value.trim() === "อาบน้ำและตัดขน") {
-//       opt.disabled = true;
-//     }
-//   });
-//   if (select.value === "อาบน้ำและตัดขน") select.value = "";
-// }
 
-
-/* --- Hook เข้ากับปุ่มเวลาในตาราง --- */
+/* === Hook เข้ากับปุ่มเวลาในตารางแบบเสถียร === */
 const _oldShowTimesEvening = showTimes;
 showTimes = function () {
   _oldShowTimesEvening();
@@ -704,34 +697,12 @@ showTimes = function () {
   [...grid.children].forEach(btn => {
     btn.addEventListener("click", () => {
       const chosen = btn.textContent.trim();
-      selectedTime = chosen; // ✅ เก็บเวลาที่เลือกไว้
-      updateServiceOptionsForEvening(chosen);
+      updateServiceOptionsForEvening(selectedDate, chosen);
+      updateServiceOptions(); // เรียกใช้ระบบตรวจเวลาต่อเนื่องเดิมด้วย
     });
   });
 };
 
-/* --- Hook ตอนเพิ่มฟอร์มสัตว์เลี้ยง เพื่อเช็กเวลาอีกครั้ง --- */
-const _oldAddPetFormEvening = addPetForm;
-addPetForm = function () {
-  _oldAddPetFormEvening();
-  if (selectedTime === "18:00" || selectedTime === "19:00") {
-    updateServiceOptionsForEvening(selectedTime);
-  }
-};
-
-/* hook เข้ากับปุ่มเวลาในตาราง */
-const _oldShowTimesEvening = showTimes;
-showTimes = function () {
-  _oldShowTimesEvening();
-  const grid = document.getElementById("timeGrid");
-  if (!grid) return;
-  [...grid.children].forEach(btn => {
-    btn.addEventListener("click", () => {
-      const chosen = btn.textContent.trim();
-      updateServiceOptionsForEvening(chosen);
-    });
-  });
-};
 
 
 </script>
