@@ -310,7 +310,7 @@ const SERVICE_DURATION = {
   "ตัดขน": 2,
   "อาบน้ำและตัดขน": 3,
 };
-const ALWAYS_ALLOW_ALL_AT = ["19:00"];
+const ALWAYS_ALLOW_ALL_AT = ["18:00"];
 
 function contiguousFreeSlots(dateStr, startTime){
   if (!dateStr || !startTime) return 0;
@@ -652,11 +652,11 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
   }
 })();
 
-/* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันเสถียรสุด) === */
-/* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันปรับปรุง) === */
 /* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันเสถียร) === */
 function updateServiceOptionsForEvening(dateStr, time) {
   const daySlots = availability[dateStr] || {};
+  if (!selectedTime) selectedTime = time;
+
 
   pets.forEach(wrap => {
     const select = wrap.querySelector('[data-role="service"]');
@@ -715,10 +715,10 @@ showTimes = function () {
   if (!grid) return;
   [...grid.children].forEach(btn => {
     btn.addEventListener("click", () => {
-      const chosen = btn.textContent.trim();
-      updateServiceOptionsForEvening(selectedDate, chosen);
-      updateServiceOptions();
-    });
+  const chosen = btn.textContent.trim();
+  updateServiceOptions(); // รันหลักก่อน
+  updateServiceOptionsForEvening(selectedDate, chosen); // แล้วค่อยบังคับเงื่อนไขพิเศษ
+});
   });
 };
 
