@@ -310,7 +310,7 @@ const SERVICE_DURATION = {
   "ตัดขน": 2,
   "อาบน้ำและตัดขน": 3,
 };
-const ALWAYS_ALLOW_ALL_AT = ["19:00"];
+const ALWAYS_ALLOW_ALL_AT = ["18:00"];
 
 function contiguousFreeSlots(dateStr, startTime){
   if (!dateStr || !startTime) return 0;
@@ -652,48 +652,60 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
   }
 })();
 
-/* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันเสถียรสุด) === */
+/* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันเสถียร) === */
 function updateServiceOptionsForEvening(dateStr, time) {
   const daySlots = availability[dateStr] || {};
+  if (!selectedTime) selectedTime = time;
+
 
   pets.forEach(wrap => {
     const select = wrap.querySelector('[data-role="service"]');
     if (!select) return;
 
-    // เปิดให้เลือกทุกบริการก่อน
+    // ปลดล็อกทั้งหมดก่อน
     [...select.options].forEach(opt => (opt.disabled = false));
 
-    // --- เงื่อนไขเวลา 17.00 ---
+    // ==== 17.00 ====
     if (time === "17:00") {
-      const isNextFree = (daySlots["18:00"] ?? "ว่าง") === "ว่าง";
-      if (!isNextFree) {
-        // ถ้า 18.00 ไม่ว่าง → จำกัดเฉพาะบริการเสริม
+      const next = daySlots["18:00"] ?? "ว่าง";
+      const nextFree = next === "ว่าง" || next === "รอมัดจำ";
+      if (!nextFree) {
         [...select.options].forEach(opt => {
           if (opt.value.trim() !== "บริการเสริมอย่างเดียว") {
             opt.disabled = true;
           }
         });
-        // ถ้าเคยเลือกบริการอื่นไว้ → รีเซ็ตเป็นว่าง
         if (select.value && select.value !== "บริการเสริมอย่างเดียว") {
           select.value = "";
         }
       }
     }
 
-    // --- เงื่อนไขเวลา 18.00 ---
+    // ==== 18.00 ====
     if (time === "18:00") {
+      // ให้เลือกได้ทุกอย่าง ยกเว้น "อาบน้ำและตัดขน"
       [...select.options].forEach(opt => {
         if (opt.value.trim() === "อาบน้ำและตัดขน") {
           opt.disabled = true;
         }
       });
-      // ถ้าเคยเลือกอาบน้ำและตัดขนไว้ → รีเซ็ตค่า
+
+      // ถ้าเผื่อระบบหลักล็อกเองว่าเหลือแค่บริการเสริม → บังคับปลด
+      const anyEnabled = [...select.options].some(o => !o.disabled && o.value);
+      if (!anyEnabled) {
+        [...select.options].forEach(opt => {
+          if (opt.value.trim() !== "อาบน้ำและตัดขน") opt.disabled = false;
+        });
+      }
+
       if (select.value === "อาบน้ำและตัดขน") {
         select.value = "";
       }
     }
   });
 }
+
+
 
 /* === Hook เข้ากับปุ่มเวลาในตารางแบบเสถียร === */
 const _oldShowTimesEvening = showTimes;
@@ -703,12 +715,14 @@ showTimes = function () {
   if (!grid) return;
   [...grid.children].forEach(btn => {
     btn.addEventListener("click", () => {
-      const chosen = btn.textContent.trim();
-      updateServiceOptionsForEvening(selectedDate, chosen);
-      updateServiceOptions(); // เรียกใช้ระบบตรวจเวลาต่อเนื่องเดิมด้วย
-    });
+  const chosen = btn.textContent.trim();
+  updateServiceOptions(); // รันหลักก่อน
+  updateServiceOptionsForEvening(selectedDate, chosen); // แล้วค่อยบังคับเงื่อนไขพิเศษ
+});
   });
 };
+
+
 
 
 
