@@ -215,7 +215,7 @@ const SHEET_GVIZ_JSON="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT
 const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
 const LINE_OA_ID="@po_grooming";
 
-const START_DATE=dayjs.tz("2025-10-01");
+const START_DATE=dayjs.tz("2025-11-01");
 const END_DATE=dayjs.tz("2025-12-31");
 const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00"];
 
@@ -631,7 +631,14 @@ document.getElementById("prevMonth").addEventListener("click",()=>{const prev=vi
 document.getElementById("nextMonth").addEventListener("click",()=>{const next=visibleMonth.add(1,"month"); if(next.isAfter(END_DATE,"month"))return; visibleMonth=next; renderCalendar();});
 document.getElementById("btnReload").addEventListener("click",async()=>{await fetchSheet(); renderCalendar(); if(selectedDate) showTimes();});
 
-(async function init(){ await fetchSheet(); renderCalendar(); })();
+(async function init() {
+  await fetchSheet(); 
+  renderCalendar(); 
+  if (Object.keys(availability).length === 0) {
+    console.warn("⚠️ โหลดชีตไม่สำเร็จหรือไม่มีข้อมูล → สร้างปฏิทินเปล่า");
+  }
+})();
+
   // ===== โหลดภาษาจาก query string =====
 (function(){
   const urlParams = new URLSearchParams(window.location.search);
@@ -646,6 +653,7 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
 })();
 
 /* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันเสถียรสุด) === */
+/* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันปรับปรุง) === */
 function updateServiceOptionsForEvening(dateStr, time) {
   const daySlots = availability[dateStr] || {};
 
@@ -653,40 +661,45 @@ function updateServiceOptionsForEvening(dateStr, time) {
     const select = wrap.querySelector('[data-role="service"]');
     if (!select) return;
 
-    // เปิดให้เลือกทุกบริการก่อน
+    // เปิดทุกบริการก่อน
     [...select.options].forEach(opt => (opt.disabled = false));
 
-    // --- เงื่อนไขเวลา 17.00 ---
+    // --------------------------
+    // เงื่อนไขพิเศษช่วง 17.00
+    // --------------------------
     if (time === "17:00") {
-      const isNextFree = (daySlots["18:00"] ?? "ว่าง") === "ว่าง";
-      if (!isNextFree) {
-        // ถ้า 18.00 ไม่ว่าง → จำกัดเฉพาะบริการเสริม
+      const slot18 = daySlots["18:00"] ?? "ว่าง";
+      const nextIsFree = slot18 === "ว่าง" || slot18 === "รอมัดจำ";
+      if (!nextIsFree) {
+        // ถ้า 18.00 เต็มหรือปิด → จำกัดเฉพาะบริการเสริม
         [...select.options].forEach(opt => {
           if (opt.value.trim() !== "บริการเสริมอย่างเดียว") {
             opt.disabled = true;
           }
         });
-        // ถ้าเคยเลือกบริการอื่นไว้ → รีเซ็ตเป็นว่าง
+        // รีเซ็ตค่าที่เคยเลือกไว้
         if (select.value && select.value !== "บริการเสริมอย่างเดียว") {
           select.value = "";
         }
       }
     }
 
-    // --- เงื่อนไขเวลา 18.00 ---
+    // --------------------------
+    // เงื่อนไขพิเศษช่วง 18.00
+    // --------------------------
     if (time === "18:00") {
       [...select.options].forEach(opt => {
         if (opt.value.trim() === "อาบน้ำและตัดขน") {
           opt.disabled = true;
         }
       });
-      // ถ้าเคยเลือกอาบน้ำและตัดขนไว้ → รีเซ็ตค่า
       if (select.value === "อาบน้ำและตัดขน") {
         select.value = "";
       }
     }
   });
 }
+
 
 /* === Hook เข้ากับปุ่มเวลาในตารางแบบเสถียร === */
 const _oldShowTimesEvening = showTimes;
@@ -698,10 +711,11 @@ showTimes = function () {
     btn.addEventListener("click", () => {
       const chosen = btn.textContent.trim();
       updateServiceOptionsForEvening(selectedDate, chosen);
-      updateServiceOptions(); // เรียกใช้ระบบตรวจเวลาต่อเนื่องเดิมด้วย
+      updateServiceOptions(); // ตรวจเวลาว่างต่อเนื่องเดิม
     });
   });
 };
+
 
 
 
