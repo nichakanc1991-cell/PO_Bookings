@@ -215,7 +215,7 @@ const SHEET_GVIZ_JSON="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT
 const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
 const LINE_OA_ID="@po_grooming";
 
-const START_DATE=dayjs.tz("2025-10-01");
+const START_DATE=dayjs.tz("2025-11-01");
 const END_DATE=dayjs.tz("2025-12-31");
 const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00"];
 
@@ -631,7 +631,14 @@ document.getElementById("prevMonth").addEventListener("click",()=>{const prev=vi
 document.getElementById("nextMonth").addEventListener("click",()=>{const next=visibleMonth.add(1,"month"); if(next.isAfter(END_DATE,"month"))return; visibleMonth=next; renderCalendar();});
 document.getElementById("btnReload").addEventListener("click",async()=>{await fetchSheet(); renderCalendar(); if(selectedDate) showTimes();});
 
-(async function init(){ await fetchSheet(); renderCalendar(); })();
+(async function init() {
+  await fetchSheet(); 
+  renderCalendar(); 
+  if (Object.keys(availability).length === 0) {
+    console.warn("⚠️ โหลดชีตไม่สำเร็จหรือไม่มีข้อมูล → สร้างปฏิทินเปล่า");
+  }
+})();
+
   // ===== โหลดภาษาจาก query string =====
 (function(){
   const urlParams = new URLSearchParams(window.location.search);
