@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="price.title">ประเมินค่าบริการ | PO Grooming</title>
+
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+  <style>
+    body {
+      font-family: "Prompt", sans-serif;
+      background: linear-gradient(to bottom, #0F3B2E, #1E5D48, #F2E2C4);
+      color: #F2E2C4;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .step-card {
+      background: rgba(255,255,255,0.10);
+      padding: 18px 20px;
+      border-radius: 18px;
+      backdrop-filter: blur(4px);
+      margin-top: 18px;
+    }
+
+    select {
+      color: #0F3B2E;
+      font-weight: 600;
+      background: #ffffffdd;
+    }
+  </style>
+</head>
+
+<body class="px-5">
+
+  <!-- LANGUAGE SWITCHER -->
+  <div class="text-center mt-4">
+    <button onclick="setLang('th')" class="mx-2">ไทย</button> |
+    <button onclick="setLang('en')" class="mx-2">English</button> |
+    <button onclick="setLang('zh')" class="mx-2">中文</button>
+  </div>
+
+  <h1 class="text-3xl font-bold text-center mt-8" data-i18n="price.header">
+    ประเมินค่าบริการสุนัข–แมว
+  </h1>
+
+
+  <!-- STEP 1 -->
+  <div class="step-card mt-8">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="price.step1">Step 1 — เลือกสัตว์</h3>
+
+    <div class="grid grid-cols-2 gap-4 mt-4">
+      <button id="chooseCat"
+        class="p-4 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200 transition"
+        onclick="selectPet('cat')">
+        แมว (Cat)
+      </button>
+
+      <button id="chooseDog"
+        class="p-4 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200 transition"
+        onclick="selectPet('dog')">
+        สุนัข (Dog)
+      </button>
+    </div>
+  </div>
+
+
+  <!-- STEP 2 -->
+  <div class="step-card" id="step2" style="display:none;">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="price.step2">Step 2 — เลือกน้ำหนัก</h3>
+    <select id="weight" class="w-full p-3 rounded"></select>
+  </div>
+
+
+  <!-- STEP 3 -->
+  <div class="step-card" id="step3" style="display:none;">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="price.step3">Step 3 — เลือกความยาวขน</h3>
+    <select id="hair" class="w-full p-3 rounded"></select>
+  </div>
+
+
+  <!-- STEP 4 -->
+  <div class="step-card" id="step4" style="display:none;">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="price.step4">Step 4 — เลือกบริการ</h3>
+    <select id="service" class="w-full p-3 rounded">
+      <option value="" data-i18n="price.service.default">— เลือกบริการ —</option>
+      <option value="bath" data-i18n="price.service.bath">อาบน้ำ</option>
+      <option value="bathcut" data-i18n="price.service.bathcut">อาบน้ำ + ตัดขน</option>
+      <option value="cutonly" data-i18n="price.service.cutonly">ตัดขนอย่างเดียว</option>
+    </select>
+
+    <!-- เลือกไถ/กรรไกร -->
+    <div id="cutMethodBox" class="mt-4" style="display:none;">
+      <p class="font-bold mb-2" data-i18n="price.cut.method">เลือกรูปแบบการตัดขน</p>
+
+      <select id="cutMethod" class="w-full p-3 rounded">
+        <option value="" data-i18n="price.cut.select">— เลือกวิธีตัด —</option>
+        <option value="clipper" data-i18n="price.cut.clipper">ไถทั้งตัว</option>
+        <option value="scissor" data-i18n="price.cut.scissor">กรรไกรทั้งตัว</option>
+      </select>
+    </div>
+  </div>
+
+
+
+  <!-- STEP 5 — PRICE RESULT -->
+  <div class="step-card" id="step5" style="display:none;">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="price.step5">Step 5 — ราคาโดยประมาณ</h3>
+
+    <p id="result" class="text-4xl font-bold mt-2 text-yellow-200">—</p>
+
+    <p class="text-sm mt-3" data-i18n="price.result.note">
+      ราคานี้เป็นเพียงการประเมินเบื้องต้น
+    </p>
+  </div>
+
+
+
+  <!-- STEP 6 — NOTE -->
+  <div class="step-card" id="step6" style="display:none;">
+    <h3 class="font-bold mb-1" data-i18n="price.note.header">หมายเหตุ</h3>
+
+    <p data-i18n="price.note.line1">
+      ราคาที่แสดงเป็นเพียงการประเมินเบื้องต้นตามน้ำหนัก–ลักษณะขน
+    </p>
+    <p data-i18n="price.note.line2">
+      ราคาจริงอาจแตกต่างตามสภาพขน สภาพผิว พฤติกรรม
+    </p>
+    <p data-i18n="price.note.line3" class="mt-1">
+      หากมีบริการเสริม กรุณาแจ้งในขั้นตอนจองคิว
+    </p>
+  </div>
+
+
+  <!-- BOOK BUTTON -->
+  <a id="bookButton"
+    href="grooming.html"
+    style="display:none;"
+    class="block text-center font-bold p-4 rounded-xl bg-yellow-300 text-green-900 mt-6">
+    <span data-i18n="price.book">จองคิวทันที</span>
+  </a>
+
+
+  <script src="js/i18n.js"></script>
+  <script src="js/price.js"></script>
+</body>
+</html>
