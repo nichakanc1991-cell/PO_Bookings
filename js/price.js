@@ -4,7 +4,7 @@ let selectedPet = "";
 const prices = {
   cat: {
     short: { xs:{bath:259,clip:250,sc:350}, s:{bath:409,clip:300,sc:400}, m:{bath:459,clip:300,sc:400}, l:{bath:459,clip:300,sc:400}, xl:{bath:509,clip:300,sc:400} },
-    medium:{ xs:{bath:259,clip:350,sc:400}, s:{bath:409,clip:400,sc:450}, m:{bath:459,clip:450,sc:500}, l:{bath:459,clip:450,sc:500}, xl:{bath:509,clip:450,sc:500} },
+    medium:{ xs:{bath:359,clip:250,sc:350}, s:{bath:459,clip:300,sc:400}, m:{bath:509,clip:300,sc:400}, l:{bath:459,clip:450,sc:500}, xl:{bath:509,clip:450,sc:500} },
     long:  { xs:{bath:359,clip:400,sc:450}, s:{bath:459,clip:500,sc:550}, m:{bath:509,clip:550,sc:600}, l:{bath:509,clip:600,sc:650}, xl:{bath:559,clip:650,sc:700} }
   },
 
