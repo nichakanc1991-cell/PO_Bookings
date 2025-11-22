@@ -42,12 +42,22 @@
   </style>
 </head>
 <body>
+
   <!-- Header -->
   <header class="py-6">
     <img src="logo-po.png" alt="PO Grooming Logo" class="mx-auto w-28 mb-3">
-    <h1 class="text-3xl font-bold">PO GROOMING PRIVATE & PREMIUM</h1>
-    <p class="text-lg mt-2">✂️ FUR STYLING CREATIVE PET GROOMING</p>
-    <p class="text-md">🛁 PET SPA & SALON | 🐈🏩 CAT HOTEL | 🛍️ PET SHOP</p>
+
+    <h1 class="text-3xl font-bold" data-i18n="home.title">
+      PO GROOMING PRIVATE & PREMIUM
+    </h1>
+
+    <p class="text-lg mt-2" data-i18n="home.subtitle1">
+      ✂️ FUR STYLING CREATIVE PET GROOMING
+    </p>
+
+    <p class="text-md" data-i18n="home.subtitle2">
+      🛁 PET SPA & SALON | 🐈🏩 CAT HOTEL | 🛍️ PET SHOP
+    </p>
 
     <!-- Language Switcher -->
     <div class="mt-4">
@@ -59,15 +69,34 @@
 
   <!-- Main Buttons -->
   <main class="mt-10">
-    <a href="https://nichakanc1991-cell.github.io/PO_Bookings/grooming.html?lang=th"
-   class="btn btn-main" data-i18n="btn.grooming">
-   จองคิวอาบน้ำ–ตัดขน
-   </a>
 
-    <a href="https://nichakanc1991-cell.github.io/PO_Bookings/hotel.html?lang=th"
-   class="btn btn-secondary" data-i18n="btn.hotel">
-   จองห้องพักโรงแรมแมว
-   </a>
+    <!-- Price Estimator -->
+    <a href="price.html?lang=th"
+       class="btn btn-main"
+       data-i18n="btn.price">
+       ประเมินค่าบริการสุนัข–แมว
+    </a>
+
+    <!-- Grooming Booking -->
+    <a href="grooming.html?lang=th"
+       class="btn btn-main"
+       data-i18n="btn.grooming">
+       จองคิวอาบน้ำ–ตัดขน
+    </a>
+
+    <!-- Cat Hotel -->
+    <a href="hotel.html?lang=th"
+       class="btn btn-secondary"
+       data-i18n="btn.hotel">
+       จองห้องพักโรงแรมแมว
+    </a>
+
+    <!-- Highlights -->
+    <div class="mt-10 text-lg space-y-2 text-center">
+      <p data-i18n="highlight.private">✓ ร้าน Private ไม่อยู่รวมกับน้อง ๆ บ้านอื่น</p>
+      <p data-i18n="highlight.watch">✓ ลูกค้าเฝ้าน้องได้ตลอดการกรูมมิ่ง</p>
+      <p data-i18n="highlight.experience">✓ ประสบการณ์มากกว่า 10,000 เคส ทั้งสุนัขและแมว</p>
+    </div>
 
   </main>
 
@@ -78,14 +107,3 @@
   <script src="js/i18n.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
