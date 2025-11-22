@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="price.title">ประเมินค่าบริการ | PO Grooming</title>
+
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+  <style>
+    body {
+      font-family: "Prompt", sans-serif;
+      background: linear-gradient(to bottom, #0F3B2E, #1E5D48, #F2E2C4);
+      color: #F2E2C4;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+
+<body class="px-4">
+
+  <!-- LANGUAGE SWITCHER -->
+  <div class="text-center mt-4">
+    <button onclick="setLang('th')" class="mx-2">ไทย</button> |
+    <button onclick="setLang('en')" class="mx-2">English</button> |
+    <button onclick="setLang('zh')" class="mx-2">中文</button>
+  </div>
+
+  <h1 class="text-2xl font-bold text-center mt-8" data-i18n="price.header">
+    ประเมินค่าบริการสุนัข–แมว
+  </h1>
+
+  <div class="max-w-xl mx-auto mt-6 space-y-6">
+
+    <!-- เลือกสัตว์ -->
+    <div class="card">
+      <h3 class="font-bold mb-2" data-i18n="price.select.pet">เลือกสัตว์</h3>
+      <select id="petType" class="w-full p-3 rounded text-black">
+        <option value="" data-i18n="price.pet.default">— เลือกชนิดสัตว์ —</option>
+        <option value="cat" data-i18n="price.pet.cat">แมว</option>
+        <option value="dog" data-i18n="price.pet.dog">สุนัข</option>
+      </select>
+    </div>
+
+    <!-- น้ำหนัก -->
+    <div class="card">
+      <h3 class="font-bold mb-2" data-i18n="price.weight.title">น้ำหนัก</h3>
+      <select id="weight" class="w-full p-3 rounded text-black">
+        <option value="" data-i18n="price.weight.default">— กรุณาเลือกชนิดสัตว์ก่อน —</option>
+      </select>
+    </div>
+
+    <!-- ความยาวขน -->
+    <div class="card">
+      <h3 class="font-bold mb-2" data-i18n="price.hair.title">ความยาวขน</h3>
+      <select id="hair" class="w-full p-3 rounded text-black">
+        <option value="" data-i18n="price.hair.default">— กรุณาเลือกชนิดสัตว์ก่อน —</option>
+      </select>
+    </div>
+
+    <!-- บริการหลัก -->
+    <div class="card">
+      <h3 class="font-bold mb-2" data-i18n="price.service.title">บริการหลัก</h3>
+
+      <select id="service" class="w-full p-3 rounded text-black">
+        <option value="" data-i18n="price.service.default">— เลือกบริการ —</option>
+        <option value="bath" data-i18n="price.service.bath">อาบน้ำ</option>
+        <option value="bathcut" data-i18n="price.service.bathcut">อาบน้ำ + ตัดขน</option>
+        <option value="cut" data-i18n="price.service.cut">ตัดขนอย่างเดียว</option>
+      </select>
+    </div>
+
+    <!-- ราคาโดยประมาณ -->
+    <div class="card">
+      <h3 class="font-bold mb-2" data-i18n="price.result.title">ราคาโดยประมาณ</h3>
+      <p id="result" class="text-3xl font-bold">—</p>
+      <p class="text-sm mt-2 text-yellow-200" data-i18n="price.result.note">
+        เป็นการประเมินเบื้องต้น โปรดสอบถามช่างเพื่อยืนยันราคา
+      </p>
+    </div>
+
+    <!-- หมายเหตุ -->
+    <div class="card text-sm leading-relaxed">
+      <p class="font-bold" data-i18n="price.note.header">หมายเหตุ</p>
+
+      <p data-i18n="price.note.line1">
+        ราคาที่แสดงเป็นเพียงการประเมินเบื้องต้นจากน้ำหนัก–ความยาวขน และประเภทบริการ
+      </p>
+      <p data-i18n="price.note.line2">
+        ราคาจริงอาจแตกต่างตามสภาพขน สภาพผิว พฤติกรรม และความยากง่ายของเคส
+      </p>
+      <p class="mt-2" data-i18n="price.note.line3">
+        หากต้องการบริการเสริม เช่น สางขน กำจัดเห็บหมัด แกะสังกะตัง หรืองานเฉพาะจุด
+        กรุณาแจ้งช่างในวันเข้ารับบริการ หรือเขียนในช่อง “หมายเหตุ” ระหว่างขั้นตอนจองคิวค่ะ
+      </p>
+    </div>
+
+    <!-- ปุ่มจองคิว -->
+    <a id="bookButton" href="grooming.html"
+       class="block text-center font-bold p-4 rounded bg-yellow-300 text-black mt-4"
+       data-i18n="price.book">
+       จองคิวทันที
+    </a>
+
+  </div>
+
+  <script src="js/i18n.js"></script>
+  <script src="price.js"></script>
+</body>
+</html>
