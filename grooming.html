@@ -516,10 +516,10 @@ function showTimes(){
        isPending?"bg-yellow-100 text-yellow-700 cursor-wait":
        "bg-white hover:bg-[var(--po-card)]");
     btn.addEventListener("click",()=>{
-      // === เงื่อนไขพิเศษเวลา 12:00 ===
+
     if (t === "12:00") {
-      const confirmed = confirm("ช่วงเวลา 12:00 รับเฉพาะสุนัขเท่านั้นค่ะ");
-      if (!confirmed) return; 
+      const ok = confirm("เวลา 12:00 เปิดให้บริการเฉพาะสุนัขนะคะ");
+      if (!ok) return;
     }
 
     [...grid.children].forEach(el=>el.classList.remove("slot-active"));
@@ -528,9 +528,6 @@ function showTimes(){
     updateStep(2);
     updateServiceOptions();
 });
-      [...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2); updateServiceOptions();});
-    grid.appendChild(btn);
-  });
 }
 
 /* ===== Steps & actions (เดิม) ===== */
