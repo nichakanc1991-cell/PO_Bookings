@@ -520,23 +520,27 @@ function showTimes(){
 
     btn.addEventListener("click",()=>{
 
-        // === popup เวลา 12:00 ===
-        if (t === "12:00") {
-            const ok = confirm("เวลา 12:00 เปิดให้บริการเฉพาะสุนัขนะคะ");
-            if (!ok) return;
-        }
+    // Popup เฉพาะเวลา 12:00
+    if (t === "12:00") {
+      const ok = confirm("เวลา 12:00 เปิดให้บริการเฉพาะสุนัขนะคะ");
+      if (!ok) return;
+    }
 
-        [...grid.children].forEach(el=>el.classList.remove("slot-active"));
-        btn.classList.add("slot-active");
-        selectedTime=t;
-        updateStep(2);
-        updateServiceOptions();
-    });
+    // โค้ดเดิม
+    [...grid.children].forEach(el=>el.classList.remove("slot-active"));
+    btn.classList.add("slot-active");
+    selectedTime = t;
+    updateStep(2);
+    updateServiceOptions();
+});
 
-    grid.appendChild(btn);
-  });   // ← ปิด forEach
+// ⬅️ สำคัญมาก: ต้องเพิ่มปุ่มเข้าไปในกริด
+grid.appendChild(btn);
 
-}   // ← ปิด showTimes()
+});   // ⬅️ ปิด TIME_SLOTS.forEach
+
+}     // ⬅️ ปิดฟังก์ชัน showTimes()
+
 
 
 /* ===== Steps & actions (เดิม) ===== */
