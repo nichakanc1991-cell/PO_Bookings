@@ -1,145 +1,168 @@
-// i18n.js — Version FIXED 100%
+/* ===========================
+   i18n.js — Multi-language
+   =========================== */
 
 const translations = {
   th: {
-    /* ---------- HOME ---------- */
+    /* --- ปุ่มหน้า Home --- */
     "btn.price": "ประเมินค่าบริการสุนัข–แมว",
     "btn.grooming": "จองคิวอาบน้ำ–ตัดขน",
     "btn.hotel": "จองห้องพักโรงแรมแมว",
 
-    "highlight.private": "✓ ร้าน Private ไม่อยู่รวมกับน้อง ๆ บ้านอื่น",
-    "highlight.watch": "✓ ลูกค้าเฝ้าน้องได้ตลอดการกรูมมิ่ง",
-    "highlight.experience": "✓ ประสบการณ์มากกว่า 10,000 เคส ทั้งสุนัขและแมว",
+    /* --- Booking Header --- */
+    "title.booking": "ระบบจองคิว",
 
-    /* ---------- PRICE PAGE ---------- */
-    "price.title": "ประเมินค่าบริการ",
-    "price.header": "ประเมินค่าบริการสุนัข–แมว",
+    /* --- Wizard Steps --- */
+    "wizard.step1": "เลือกวัน–เวลา",
+    "wizard.step2": "ข้อมูลผู้จอง",
+    "wizard.step3": "รายละเอียดสัตว์เลี้ยง",
+    "wizard.step4": "เงื่อนไขการให้บริการ",
+    "wizard.step5": "ชำระมัดจำ",
 
-    "price.step1": "Step 1 — เลือกสัตว์",
-    "price.step2": "Step 2 — เลือกน้ำหนัก",
-    "price.step3": "Step 3 — เลือกความยาวขน",
-    "price.step4": "Step 4 — เลือกบริการ",
-    "price.step5": "Step 5 — ราคาโดยประมาณ",
+    /* --- Customer Info --- */
+    "label.custname": "ชื่อผู้จอง",
+    "label.custphone": "เบอร์ติดต่อ",
+    "label.next": "ถัดไป",
 
-    "price.service.default": "— เลือกบริการ —",
-    "price.service.bath": "อาบน้ำ",
-    "price.service.bathcut": "อาบน้ำ + ตัดขน",
-    "price.service.cutonly": "ตัดขนอย่างเดียว",
+    /* --- Pet Info --- */
+    "label.petlist": "รายละเอียดน้อง (สูงสุด 3 ตัว)",
+    "label.petname": "ชื่อน้อง",
+    "label.pettype": "ประเภท",
+    "label.petbreed": "สายพันธุ์",
+    "label.petservice": "ประเภทบริการ",
+    "label.petaddon": "บริการเสริมเพิ่มเติม (ถ้ามี)",
+    "label.petnote": "ข้อควรระวัง",
 
-    "price.cut.method": "เลือกรูปแบบการตัดขน",
-    "price.cut.select": "— เลือกวิธีตัด —",
-    "price.cut.clipper": "ไถทั้งตัว",
-    "price.cut.scissor": "กรรไกรทั้งตัว",
+    "label.addpet": "+ เพิ่มน้อง",
+    "label.toTerms": "ถัดไป",
 
-    "price.result.note": "ราคานี้เป็นเพียงการประเมินเบื้องต้น",
+    /* --- Terms --- */
+    "label.agree": "ฉันได้อ่านและยอมรับเงื่อนไขการบริการแล้ว",
+    "label.toPayment": "ไปหน้าชำระเงิน",
 
-    "price.note.header": "หมายเหตุ",
-    "price.note.line1": "ราคาที่แสดงเป็นเพียงการประเมินเบื้องต้นตามน้ำหนัก–ลักษณะขน",
-    "price.note.line2": "ราคาจริงอาจแตกต่างตามสภาพขน สภาพผิว พฤติกรรม",
-    "price.note.line3": "หากมีบริการเสริม กรุณาแจ้งในขั้นตอนจองคิว",
+    /* --- Payment --- */
+    "label.deposit.title": "ชำระมัดจำ",
+    "label.deposit.remark": "โปรดชำระภายใน 15 นาทีเพื่อรักษาคิว",
+    "label.notifyline": "แจ้งสลิปทางไลน์",
 
-    "price.book": "จองคิวทันที"
+    /* --- Calendar --- */
+    "calendar.free": "ว่าง",
+    "calendar.partial": "บางช่วง",
+    "calendar.full": "เต็ม",
+
+    /* --- Booking message (Line OA) --- */
+    "line.header": "📌 แจ้งจองคิวจากหน้าเว็บ",
+    "line.petdetail": "• รายละเอียดน้อง:",
+    "line.sentfrom": "— ส่งจากระบบจองคิว PO Grooming —"
   },
 
-  /* -------------------- ENGLISH -------------------- */
+  /* ==================== ENGLISH ===================== */
   en: {
-    /* HOME */
     "btn.price": "Price Estimator (Dogs & Cats)",
     "btn.grooming": "Book Grooming Appointment",
     "btn.hotel": "Book Cat Hotel Room",
 
-    "highlight.private": "✓ Private grooming — no mixing with other pets",
-    "highlight.watch": "✓ Owners can supervise throughout",
-    "highlight.experience": "✓ Over 10,000 grooming cases for both dogs and cats",
+    "title.booking": "Booking System",
 
-    /* PRICE PAGE */
-    "price.title": "Price Estimator",
-    "price.header": "Pet Grooming Price Estimator",
+    "wizard.step1": "Select Date & Time",
+    "wizard.step2": "Customer Info",
+    "wizard.step3": "Pet Details",
+    "wizard.step4": "Terms & Conditions",
+    "wizard.step5": "Deposit Payment",
 
-    "price.step1": "Step 1 — Select Pet",
-    "price.step2": "Step 2 — Select Weight",
-    "price.step3": "Step 3 — Select Coat Type",
-    "price.step4": "Step 4 — Select Service",
-    "price.step5": "Step 5 — Estimated Price",
+    "label.custname": "Full Name",
+    "label.custphone": "Phone Number",
+    "label.next": "Next",
 
-    "price.service.default": "— Select Service —",
-    "price.service.bath": "Bath Only",
-    "price.service.bathcut": "Bath + Haircut",
-    "price.service.cutonly": "Haircut Only",
+    "label.petlist": "Pet Details (up to 3 pets)",
+    "label.petname": "Pet Name",
+    "label.pettype": "Type",
+    "label.petbreed": "Breed",
+    "label.petservice": "Service Type",
+    "label.petaddon": "Add-on Services (optional)",
+    "label.petnote": "Notes / Cautions",
 
-    "price.cut.method": "Choose haircut method",
-    "price.cut.select": "— Select Method —",
-    "price.cut.clipper": "Clipper Cut",
-    "price.cut.scissor": "Full Scissoring",
+    "label.addpet": "+ Add Pet",
+    "label.toTerms": "Next",
 
-    "price.result.note": "This is only an estimated price.",
+    "label.agree": "I have read and accepted the terms.",
+    "label.toPayment": "Go to Payment",
 
-    "price.note.header": "Notes",
-    "price.note.line1": "Displayed price is an estimate based on weight & coat type.",
-    "price.note.line2": "Actual price may vary by coat condition & behavior.",
-    "price.note.line3": "If extra services are needed, please note during booking.",
+    "label.deposit.title": "Deposit Payment",
+    "label.deposit.remark": "Please pay within 15 minutes to secure your booking.",
+    "label.notifyline": "Notify via LINE",
 
-    "price.book": "Book Now"
+    "calendar.free": "Free",
+    "calendar.partial": "Partial",
+    "calendar.full": "Full",
+
+    "line.header": "📌 Booking request from website",
+    "line.petdetail": "• Pet details:",
+    "line.sentfrom": "— Sent from PO Grooming Booking System —"
   },
 
-  /* -------------------- CHINESE -------------------- */
+  /* ====================== CHINESE ===================== */
   zh: {
-    /* HOME */
-    "btn.price": "估算美容价格（犬｜猫）",
-    "btn.grooming": "预约洗澡・造型",
+    "btn.price": "美容价格估算（犬｜猫）",
+    "btn.grooming": "预约美容服务",
     "btn.hotel": "预约猫咪酒店",
 
-    "highlight.private": "✓ 私密式美容，不与其他家庭宠物混在一起",
-    "highlight.watch": "✓ 主人可全程陪同、安心看护",
-    "highlight.experience": "✓ 超过 10,000 只犬猫的专业护理经验",
+    "title.booking": "预约系统",
 
-    /* PRICE PAGE */
-    "price.title": "美容价格估算",
-    "price.header": "犬猫美容价格估算",
+    "wizard.step1": "选择日期与时间",
+    "wizard.step2": "客户资料",
+    "wizard.step3": "宠物资料",
+    "wizard.step4": "服务条款",
+    "wizard.step5": "支付订金",
 
-    "price.step1": "步骤 1 — 选择宠物",
-    "price.step2": "步骤 2 — 选择体重",
-    "price.step3": "步骤 3 — 选择毛发类型",
-    "price.step4": "步骤 4 — 选择服务",
-    "price.step5": "步骤 5 — 预计价格",
+    "label.custname": "姓名",
+    "label.custphone": "联系电话",
+    "label.next": "下一步",
 
-    "price.service.default": "— 请选择服务 —",
-    "price.service.bath": "洗澡",
-    "price.service.bathcut": "洗澡 + 修剪",
-    "price.service.cutonly": "仅修剪",
+    "label.petlist": "宠物资料（最多3只）",
+    "label.petname": "宠物名字",
+    "label.pettype": "种类",
+    "label.petbreed": "品种",
+    "label.petservice": "服务类型",
+    "label.petaddon": "额外服务（可选）",
+    "label.petnote": "注意事项",
 
-    "price.cut.method": "请选择修剪方式",
-    "price.cut.select": "— 请选择 —",
-    "price.cut.clipper": "推剪",
-    "price.cut.scissor": "手工剪",
+    "label.addpet": "+ 添加宠物",
+    "label.toTerms": "下一步",
 
-    "price.result.note": "此价格仅为预估。",
+    "label.agree": "我已阅读并同意服务条款",
+    "label.toPayment": "前往支付",
 
-    "price.note.header": "备注",
-    "price.note.line1": "显示价格基于体重与毛发类型，为预估价。",
-    "price.note.line2": "实际价格可能因毛发状况与配合度而不同。",
-    "price.note.line3": "如需额外服务，请在预约时备注。",
+    "label.deposit.title": "支付订金",
+    "label.deposit.remark": "请在15分钟内完成支付以保留名额",
+    "label.notifyline": "通过 LINE 通知",
 
-    "price.book": "立即预约"
+    "calendar.free": "空闲",
+    "calendar.partial": "部分空闲",
+    "calendar.full": "已满",
+
+    "line.header": "📌 来自网站的预约请求",
+    "line.petdetail": "• 宠物资料：",
+    "line.sentfrom": "— 来自 PO Grooming 预约系统 —"
   }
 };
 
-/* -------------------------------------------------- */
-/* APPLY LANGUAGE */
-/* -------------------------------------------------- */
 
-function setLang(lang) {
+/* =====================================================
+      APPLY LANGUAGE
+===================================================== */
+function setLang(lang){
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
-    if (translations[lang] && translations[lang][key]) {
+    if(translations[lang] && translations[lang][key]){
       el.innerText = translations[lang][key];
     }
   });
-
   localStorage.setItem("lang", lang);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+/* โหลดภาษาอัตโนมัติ */
+document.addEventListener("DOMContentLoaded", ()=>{
   const lang = localStorage.getItem("lang") || "th";
   setLang(lang);
 });
