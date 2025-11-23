@@ -14,121 +14,107 @@
       background: linear-gradient(to bottom, #0F3B2E, #1E5D48, #F2E2C4);
       color: #F2E2C4;
       min-height: 100vh;
-      padding-bottom: 100px;
     }
 
-    .step-card {
-      background: rgba(255,255,255,0.10);
-      padding: 18px 20px;
+    .card {
+      background: rgba(255,255,255,0.12);
+      padding: 20px;
       border-radius: 18px;
       backdrop-filter: blur(4px);
-      margin-top: 18px;
+      margin-top: 20px;
     }
 
     select {
+      background: #ffffffdd;
       color: #0F3B2E;
       font-weight: 600;
-      background: #ffffffdd;
     }
   </style>
 </head>
 
-<body class="px-5">
+<body class="px-5 pb-20">
 
-  <!-- LANGUAGE SWITCHER -->
+  <!-- LANGUAGE -->
   <div class="text-center mt-4">
     <button onclick="setLang('th')" class="mx-2">ไทย</button> |
     <button onclick="setLang('en')" class="mx-2">English</button> |
     <button onclick="setLang('zh')" class="mx-2">中文</button>
   </div>
 
-  <h1 class="text-3xl font-bold text-center mt-8" data-i18n="booking.header">
+  <h1 class="text-3xl text-center font-bold mt-6" data-i18n="booking.header">
     จองคิวอาบน้ำ–ตัดขน
   </h1>
 
-
-  <!-- STEP 1 — จำนวนสัตว์ -->
-  <div class="step-card mt-6">
-    <h3 class="font-bold mb-2 text-xl" data-i18n="booking.step1">
+  
+  <!-- STEP 1 -->
+  <div class="card">
+    <h3 class="font-bold text-xl mb-2" data-i18n="booking.step1">
       Step 1 — เลือกจำนวนสัตว์เลี้ยง
     </h3>
 
-    <select id="petCount" onchange="setPetCount(this.value)" class="w-full p-3 rounded mt-2">
-      <option value="1" selected>1 ตัว</option>
+    <select id="petCount" class="w-full p-3 rounded" onchange="setPetCount(this.value)">
+      <option value="1">1 ตัว</option>
       <option value="2">2 ตัว</option>
       <option value="3">3 ตัว</option>
     </select>
   </div>
 
 
-  <!-- STEP 2 — ฟอร์มน้องทีละตัว -->
-  <div id="step2" class="mt-4">
-    <h3 class="font-bold mb-2 text-xl" data-i18n="booking.step2">
-      Step 2 — กรอกรายละเอียดของน้อง ๆ
-    </h3>
-
-    <div id="petForms"></div>
-  </div>
+  <!-- STEP 2 -->
+  <div id="petForms" class="mt-4"></div>
 
 
-  <!-- ดำเนินการต่อ -->
-  <button onclick="gotoTimeStep()"
-    class="block mt-6 w-full p-4 rounded-xl bg-yellow-300 text-green-900 font-bold text-xl">
+  <button onclick="goToCalendar()"
+    id="toCalendarBtn"
+    class="hidden w-full p-4 mt-6 bg-yellow-300 text-green-900 font-bold rounded-xl text-lg">
     <span data-i18n="booking.next">ถัดไป</span>
   </button>
 
 
-  <!-- STEP 3 — เลือกวันเวลา -->
-  <div id="step3" class="step-card mt-8" style="display:none;">
-    <h3 class="font-bold mb-2 text-xl" data-i18n="booking.step3">
-      Step 3 — เลือกวันและเวลา
-    </h3>
+  <!-- STEP 3: CALENDAR -->
+  <div id="calendarSection" style="display:none;">
+    <div class="card mt-6">
+      <h3 class="font-bold text-xl mb-2" data-i18n="booking.step3">
+        Step 3 — เลือกวันและเวลา
+      </h3>
 
-    <p class="text-sm opacity-80 mb-3">
-      (12:00 รับเฉพาะสุนัข • 18:00 ไม่รับอาบน้ำ+ตัดขน)
-    </p>
+      <p class="text-sm opacity-80 mb-3">
+        12:00 รับเฉพาะสุนัข · 18:00 ไม่รับอาบน้ำ+ตัดขน
+      </p>
 
-    <!-- ใส่ปุ่มเวลา -->
-    <div class="grid grid-cols-3 gap-4 mt-4">
-      <button onclick="selectTime('10:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">10:00</button>
-      <button onclick="selectTime('12:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">12:00</button>
-      <button onclick="selectTime('13:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">13:00</button>
+      <!-- Calendar -->
+      <div id="calendar" class="mt-4">
+        <!-- จะถูกเติมด้วย JS -->
+      </div>
 
-      <button onclick="selectTime('15:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">15:00</button>
-      <button onclick="selectTime('17:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">17:00</button>
-      <button onclick="selectTime('18:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">18:00</button>
+      <!-- Time buttons -->
+      <div id="timeButtons" class="grid grid-cols-3 gap-3 mt-4"></div>
+
+      <input type="hidden" id="selectedDate">
+      <input type="hidden" id="selectedTime">
+    </div>
+  </div>
+
+
+  <!-- STEP 4 Summary -->
+  <div id="summarySection" style="display:none;">
+    <div class="card mt-6">
+      <h3 class="font-bold text-xl mb-2" data-i18n="booking.step4">
+        Step 4 — ตรวจสอบข้อมูลและยอดมัดจำ
+      </h3>
+
+      <div id="summary"></div>
     </div>
 
-    <input type="hidden" id="selectedTime">
+    <button onclick="sendToLINE()"
+      class="w-full p-4 mt-6 bg-yellow-300 text-green-900 font-bold rounded-xl text-lg">
+      <span data-i18n="booking.bookNow">ส่งข้อมูลและสลิปมัดจำในไลน์</span>
+    </button>
   </div>
 
 
-  <!-- STEP 4 — สรุป & มัดจำ -->
-  <div id="step4" class="step-card mt-8" style="display:none;">
-    <h3 class="font-bold mb-2 text-xl" data-i18n="booking.step4">
-      Step 4 — ตรวจสอบข้อมูลและยอดมัดจำ
-    </h3>
-
-    <div id="summary"></div>
-
-    <p class="mt-4 text-sm opacity-80" data-i18n="booking.depositNote">
-      กรุณาชำระมัดจำเพื่อยืนยันคิว
-    </p>
-  </div>
-
-
-  <!-- STEP 5 — ปุ่มส่งเข้าไลน์ -->
-  <button onclick="sendToLINE()"
-    id="finalButton"
-    style="display:none;"
-    class="block mt-6 w-full p-4 rounded-xl bg-yellow-300 text-green-900 font-bold text-xl">
-    <span data-i18n="booking.bookNow">ส่งข้อมูลและสลิปมัดจำในไลน์</span>
-  </button>
-
-
-  <!-- SCRIPT -->
   <script src="js/i18n.js"></script>
-  <script src="js/booking.js"></script>
+  <script src="js/grooming.js"></script>
 
 </body>
 </html>
