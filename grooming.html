@@ -5,260 +5,422 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PO Grooming — ระบบจองคิว</title>
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com?ver=3.4.1"></script>
-
-  <!-- JS หลัก -->
-  <script src="grooming.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    :root{
+    :root {
       --po-deep:#0b3d36;
       --po-forest:#1c322d;
       --po-olive:#324f44;
       --po-card:#f6f9f7;
-      --po-border:#dbe4df;
-    }
-    body{
-      background:linear-gradient(to bottom,var(--po-deep),#f8f4e7);
     }
   </style>
 </head>
 
-<body class="min-h-screen">
-<main class="max-w-4xl mx-auto p-4">
+<body class="min-h-screen bg-gradient-to-b from-[var(--po-deep)] to-[#f8f4e7]">
+
+<main class="max-w-5xl mx-auto p-4">
 
   <!-- HEADER -->
-  <header class="mb-4 p-4 bg-white/80 rounded-xl shadow flex justify-between items-center">
-    <h1 class="text-xl font-bold text-[var(--po-forest)]">
-      🐾 PO Grooming – ระบบจองคิว
-    </h1>
-    <a href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit#gid=0"
-       target="_blank" class="text-indigo-700 underline text-sm">เปิด Google Sheet</a>
+  <header class="flex items-center justify-between bg-white/70 p-4 rounded-xl shadow mb-4">
+    <h1 class="text-xl font-bold text-[var(--po-forest)]">🐾 PO Grooming — ระบบจองคิว</h1>
+    <a class="text-indigo-700 underline" target="_blank"
+       href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit#gid=0">
+       เปิด Google Sheet
+    </a>
   </header>
 
-  <!-- STEP 1 : Calendar -->
-  <section class="p-4 rounded-xl bg-white shadow mb-4">
-    <h2 class="text-lg font-semibold text-[var(--po-forest)] mb-2">เลือกวันที่</h2>
+  <!-- STEP 1 -->
+  <section class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
+    <div class="bg-white/80 p-4 rounded-xl shadow">
+      <div id="calendarDays" class="grid grid-cols-3 gap-2"></div>
 
-    <div id="calendarDays" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-      <!-- ปฏิทินวันที่ -->
+      <div id="calendarTimes" class="mt-4 grid grid-cols-3 gap-2"></div>
     </div>
 
-    <hr class="my-4">
-
-    <h2 class="text-lg font-semibold text-[var(--po-forest)] mb-2">เลือกเวลา</h2>
-    <div id="calendarTimes" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
-
-    <input type="hidden" id="selectedTime">
+    <div class="bg-white/80 p-4 rounded-xl shadow">
+      <h3 class="font-bold mb-2 text-[var(--po-forest)]">ขั้นตอน</h3>
+      <ol class="text-sm space-y-2">
+        <li>1) เลือกวัน/เวลา</li>
+        <li>2) กรอกชื่อ & เบอร์</li>
+        <li>3) รายละเอียดน้อง</li>
+        <li>4) ยืนยันเงื่อนไข</li>
+        <li>5) ชำระมัดจำ & แจ้งสลิป</li>
+      </ol>
+    </div>
   </section>
 
-  <!-- STEP 2 : กรอกข้อมูลผู้จอง -->
-  <section id="step2" class="p-4 rounded-xl bg-white shadow mb-4 hidden">
-    <h2 class="text-lg font-semibold text-[var(--po-forest)] mb-2">ข้อมูลผู้จอง</h2>
-    <label class="text-sm">ชื่อ–นามสกุล/ชื่อเล่น</label>
-    <input id="custName" class="w-full p-2 border rounded-xl mb-3" placeholder="เช่น แนน / คุณเอม">
+  <!-- STEP 2 -->
+  <section id="step2" class="hidden bg-white/80 p-4 rounded-xl shadow mt-4">
+    <h3 class="font-bold text-[var(--po-forest)] mb-2">ข้อมูลผู้จอง</h3>
+    <input id="custName" class="w-full border p-2 rounded mb-2" placeholder="ชื่อผู้จอง" />
+    <input id="custPhone" class="w-full border p-2 rounded mb-2" placeholder="เบอร์โทร" />
 
-    <label class="text-sm">เบอร์โทร</label>
-    <input id="custPhone" class="w-full p-2 border rounded-xl mb-3" placeholder="08xxxxxxxx">
+    <button onclick="goToPets()"
+            class="w-full bg-[var(--po-olive)] text-white p-2 rounded">ถัดไป</button>
+  </section>
 
-    <button onclick="goStep3()" class="mt-3 w-full py-2 rounded-xl bg-[var(--po-olive)] text-white font-bold">
+  <!-- STEP 3 -->
+  <section id="step3" class="hidden bg-white/80 p-4 rounded-xl shadow mt-4">
+    <h3 class="font-bold text-[var(--po-forest)]">รายละเอียดน้อง</h3>
+
+    <div id="petsContainer" class="space-y-4 mt-3"></div>
+
+    <button id="addPet" class="px-3 py-2 rounded border">+ เพิ่มตัว</button>
+    <button onclick="goToSummary()" class="px-3 py-2 float-right rounded bg-indigo-600 text-white">
       ถัดไป
     </button>
+    <div class="clear-both"></div>
+
+    <!-- ตารางราคา -->
+    <div id="priceCat" class="hidden mt-4">
+      <img src="./price-cat.png" class="rounded-lg shadow border" />
+    </div>
+    <div id="priceDog" class="hidden mt-4">
+      <img src="./price-dog.png" class="rounded-lg shadow border" />
+    </div>
+    <div id="priceOption" class="hidden mt-4">
+      <img src="./option.png" class="rounded-lg shadow border" />
+    </div>
   </section>
 
-  <!-- STEP 3 : รายละเอียดสัตว์ -->
-  <section id="step3" class="p-4 rounded-xl bg-white shadow mb-4 hidden">
-    <h2 class="text-lg font-semibold text-[var(--po-forest)] mb-2">รายละเอียดน้อง (สูงสุด 3 ตัว)</h2>
+  <!-- STEP 4 -->
+  <section id="step4" class="hidden bg-white/80 p-4 rounded-xl shadow mt-4">
+    <h3 class="font-bold text-[var(--po-forest)]">ตรวจสอบข้อมูล</h3>
 
-    <div id="petsBox"></div>
+    <div id="summary" class="mt-3 text-sm"></div>
 
-    <button onclick="addPet()" class="mt-3 px-3 py-2 border rounded-xl">+ เพิ่มสัตว์</button>
-
-    <!-- แสดงรูปตารางราคา -->
-    <div id="priceDogBox" class="mt-4 hidden">
-      <img src="./price-dog.png" class="rounded-xl border shadow">
-      <img src="./option.png" class="rounded-xl border shadow mt-2">
-    </div>
-
-    <div id="priceCatBox" class="mt-4 hidden">
-      <img src="./price-cat.png" class="rounded-xl border shadow">
-      <img src="./option.png" class="rounded-xl border shadow mt-2">
-    </div>
-
-    <button onclick="goStep4()" class="mt-4 w-full py-2 rounded-xl bg-indigo-600 text-white">
-      ถัดไป
-    </button>
+    <button onclick="goToPayment()"
+            class="w-full bg-indigo-600 text-white p-2 rounded mt-3">ไปหน้าชำระเงิน</button>
   </section>
 
-  <!-- STEP 4 : สรุป + มัดจำ -->
-  <section id="step4" class="p-4 rounded-xl bg-white shadow mb-4 hidden">
-    <h2 class="text-lg font-semibold text-[var(--po-forest)] mb-2">ตรวจสอบข้อมูล</h2>
+  <!-- STEP 5 -->
+  <section id="step5" class="hidden bg-white/80 p-4 rounded-xl shadow mt-4">
+    <h3 class="font-bold text-[var(--po-forest)] mb-2">ชำระมัดจำ</h3>
+    <img src="./qr.png" class="rounded-lg border shadow w-full max-w-[360px] mx-auto" />
 
-    <div id="summary" class="text-sm leading-6"></div>
-
-    <button onclick="sendToLINE()"
-            id="finalButton"
-            class="hidden w-full mt-4 py-3 bg-green-600 text-white rounded-xl font-bold">
-      เปิดไลน์เพื่อส่งข้อมูล & ส่งสลิปมัดจำ
+    <button onclick="sendToLINE()" class="w-full mt-3 bg-green-600 text-white p-3 rounded">
+      แจ้งสลิปทางไลน์
     </button>
   </section>
 
 </main>
 
-<script>
-/* ==============
-   สร้างฟอร์มสัตว์
-   ============== */
-function addPet() {
-  if (petCount >= 3) return alert("เพิ่มได้สูงสุด 3 ตัวค่ะ");
 
-  petCount++;
-  renderPets();
+<!-- ---------------------------------------------------
+     JAVASCRIPT
+--------------------------------------------------- -->
+
+<script>
+// ------------------------------------------------------
+// CONFIG
+// ------------------------------------------------------
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/gviz/tq?tqx=out:json&gid=0";
+
+const TIME_SLOTS = ["12:00","14:00","15:00","16:00","17:00","18:00"];
+
+const SERVICE_DURATION = { bath:2, cutonly:2, bathcut:3 };
+
+let calendarData = [];
+let selectedDate = null;
+let selectedTime = null;
+
+let petCount = 0;
+let pets = [];
+
+
+// ------------------------------------------------------
+// LOAD SHEET
+// ------------------------------------------------------
+async function loadCalendar() {
+  const res = await fetch(SHEET_URL);
+  const text = await res.text();
+  const json = JSON.parse(text.substring(47, text.length - 2));
+
+  calendarData = json.table.rows.map(r => ({
+    date: r.c[0]?.v,
+    time: r.c[1]?.v,
+    status: r.c[2]?.v === true
+  }));
 }
 
-/* render ใหม่ทุกครั้ง */
-function renderPets() {
-  const box = document.getElementById("petsBox");
+
+// ------------------------------------------------------
+// RENDER DAYS
+// ------------------------------------------------------
+function renderCalendarDays() {
+  const box = document.getElementById("calendarDays");
   box.innerHTML = "";
 
-  pets = [];
+  let dates = [...new Set(calendarData.map(r => r.date))];
 
-  for (let i = 1; i <= petCount; i++) {
-    const html = `
-      <div class="p-3 border rounded-xl mb-3" id="pet-${i}">
-        <div class="font-semibold mb-2">สัตว์ตัวที่ ${i}</div>
-
-        <label class="text-xs">ชนิดสัตว์ *</label>
-        <select id="petType-${i}" onchange="updatePriceImages()" class="w-full p-2 border rounded-xl mb-2">
-          <option value="">เลือก</option>
-          <option value="dog">สุนัข</option>
-          <option value="cat">แมว</option>
-        </select>
-
-        <label class="text-xs">น้ำหนัก *</label>
-        <select id="weight-${i}" class="w-full p-2 border rounded-xl mb-2">
-          <option value="">เลือก</option>
-          <option value="xs">XS</option>
-          <option value="s">S</option>
-          <option value="m">M</option>
-          <option value="l">L</option>
-          <option value="xl">XL (พันธุ์ใหญ่)</option>
-        </select>
-
-        <label class="text-xs">สภาพขน *</label>
-        <select id="hair-${i}" class="w-full p-2 border rounded-xl mb-2">
-          <option value="">เลือก</option>
-          <option value="short">ขนสั้น</option>
-          <option value="long">ขนยาว</option>
-        </select>
-
-        <label class="text-xs">บริการ *</label>
-        <select id="service-${i}" class="w-full p-2 border rounded-xl mb-2">
-          <option value="">เลือก</option>
-          <option value="bath">อาบน้ำ</option>
-          <option value="cutonly">ตัดขน</option>
-          <option value="bathcut">อาบน้ำและตัดขน</option>
-        </select>
-
-        <label class="text-xs">บริการเสริม (ไม่บังคับ)</label>
-        <input id="method-${i}" class="w-full p-2 border rounded-xl mb-1" placeholder="เช่น ทรีตเมนต์ขน / เคลียร์หู">
-      </div>
-    `;
-    box.insertAdjacentHTML("beforeend", html);
-  }
+  dates.forEach(d => {
+    const btn = document.createElement("button");
+    btn.className = "p-3 bg-white rounded-xl hover:bg-yellow-200";
+    btn.innerText = d;
+    btn.onclick = () => selectDate(d);
+    box.appendChild(btn);
+  });
 }
 
-/* ==============
-   แสดงรูปหมา/แมวตามที่เลือก
-   ============== */
-function updatePriceImages() {
-  let anyDog = false, anyCat = false;
 
-  for (let i = 1; i <= petCount; i++) {
-    const t = document.getElementById(`petType-${i}`).value;
-    if (t === "dog") anyDog = true;
-    if (t === "cat") anyCat = true;
-  }
-
-  document.getElementById("priceDogBox").classList.toggle("hidden", !anyDog);
-  document.getElementById("priceCatBox").classList.toggle("hidden", !anyCat);
-}
-
-/* ==============
-   Step control
-   ============== */
-function goStep3() {
-  if (!selectedDate || !selectedTime)
-    return alert("กรุณาเลือกวันเวลา");
-
-  if (!custName.value.trim() || !custPhone.value.trim())
-    return alert("กรุณากรอกชื่อและเบอร์");
-
+// ------------------------------------------------------
+// SELECT DATE
+// ------------------------------------------------------
+function selectDate(d) {
+  selectedDate = d;
+  selectedTime = null;
+  document.getElementById("calendarTimes").innerHTML = "";
   document.getElementById("step2").classList.add("hidden");
-  document.getElementById("step3").classList.remove("hidden");
-  renderPets();
+  renderTimesForDate(d);
 }
 
-function goStep4() {
-  for (let i = 1; i <= petCount; i++) {
-    const t = document.getElementById(`petType-${i}`).value;
-    const s = document.getElementById(`service-${i}`).value;
-    const w = document.getElementById(`weight-${i}`).value;
-    const h = document.getElementById(`hair-${i}`).value;
 
-    if (!t || !s || !w || !h) {
-      return alert("กรุณากรอกข้อมูลสัตว์ให้ครบค่ะ");
+// ------------------------------------------------------
+// TIME RULES
+// ------------------------------------------------------
+function isValidTime(slot) {
+  let errors = [];
+
+  for (let i=1; i<=petCount; i++) {
+    let type = document.getElementById(`petType-${i}`).value;
+    let svc  = document.getElementById(`service-${i}`).value;
+
+    // 12:00 หมาเท่านั้น
+    if (slot === "12:00" && type !== "dog") {
+      errors.push("เวลา 12:00 รับเฉพาะสุนัขค่ะ");
+    }
+
+    // 18:00 ห้าม bathcut
+    if (slot === "18:00" && svc === "bathcut") {
+      errors.push("18:00 ไม่รับอาบน้ำและตัดขนค่ะ");
+    }
+
+    // ตรวจเวลาไม่พอ (duration)
+    let dur = SERVICE_DURATION[svc];
+    if (dur) {
+      let start = TIME_SLOTS.indexOf(slot);
+      for (let k=1; k<dur; k++) {
+        let next = TIME_SLOTS[start + k];
+        let row = calendarData.find(r => r.date===selectedDate && r.time===next);
+        if (!row?.status) {
+          errors.push(`${slot} → ${next} ไม่ว่าง`);
+        }
+      }
     }
   }
 
-  document.getElementById("step3").classList.add("hidden");
-  document.getElementById("step4").classList.remove("hidden");
-
-  renderSummary();
+  if (errors.length > 0) {
+    alert(errors.join("\n"));
+    return false;
+  }
+  return true;
 }
 
-/* ==============
-   สรุปยอด
-   ============== */
-function renderSummary() {
-  const box = document.getElementById("summary");
 
-  let html = `
+// ------------------------------------------------------
+// RENDER TIME BUTTONS
+// ------------------------------------------------------
+function renderTimesForDate(date) {
+  const box = document.getElementById("calendarTimes");
+  box.innerHTML = "";
+
+  TIME_SLOTS.forEach(slot => {
+    const row = calendarData.find(r => r.date === date && r.time === slot);
+    const free = row?.status;
+
+    const btn = document.createElement("button");
+    btn.innerText = slot;
+    btn.className = "p-3 rounded-xl w-full " +
+      (free ? "bg-white hover:bg-yellow-200" : "bg-gray-300 text-gray-600");
+    btn.disabled = !free;
+
+    if (free) btn.onclick = () => selectTime(slot);
+
+    box.appendChild(btn);
+  });
+}
+
+
+// ------------------------------------------------------
+// SELECT TIME
+// ------------------------------------------------------
+function selectTime(slot) {
+  if (!isValidTime(slot)) return;
+
+  selectedTime = slot;
+
+  document.getElementById("step2").classList.remove("hidden");
+}
+
+
+// ------------------------------------------------------
+// STEP 2 → STEP 3
+// ------------------------------------------------------
+function goToPets() {
+  let n = document.getElementById("custName").value.trim();
+  let p = document.getElementById("custPhone").value.trim();
+
+  if (!n || !p) return alert("กรุณากรอกข้อมูลให้ครบ");
+
+  document.getElementById("step3").classList.remove("hidden");
+  addPet();
+}
+
+
+// ------------------------------------------------------
+// ADD PET FORM
+// ------------------------------------------------------
+function addPet() {
+  petCount++;
+  if (petCount > 3) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "p-3 border rounded-xl";
+  wrap.innerHTML = `
+    <p class="font-bold mb-2">น้องตัวที่ ${petCount}</p>
+
+    <label class="text-sm">ชนิดสัตว์ *</label>
+    <select id="petType-${petCount}" onchange="showPrice(${petCount})"
+      class="border w-full p-2 rounded mb-2">
+      <option value="">เลือก</option>
+      <option value="dog">สุนัข</option>
+      <option value="cat">แมว</option>
+    </select>
+
+    <label class="text-sm">น้ำหนัก *</label>
+    <select id="weight-${petCount}" class="border w-full p-2 rounded mb-2">
+      <option value="">เลือกน้ำหนัก</option>
+      <option value="s">เล็ก</option>
+      <option value="m">กลาง</option>
+      <option value="l">ใหญ่</option>
+      <option value="xl">ใหญ่มาก (XL)</option>
+    </select>
+
+    <label class="text-sm">ลักษณะขน *</label>
+    <select id="hair-${petCount}" class="border w-full p-2 rounded mb-2">
+      <option value="">เลือก</option>
+      <option value="short">ขนสั้น</option>
+      <option value="medium">ขนกลาง</option>
+      <option value="long">ขนยาว</option>
+    </select>
+
+    <label class="text-sm">บริการ *</label>
+    <select id="service-${petCount}" class="border w-full p-2 rounded mb-2">
+      <option value="">เลือกบริการ</option>
+      <option value="bath">อาบน้ำ</option>
+      <option value="cutonly">ตัดขนอย่างเดียว</option>
+      <option value="bathcut">อาบน้ำและตัดขน</option>
+    </select>
+  `;
+  pets.push(wrap);
+  document.getElementById("petsContainer").appendChild(wrap);
+}
+
+
+// ------------------------------------------------------
+// SHOW PRICE IMAGES
+// ------------------------------------------------------
+function showPrice(i) {
+  const type = document.getElementById(`petType-${i}`).value;
+
+  document.getElementById("priceCat").classList.add("hidden");
+  document.getElementById("priceDog").classList.add("hidden");
+  document.getElementById("priceOption").classList.add("hidden");
+
+  if (type === "cat") {
+    priceCat.classList.remove("hidden");
+    priceOption.classList.remove("hidden");
+  }
+  if (type === "dog") {
+    priceDog.classList.remove("hidden");
+    priceOption.classList.remove("hidden");
+  }
+}
+
+
+// ------------------------------------------------------
+// STEP 3 → STEP 4 SUMMARY
+// ------------------------------------------------------
+function goToSummary() {
+  const box = document.getElementById("summary");
+  let dep = calcDeposit();
+
+  box.innerHTML = `
     <p>วันที่: <b>${selectedDate}</b></p>
     <p>เวลา: <b>${selectedTime}</b></p>
-    <hr class="my-2">
+    <hr class="my-2" />
+    <p>ยอดมัดจำรวม: <b>${dep} บาท</b></p>
   `;
 
-  html += `<p class="font-semibold">ยอดมัดจำรวม: ${calcDeposit()} บาท</p>`;
-
-  box.innerHTML = html;
-  document.getElementById("finalButton").classList.remove("hidden");
+  document.getElementById("step4").classList.remove("hidden");
 }
 
-/* ==============
-   มัดจำใหม่ตามกฎ
-   ============== */
+
+// ------------------------------------------------------
+// DEPOSIT
+// ------------------------------------------------------
 function calcDeposit() {
-  let dep = 0;
+  let sum = 0;
 
-  for (let i = 1; i <= petCount; i++) {
-    const type = document.getElementById(`petType-${i}`).value;
-    const service = document.getElementById(`service-${i}`).value;
-    const weight = document.getElementById(`weight-${i}`).value;
+  for (let i=1; i<=petCount; i++) {
+    let type = document.getElementById(`petType-${i}`).value;
+    let svc = document.getElementById(`service-${i}`).value;
+    let w = document.getElementById(`weight-${i}`).value;
 
-    if (type === "dog" && weight === "xl") {
-      dep += 400;
+    if (type === "dog" && w === "xl") {
+      sum += 400;
       continue;
     }
-    if (service === "bath") dep += 200;
-    if (service === "cutonly") dep += 200;
-    if (service === "bathcut") dep += 400;
+    if (svc === "bath") sum += 200;
+    if (svc === "cutonly") sum += 200;
+    if (svc === "bathcut") sum += 400;
   }
-
-  return dep;
+  return sum;
 }
 
+
+// ------------------------------------------------------
+// STEP 5
+// ------------------------------------------------------
+function goToPayment() {
+  document.getElementById("step5").classList.remove("hidden");
+}
+
+
+// ------------------------------------------------------
+// SEND TO LINE
+// ------------------------------------------------------
+function sendToLINE() {
+  let text = "📌 แจ้งจองคิวบริการ\n\n";
+  text += `วันที่: ${selectedDate}\nเวลา: ${selectedTime}\n\n`;
+
+  for (let i=1; i<=petCount; i++) {
+    text += `น้องตัวที่ ${i}:\n`;
+    text += `ชนิดสัตว์: ${document.getElementById(`petType-${i}`).value}\n`;
+    text += `น้ำหนัก: ${document.getElementById(`weight-${i}`).value}\n`;
+    text += `ขน: ${document.getElementById(`hair-${i}`).value}\n`;
+    text += `บริการ: ${document.getElementById(`service-${i}`).value}\n\n`;
+  }
+
+  text += `ยอดมัดจำรวม: ${calcDeposit()} บาท\n`;
+  text += `\nโปรดกด "ส่งข้อความ + ส่งสลิป" เพื่อยืนยันคิวค่ะ 💛`;
+
+  let url = `https://line.me/R/ti/p/@POGROOMING?text=${encodeURIComponent(text)}`;
+  window.location.href = url;
+}
+
+
+// ------------------------------------------------------
+// INIT
+// ------------------------------------------------------
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadCalendar();
+  renderCalendarDays();
+
+  document.getElementById("addPet").onclick = () => addPet();
+});
 </script>
 
 </body>
