@@ -500,8 +500,10 @@ function showTimes(){
   if(!selectedDate){ box.classList.add("hidden"); return; }
   box.classList.remove("hidden");
   document.getElementById("chosenDateLabel").textContent=`(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
-  const grid=document.getElementById("timeGrid"); grid.innerHTML="";
+  const grid=document.getElementById("timeGrid"); 
+  grid.innerHTML="";
   const daySlots=availability[selectedDate]||{};
+
   TIME_SLOTS.forEach(t=>{
     const v=(daySlots[t]??"ว่าง");
     const taken=(v==="เต็ม")||(v==="ปิด");
@@ -515,20 +517,27 @@ function showTimes(){
       (taken?"bg-gray-100 text-gray-400 cursor-not-allowed":
        isPending?"bg-yellow-100 text-yellow-700 cursor-wait":
        "bg-white hover:bg-[var(--po-card)]");
+
     btn.addEventListener("click",()=>{
 
-    if (t === "12:00") {
-      const ok = confirm("เวลา 12:00 เปิดให้บริการเฉพาะสุนัขนะคะ");
-      if (!ok) return;
-    }
+        // === popup เวลา 12:00 ===
+        if (t === "12:00") {
+            const ok = confirm("เวลา 12:00 เปิดให้บริการเฉพาะสุนัขนะคะ");
+            if (!ok) return;
+        }
 
-    [...grid.children].forEach(el=>el.classList.remove("slot-active"));
-    btn.classList.add("slot-active");
-    selectedTime=t;
-    updateStep(2);
-    updateServiceOptions();
-});
-  }
+        [...grid.children].forEach(el=>el.classList.remove("slot-active"));
+        btn.classList.add("slot-active");
+        selectedTime=t;
+        updateStep(2);
+        updateServiceOptions();
+    });
+
+    grid.appendChild(btn);
+  });   // ← ปิด forEach
+
+}   // ← ปิด showTimes()
+
 
 /* ===== Steps & actions (เดิม) ===== */
 function updateStep(step){
