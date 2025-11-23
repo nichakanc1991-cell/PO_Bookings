@@ -1,156 +1,134 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PO Grooming — จองคิว</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="booking.title">จองคิว | PO Grooming</title>
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
 
-  <!-- Style เดิมทั้งหมด -->
   <style>
-    :root{
-      --po-deep:#0b3d36;
-      --po-card:#f6f9f7;
-      --po-border:#dbe4df;
-      --po-olive:#324f44;
-      --po-olive-dark:#2a3e38;
-      --po-cream:#f8f4e7;
+    body {
+      font-family: "Prompt", sans-serif;
+      background: linear-gradient(to bottom, #0F3B2E, #1E5D48, #F2E2C4);
+      color: #F2E2C4;
+      min-height: 100vh;
+      padding-bottom: 100px;
     }
-    body{
-      background:linear-gradient(to bottom,var(--po-deep),var(--po-cream));
-      font-family:"Prompt",sans-serif;
+
+    .step-card {
+      background: rgba(255,255,255,0.10);
+      padding: 18px 20px;
+      border-radius: 18px;
+      backdrop-filter: blur(4px);
+      margin-top: 18px;
     }
-    .slot-active{ background:#e6efe9 !important; border-color:#93c5b1 !important; }
+
+    select {
+      color: #0F3B2E;
+      font-weight: 600;
+      background: #ffffffdd;
+    }
   </style>
 </head>
 
-<body class="min-h-screen">
+<body class="px-5">
 
-<main class="max-w-6xl mx-auto p-4 md:p-6">
-
-  <!-- HEADER -->
-  <header
-    class="mb-6 flex items-center justify-between gap-3 bg-white/70 backdrop-blur-md rounded-2xl px-5 py-3 shadow border border-[color:var(--po-border)]">
-    
-    <h1 class="text-2xl md:text-3xl font-bold text-[var(--po-olive)]">
-      🐾 PO Grooming — <span data-i18n="title.booking">ระบบจองคิว</span>
-    </h1>
-
-    <div class="flex gap-2 text-sm">
-      <button onclick="setLang('th')">ไทย</button>|
-      <button onclick="setLang('en')">English</button>|
-      <button onclick="setLang('zh')">中文</button>
-    </div>
-  </header>
-
-  <!-- GRID MAIN -->
-  <div class="grid md:grid-cols-[3fr_2fr] gap-6">
-
-    <!-- LEFT COLUMN -->
-    <section class="space-y-4">
-
-      <!-- CALENDAR -->
-      <div class="rounded-2xl p-4 shadow border bg-[color:var(--po-card)]">
-        <div class="flex items-center justify-between mb-2">
-          <button id="prevMonth" class="p-2 rounded border">‹</button>
-          <div id="monthTitle" class="font-semibold text-lg text-gray-700"></div>
-          <button id="nextMonth" class="p-2 rounded border">›</button>
-        </div>
-
-        <div class="grid grid-cols-7 text-center text-xs font-semibold mb-1 text-gray-700">
-          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-        </div>
-
-        <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
-
-        <div class="mt-3 text-xs text-gray-700 flex flex-wrap gap-3">
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full"></span>ว่าง</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-yellow-500 rounded-full"></span>บางช่วง</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span>เต็ม</span>
-        </div>
-      </div>
-
-      <!-- TIME SLOTS -->
-      <div id="timeBox" class="rounded-2xl border p-4 shadow bg-white/90 hidden">
-        <div class="text-sm font-medium mb-2 text-[var(--po-olive)]">
-          เลือกเวลา <span id="chosenDateLabel"></span>
-        </div>
-        <div id="timeGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
-      </div>
-
-    </section>
-
-    <!-- RIGHT COLUMN -->
-    <section class="space-y-4">
-
-      <!-- WIZARD STEPS -->
-      <div class="rounded-2xl border p-4 shadow bg-white/90">
-        <div class="font-semibold mb-2 text-gray-700">ขั้นตอน</div>
-        <ol class="text-sm space-y-2">
-          <li id="w1" class="flex items-start gap-2"><span class="step-bullet active">1</span> เลือกวัน–เวลา</li>
-          <li id="w2" class="flex items-start gap-2 text-gray-500"><span class="step-bullet">2</span> ข้อมูลลูกค้า</li>
-          <li id="w3" class="flex items-start gap-2 text-gray-500"><span class="step-bullet">3</span> รายละเอียดสัตว์เลี้ยง</li>
-          <li id="w4" class="flex items-start gap-2 text-gray-500"><span class="step-bullet">4</span> เงื่อนไขการให้บริการ</li>
-          <li id="w5" class="flex items-start gap-2 text-gray-500"><span class="step-bullet">5</span> ชำระมัดจำ</li>
-        </ol>
-      </div>
-
-      <!-- STEP 2 -->
-      <div id="formCustomer" class="rounded-2xl border p-4 bg-white/90 hidden">
-        <div class="font-semibold mb-2 text-gray-700">ข้อมูลผู้จอง</div>
-        <label class="text-xs text-gray-600">ชื่อ</label>
-        <input id="custName" class="w-full border rounded-xl p-2 mb-2" />
-        <label class="text-xs text-gray-600">เบอร์โทร</label>
-        <input id="custPhone" class="w-full border rounded-xl p-2" />
-        <button id="toPets" class="w-full mt-3 p-2 rounded-xl bg-[var(--po-olive)] text-white">ถัดไป</button>
-      </div>
-
-      <!-- STEP 3 -->
-      <div id="formPets" class="rounded-2xl border p-4 bg-white/90 hidden">
-        <div class="font-semibold mb-2 text-gray-700">รายละเอียดน้อง (สูงสุด 3 ตัว)</div>
-
-        <div id="petsContainer" class="space-y-4"></div>
-
-        <div class="mt-4">
-          <button id="addPet" class="px-3 py-2 border rounded-xl mr-2">+ เพิ่ม</button>
-          <button id="toTerms" class="px-4 py-2 rounded-xl bg-indigo-600 text-white">ถัดไป</button>
-        </div>
-      </div>
-
-      <!-- STEP 4 -->
-      <div id="formTerms" class="rounded-2xl border p-4 bg-white/90 hidden">
-        <img src="./terms-1.png" class="w-full rounded-xl mb-3" />
-        <label class="flex gap-2"><input id="agree" type="checkbox" /> ยอมรับเงื่อนไข</label>
-        <button id="toPayment" disabled class="w-full mt-3 p-2 rounded-xl bg-indigo-600 text-white opacity-50">ไปหน้าชำระเงิน</button>
-      </div>
-
-      <!-- STEP 5 -->
-      <div id="formPay" class="rounded-2xl border p-4 bg-white/90 hidden">
-        <div class="font-semibold mb-2 text-gray-700">ชำระมัดจำ</div>
-        <div id="depositText" class="text-sm text-gray-700 mb-2"></div>
-        <img src="qr.png" class="w-full rounded-xl border shadow" />
-        <button id="goLine"
-          class="w-full mt-2 p-3 rounded-xl bg-green-600 text-white">
-          แจ้งสลิปทางไลน์
-        </button>
-      </div>
-
-    </section>
+  <!-- LANGUAGE SWITCHER -->
+  <div class="text-center mt-4">
+    <button onclick="setLang('th')" class="mx-2">ไทย</button> |
+    <button onclick="setLang('en')" class="mx-2">English</button> |
+    <button onclick="setLang('zh')" class="mx-2">中文</button>
   </div>
 
-  <footer class="text-center text-xs text-gray-200 mt-6">
-    © 2025 PO Grooming
-  </footer>
+  <h1 class="text-3xl font-bold text-center mt-8" data-i18n="booking.header">
+    จองคิวอาบน้ำ–ตัดขน
+  </h1>
 
-</main>
 
-<!-- โหลดไฟล์ภาษา -->
-<script src="js/i18n.js"></script>
+  <!-- STEP 1 — จำนวนสัตว์ -->
+  <div class="step-card mt-6">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="booking.step1">
+      Step 1 — เลือกจำนวนสัตว์เลี้ยง
+    </h3>
 
-<!-- โหลดไฟล์ระบบ Wizard ใหม่ทั้งหมด -->
-<script src="js/booking.js"></script>
+    <select id="petCount" onchange="setPetCount(this.value)" class="w-full p-3 rounded mt-2">
+      <option value="1" selected>1 ตัว</option>
+      <option value="2">2 ตัว</option>
+      <option value="3">3 ตัว</option>
+    </select>
+  </div>
+
+
+  <!-- STEP 2 — ฟอร์มน้องทีละตัว -->
+  <div id="step2" class="mt-4">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="booking.step2">
+      Step 2 — กรอกรายละเอียดของน้อง ๆ
+    </h3>
+
+    <div id="petForms"></div>
+  </div>
+
+
+  <!-- ดำเนินการต่อ -->
+  <button onclick="gotoTimeStep()"
+    class="block mt-6 w-full p-4 rounded-xl bg-yellow-300 text-green-900 font-bold text-xl">
+    <span data-i18n="booking.next">ถัดไป</span>
+  </button>
+
+
+  <!-- STEP 3 — เลือกวันเวลา -->
+  <div id="step3" class="step-card mt-8" style="display:none;">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="booking.step3">
+      Step 3 — เลือกวันและเวลา
+    </h3>
+
+    <p class="text-sm opacity-80 mb-3">
+      (12:00 รับเฉพาะสุนัข • 18:00 ไม่รับอาบน้ำ+ตัดขน)
+    </p>
+
+    <!-- ใส่ปุ่มเวลา -->
+    <div class="grid grid-cols-3 gap-4 mt-4">
+      <button onclick="selectTime('10:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">10:00</button>
+      <button onclick="selectTime('12:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">12:00</button>
+      <button onclick="selectTime('13:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">13:00</button>
+
+      <button onclick="selectTime('15:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">15:00</button>
+      <button onclick="selectTime('17:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">17:00</button>
+      <button onclick="selectTime('18:00')" class="p-3 rounded-xl bg-white text-green-900 font-bold hover:bg-yellow-200">18:00</button>
+    </div>
+
+    <input type="hidden" id="selectedTime">
+  </div>
+
+
+  <!-- STEP 4 — สรุป & มัดจำ -->
+  <div id="step4" class="step-card mt-8" style="display:none;">
+    <h3 class="font-bold mb-2 text-xl" data-i18n="booking.step4">
+      Step 4 — ตรวจสอบข้อมูลและยอดมัดจำ
+    </h3>
+
+    <div id="summary"></div>
+
+    <p class="mt-4 text-sm opacity-80" data-i18n="booking.depositNote">
+      กรุณาชำระมัดจำเพื่อยืนยันคิว
+    </p>
+  </div>
+
+
+  <!-- STEP 5 — ปุ่มส่งเข้าไลน์ -->
+  <button onclick="sendToLINE()"
+    id="finalButton"
+    style="display:none;"
+    class="block mt-6 w-full p-4 rounded-xl bg-yellow-300 text-green-900 font-bold text-xl">
+    <span data-i18n="booking.bookNow">ส่งข้อมูลและสลิปมัดจำในไลน์</span>
+  </button>
+
+
+  <!-- SCRIPT -->
+  <script src="js/i18n.js"></script>
+  <script src="js/booking.js"></script>
 
 </body>
 </html>
