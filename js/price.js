@@ -3,15 +3,55 @@ let selectedPet = "";
 // ราคาแบบตามภาพจริง 100%
 const prices = {
   cat: {
-    short: { xs:{bath:259,clip:250,sc:350}, s:{bath:409,clip:300,sc:400}, m:{bath:459,clip:300,sc:400}, l:{bath:459,clip:300,sc:400}, xl:{bath:509,clip:300,sc:400} },
-    medium:{ xs:{bath:359,clip:250,sc:350}, s:{bath:459,clip:300,sc:400}, m:{bath:509,clip:300,sc:400}, l:{bath:459,clip:450,sc:500}, xl:{bath:509,clip:450,sc:500} },
-    long:  { xs:{bath:359,clip:400,sc:450}, s:{bath:459,clip:500,sc:550}, m:{bath:509,clip:550,sc:600}, l:{bath:509,clip:600,sc:650}, xl:{bath:559,clip:650,sc:700} }
+    short: {
+      xs: { bath: 259, clip: 200, sc: 300, cutMin: 250, cutMax: 450 },
+      s:  { bath: 329, clip: 250, sc: 350, cutMin: 300, cutMax: 500 },
+      m:  { bath: 399, clip: 250, sc: 350, cutMin: 350, cutMax: 550 },
+      l:  { bath: 449, clip: 250, sc: 350, cutMin: 400, cutMax: 600 },
+      xl: { bath: 499, clip: 250, sc: 350, cutMin: 450, cutMax: 650 }
+    },
+
+    medium: {
+      xs: { bath: 309, clip: 250, sc: 350, cutMin: 300, cutMax: 500 },
+      s:  { bath: 379, clip: 300, sc: 350, cutMin: 350, cutMax: 550 },
+      m:  { bath: 449, clip: 300, sc: 450, cutMin: 400, cutMax: 600 },
+      l:  { bath: 499, clip: 300, sc: 450, cutMin: 450, cutMax: 650 },
+      xl: { bath: 549, clip: 300, sc: 450, cutMin: 500, cutMax: 700 }
+    },
+
+    long: {
+      xs: { bath: 359, clip: 250, sc: 300, cutMin: 300, cutMax: 500 },
+      s:  { bath: 439, clip: 300, sc: 300, cutMin: 350, cutMax: 550 },
+      m:  { bath: 499, clip: 300, sc: 300, cutMin: 400, cutMax: 600 },
+      l:  { bath: 549, clip: 300, sc: 300, cutMin: 450, cutMax: 650 },
+      xl: { bath: 599, clip: 300, sc: 300, cutMin: 500, cutMax: 700 }
+    }
   },
 
   dog: {
-    short:{ xs:{bath:259,clip:300,sc:350}, s:{bath:359,clip:350,sc:400}, m:{bath:409,clip:400,sc:450}, l:{bath:459,clip:450,sc:500}, xl:{bath:509,clip:450,sc:500} },
-    medium:{ xs:{bath:309,clip:400,sc:450}, s:{bath:409,clip:450,sc:500}, m:{bath:459,clip:500,sc:550}, l:{bath:509,clip:550,sc:600}, xl:{bath:559,clip:600,sc:650} },
-    long:{ xs:{bath:359,clip:450,sc:500}, s:{bath:459,clip:500,sc:550}, m:{bath:509,clip:550,sc:600}, l:{bath:559,clip:600,sc:650}, xl:{bath:609,clip:650,sc:700} }
+    short: {
+      xs: { bath: 259, clip: 250, sc: 350, cutMin: 250, cutMax: 400 },
+      s:  { bath: 359, clip: 250, sc: 350, cutMin: 300, cutMax: 500 },
+      m:  { bath: 409, clip: 250, sc: 350, cutMin: 350, cutMax: 550 },
+      l:  { bath: 459, clip: 300, sc: 400, cutMin: 400, cutMax: 600 },
+      xl: { bath: 509, clip: 300, sc: 400, cutMin: 450, cutMax: 650 }
+    },
+
+    medium: {
+      xs: { bath: 309, clip: 250, sc: 350, cutMin: 250, cutMax: 400 },
+      s:  { bath: 409, clip: 250, sc: 350, cutMin: 350, cutMax: 550 },
+      m:  { bath: 459, clip: 250, sc: 350, cutMin: 400, cutMax: 600 },
+      l:  { bath: 509, clip: 300, sc: 400, cutMin: 450, cutMax: 650 },
+      xl: { bath: 559, clip: 300, sc: 400, cutMin: 500, cutMax: 700 }
+    },
+
+    long: {
+      xs: { bath: 359, clip: 250, sc: 350, cutMin: 250, cutMax: 400 },
+      s:  { bath: 459, clip: 250, sc: 350, cutMin: 350, cutMax: 550 },
+      m:  { bath: 509, clip: 250, sc: 350, cutMin: 400, cutMax: 600 },
+      l:  { bath: 559, clip: 300, sc: 400, cutMin: 450, cutMax: 650 },
+      xl: { bath: 609, clip: 300, sc: 400, cutMin: 500, cutMax: 700 }
+    }
   }
 };
 
