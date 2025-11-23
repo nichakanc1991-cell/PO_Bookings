@@ -217,7 +217,7 @@ const LINE_OA_ID="@po_grooming";
 
 const START_DATE=dayjs.tz("2025-11-01");
 const END_DATE=dayjs.tz("2025-12-31");
-const TIME_SLOTS=["14:00","15:00","16:00","17:00","18:00"];
+const TIME_SLOTS=["12:00","14:00","15:00","16:00","17:00","18:00"];
 
 /* ===== STATE (เดิม) ===== */
 let visibleMonth=START_DATE.startOf("month");
@@ -326,83 +326,65 @@ function contiguousFreeSlots(dateStr, startTime){
   }
   return n;
 }
-function canBookService(serviceName, dateStr, startTime) {
-  if (!dateStr || !startTime) return false;
-
-  const need = SERVICE_DURATION[serviceName] || 0;
-  const daySlots = availability[dateStr] || {};
-
-  const startIdx = TIME_SLOTS.indexOf(startTime);
-  if (startIdx < 0) return false;
-
-  // ถ้าเริ่มช่วง 18:00 → ห้ามอาบ+ตัด
-  if (startTime === "18:00" && serviceName === "อาบน้ำและตัดขน") {
-    return false;
-  }
-
-  // 12:00 → ตรวจเฉพาะว่าเป็นสุนัขหรือไม่ (เดี๋ยวไปเช็กใน validateTime แยก)
-  // ที่นี่ไม่บังคับเรื่องบริการ
-
-  // ตรวจเวลาว่างต่อเนื่อง เช่น 3 ชั่วโมงต้องว่าง 3 ช่องติดกัน
-  for (let i = 0; i < need; i++) {
-    const slot = TIME_SLOTS[startIdx + i];
-    if (!slot) return false;
-
-    const status = daySlots[slot] || "ว่าง";
-    if (status === "เต็ม" || status === "ปิด") return false;
-  }
-
-  return true;
+function canBookService(serviceName, dateStr, startTime){
+  if (ALWAYS_ALLOW_ALL_AT.includes(startTime)) return true;
+  const need=SERVICE_DURATION[serviceName]??0;
+  const free=contiguousFreeSlots(dateStr,startTime);
+  return free>=need;
 }
+function updateServiceOptions(){
+  const dateStr=selectedDate, startTime=selectedTime;
+  const allowAll=!dateStr||!startTime||ALWAYS_ALLOW_ALL_AT.includes(startTime);
+  pets.forEach(wrap=>{
+    const select=wrap.querySelector('[data-role="service"]'); if(!select) return;
+    [...select.options].forEach(opt=>{
+      const label=opt.value.trim(); if(!label) return;
+      opt.disabled = allowAll ? false : !canBookService(label,dateStr,startTime);
+    });
+    const cur=select.value.trim();
+    if(cur && select.querySelector(`option[value="${cur}"]`)?.disabled){ select.value=""; }
+    select.title = allowAll ? "เลือกบริการได้ทุกชนิด" : "ระบบจำกัดบริการตามเวลาว่างต่อเนื่องของช่วงที่เลือก";
+  });
+    // ===== เงื่อนไขพิเศษช่วงเย็น 17:00 / 18:00 =====
+  if (selectedTime === "17:00") {
+    const daySlots = availability[selectedDate] || {};
+    const nextStatus = daySlots["18:00"] ?? "ว่าง";
+    const nextFree = nextStatus === "ว่าง" || nextStatus === "รอมัดจำ";
 
-function updateServiceOptions() {
-  const dateStr = selectedDate;
-  const startTime = selectedTime;
-  if (!dateStr || !startTime) return;
+    pets.forEach(wrap => {
+      const select = wrap.querySelector('[data-role="service"]');
+      if (!select) return;
 
-  pets.forEach(wrap => {
-    const select = wrap.querySelector('[data-role="service"]');
-    if (!select) return;
-
-    const petType = wrap.querySelector('[data-role="petType"]').value;
-
-    // ปลดล็อกก่อนทุกตัวเลือก
-    [...select.options].forEach(opt => (opt.disabled = false));
-
-    // ==== RULE 1 — 12:00 รับแต่สุนัข ====
-    if (startTime === "12:00" && petType !== "สุนัข") {
       [...select.options].forEach(opt => {
-        if (opt.value !== "") opt.disabled = true;
+        if (!nextFree && opt.value !== "บริการเสริมอย่างเดียว") {
+          opt.disabled = true;
+        }
       });
-      select.value = "";
-      return;
-    }
 
-    // ==== RULE 2 — 18:00 ห้ามอาบ+ตัด ====
-    if (startTime === "18:00") {
-      [...select.options].forEach(opt => {
-        if (opt.value.trim() === "อาบน้ำและตัดขน") opt.disabled = true;
-      });
-      if (select.value === "อาบน้ำและตัดขน") select.value = "";
-    }
-
-    // ==== RULE 3 — คำนวณเวลาต่อเนื่องตามบริการ ====
-    [...select.options].forEach(opt => {
-      const label = opt.value.trim();
-      if (!label) return; // default
-
-      if (!canBookService(label, dateStr, startTime)) {
-        opt.disabled = true;
+      if (select.value && select.value !== "บริการเสริมอย่างเดียว") {
+        select.value = "";
       }
     });
+  }
 
-    // ถ้าค่าปัจจุบันถูก disable → รีเซ็ต
-    if (select.value && select.options[select.selectedIndex].disabled) {
-      select.value = "";
-    }
-  });
+  if (selectedTime === "18:00") {
+    pets.forEach(wrap => {
+      const select = wrap.querySelector('[data-role="service"]');
+      if (!select) return;
+
+      [...select.options].forEach(opt => {
+        if (opt.value === "อาบน้ำและตัดขน") {
+          opt.disabled = true;
+        }
+      });
+
+      if (select.value === "อาบน้ำและตัดขน") {
+        select.value = "";
+      }
+    });
+  }
+
 }
-
 
 /* ===== Parsers (เดิม) ===== */
 function parseGviz(text){
@@ -533,7 +515,20 @@ function showTimes(){
       (taken?"bg-gray-100 text-gray-400 cursor-not-allowed":
        isPending?"bg-yellow-100 text-yellow-700 cursor-wait":
        "bg-white hover:bg-[var(--po-card)]");
-    btn.addEventListener("click",()=>{[...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2); updateServiceOptions();});
+    btn.addEventListener("click",()=>{
+      // === เงื่อนไขพิเศษเวลา 12:00 ===
+    if (t === "12:00") {
+      const confirmed = confirm("ช่วงเวลา 12:00 รับเฉพาะสุนัขเท่านั้นค่ะ");
+      if (!confirmed) return; 
+    }
+
+    [...grid.children].forEach(el=>el.classList.remove("slot-active"));
+    btn.classList.add("slot-active");
+    selectedTime=t;
+    updateStep(2);
+    updateServiceOptions();
+});
+      [...grid.children].forEach(el=>el.classList.remove("slot-active")); btn.classList.add("slot-active"); selectedTime=t; updateStep(2); updateServiceOptions();});
     grid.appendChild(btn);
   });
 }
@@ -592,6 +587,18 @@ function addPetForm(){
     </div>`;
   document.getElementById("petsContainer").appendChild(wrap);
   pets.push(wrap); updateServiceOptions();
+  /* === บังคับประเภทสัตว์เมื่อเลือกเวลา 12:00 === */
+if (selectedTime === "12:00") {
+    const sel = wrap.querySelector('[data-role="petType"]');
+
+    [...sel.options].forEach(opt=>{
+      if (opt.value !== "" && opt.textContent.trim() !== "สุนัข") {
+          opt.disabled = true;
+      }
+    });
+
+    // ถ้าเคยเลือกอย่างอื่นอยู่ให้เคลียร์
+    if (sel.value !== "สุนัข") sel.value = "";
 }
 document.getElementById("toTerms").addEventListener("click",()=>{
   if(pets.length===0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
@@ -708,79 +715,7 @@ document.getElementById("btnReload").addEventListener("click",async()=>{await fe
     setLang(savedLang);
   }
 })();
-
-/* === เงื่อนไขเวลา 17.00 และ 18.00 (เวอร์ชันเสถียร) === */
-function updateServiceOptionsForEvening(dateStr, time) {
-  const daySlots = availability[dateStr] || {};
-  if (!selectedTime) selectedTime = time;
-
-
-  pets.forEach(wrap => {
-    const select = wrap.querySelector('[data-role="service"]');
-    if (!select) return;
-
-    // ปลดล็อกทั้งหมดก่อน
-    [...select.options].forEach(opt => (opt.disabled = false));
-
-    // ==== 17.00 ====
-    if (time === "17:00") {
-      const next = daySlots["18:00"] ?? "ว่าง";
-      const nextFree = next === "ว่าง" || next === "รอมัดจำ";
-      if (!nextFree) {
-        [...select.options].forEach(opt => {
-          if (opt.value.trim() !== "บริการเสริมอย่างเดียว") {
-            opt.disabled = true;
-          }
-        });
-        if (select.value && select.value !== "บริการเสริมอย่างเดียว") {
-          select.value = "";
-        }
-      }
-    }
-
-    // ==== 18.00 ====
-    if (time === "18:00") {
-      // ให้เลือกได้ทุกอย่าง ยกเว้น "อาบน้ำและตัดขน"
-      [...select.options].forEach(opt => {
-        if (opt.value.trim() === "อาบน้ำและตัดขน") {
-          opt.disabled = true;
-        }
-      });
-
-      // ถ้าเผื่อระบบหลักล็อกเองว่าเหลือแค่บริการเสริม → บังคับปลด
-      const anyEnabled = [...select.options].some(o => !o.disabled && o.value);
-      if (!anyEnabled) {
-        [...select.options].forEach(opt => {
-          if (opt.value.trim() !== "อาบน้ำและตัดขน") opt.disabled = false;
-        });
-      }
-
-      if (select.value === "อาบน้ำและตัดขน") {
-        select.value = "";
-      }
-    }
-  });
-}
-
-
-
-/* === Hook เข้ากับปุ่มเวลาในตารางแบบเสถียร === */
-const _oldShowTimesEvening = showTimes;
-showTimes = function () {
-  _oldShowTimesEvening();
-  const grid = document.getElementById("timeGrid");
-  if (!grid) return;
-  [...grid.children].forEach(btn => {
-    btn.addEventListener("click", () => {
-  const chosen = btn.textContent.trim();
-  updateServiceOptions(); // รันหลักก่อน
-  updateServiceOptionsForEvening(selectedDate, chosen); // แล้วค่อยบังคับเงื่อนไขพิเศษ
-});
-  });
-};
-
-
-
+  
 
 
 </script>
