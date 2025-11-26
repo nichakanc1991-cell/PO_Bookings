@@ -343,23 +343,37 @@ function updateServiceOptions(){
     if(cur && select.querySelector(`option[value="${cur}"]`)?.disabled){ select.value=""; }
     select.title = allowAll ? "เลือกบริการได้ทุกชนิด" : "ระบบจำกัดบริการตามเวลาว่างต่อเนื่องของช่วงที่เลือก";
   });
-    if (startTime === "12:00") {
-    const daySlots = availability[dateStr] || {};
-    const is14Free = ["ว่าง","รอมัดจำ"].includes(daySlots["14:00"]);
+  
+    // ===== (A) เวลา 12:00 — ขึ้นกับ 14:00 =====
+if (startTime === "12:00") {
+  const daySlots = availability[dateStr] || {};
+  const is14Free = ["ว่าง","รอมัดจำ"].includes(daySlots["14:00"]);
 
-    pets.forEach(wrap=>{
-      const select=wrap.querySelector('[data-role="service"]');
-      if(!select) return;
+  pets.forEach(wrap=>{
+    const select=wrap.querySelector('[data-role="service"]');
+    if(!select) return;
 
-      if (!is14Free) {
-        // ถ้า 14:00 ไม่ว่าง → ห้ามอาบน้ำ+ตัดขน
-        [...select.options].forEach(opt=>{
-          if (opt.value === "อาบน้ำและตัดขน") opt.disabled = true;
-        });
-        if (select.value === "อาบน้ำและตัดขน") select.value = "";
-      }
+    // ล้าง disabled เดิมทั้งหมดก่อน
+    [...select.options].forEach(opt=>{
+      opt.disabled = false;
     });
-  }
+
+    if (!is14Free) {
+      // ปิด "อาบน้ำและตัดขน" อย่างเดียว
+      [...select.options].forEach(opt=>{
+        if (opt.value === "อาบน้ำและตัดขน") {
+          opt.disabled = true;
+        }
+      });
+
+      if (select.value === "อาบน้ำและตัดขน") {
+        select.value = "";
+      }
+    }
+
+  });
+}
+
 
   // ===== (B) เวลา 17:00 — ขึ้นกับ 18:00 =====
   if (startTime === "17:00") {
