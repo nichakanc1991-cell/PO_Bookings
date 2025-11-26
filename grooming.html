@@ -496,43 +496,58 @@ function renderCalendar(){
   }
 }
 function showTimes(){
-  const box=document.getElementById("timeBox");
-  if(!selectedDate){ box.classList.add("hidden"); return; }
+  const box = document.getElementById("timeBox");
+  if(!selectedDate){ 
+    box.classList.add("hidden"); 
+    return; 
+  }
+
   box.classList.remove("hidden");
-  document.getElementById("chosenDateLabel").textContent=`(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
-  const grid=document.getElementById("timeGrid"); 
-  grid.innerHTML="";
-  const daySlots=availability[selectedDate]||{};
+  document.getElementById("chosenDateLabel").textContent =
+    `(วันที่ ${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())})`;
 
-  TIME_SLOTS.forEach(t=>{
-    const v=(daySlots[t]??"ว่าง");
-    const taken=(v==="เต็ม")||(v==="ปิด");
-    const isPending=(v==="รอมัดจำ");
+  const grid = document.getElementById("timeGrid");
+  grid.innerHTML = "";
 
-    const btn=document.createElement("button");
-    btn.type="button";
-    btn.textContent=t;
-    btn.disabled=taken || isPending;
-    btn.className="py-3 rounded-xl border border-[color:var(--po-border)] text-sm font-medium "+
-      (taken?"bg-gray-100 text-gray-400 cursor-not-allowed":
-       isPending?"bg-yellow-100 text-yellow-700 cursor-wait":
-       "bg-white hover:bg-[var(--po-card)]");
+  const daySlots = availability[selectedDate] || {};
 
-    btn.addEventListener("click",()=>{
+  TIME_SLOTS.forEach(t => {
+    const v = daySlots[t] ?? "ว่าง";
+    const taken = (v === "เต็ม") || (v === "ปิด");
+    const isPending = (v === "รอมัดจำ");
 
-    // Popup เฉพาะเวลา 12:00
-    if (t === "12:00") {
-      const ok = confirm("เวลา 12:00 เปิดให้บริการเฉพาะสุนัขนะคะ");
-      if (!ok) return;
-    }
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = t;
+    btn.disabled = taken || isPending;
+    btn.className =
+      "py-3 rounded-xl border border-[color:var(--po-border)] text-sm font-medium " +
+      (taken 
+        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+        : isPending
+        ? "bg-yellow-100 text-yellow-700 cursor-wait"
+        : "bg-white hover:bg-[var(--po-card)]"
+      );
 
-    // โค้ดเดิม
-    [...grid.children].forEach(el=>el.classList.remove("slot-active"));
-    btn.classList.add("slot-active");
-    selectedTime = t;
-    updateStep(2);
-    updateServiceOptions();
-});
+    btn.addEventListener("click", () => {
+
+      // เฉพาะเวลา 12:00
+      if (t === "12:00") {
+        const ok = confirm("เวลา 12:00 เปิดให้บริการเฉพาะสุนัขนะคะ");
+        if (!ok) return;
+      }
+
+      [...grid.children].forEach(el => el.classList.remove("slot-active"));
+      btn.classList.add("slot-active");
+
+      selectedTime = t;
+      updateStep(2);
+      updateServiceOptions();
+    });
+
+    grid.appendChild(btn);
+  });
+}
 
 // ⬅️ สำคัญมาก: ต้องเพิ่มปุ่มเข้าไปในกริด
 grid.appendChild(btn);
@@ -570,50 +585,58 @@ document.getElementById("addPet").addEventListener("click",()=>{
   addPetForm();
 });
 function addPetForm(){
-  const idx=pets.length+1;
-  const wrap=document.createElement("div");
-  wrap.className="p-3 border border-[color:var(--po-border)] rounded-xl";
-  wrap.innerHTML=`
+  const idx = pets.length + 1;
+  const wrap = document.createElement("div");
+  wrap.className = "p-3 border border-[color:var(--po-border)] rounded-xl";
+
+  wrap.innerHTML = `
     <div class="text-sm font-medium mb-2 text-[var(--po-forest)]">น้องตัวที่ ${idx}</div>
     <div class="grid gap-2">
       <label class="text-xs text-gray-600">ชื่อน้อง *</label>
-      <input class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="petName" placeholder="เช่น อุ๋งอุ๋ง" />
+      <input class="border rounded-xl p-2" data-role="petName" />
+
       <label class="text-xs text-gray-600">ประเภท *</label>
-      <select class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="petType">
+      <select class="border rounded-xl p-2" data-role="petType">
         <option value="">เลือกประเภท</option>
-        <option>สุนัข</option><option>แมว</option><option>กระต่าย</option><option>อื่นๆ</option>
+        <option value="สุนัข">สุนัข</option>
+        <option value="แมว">แมว</option>
+        <option value="กระต่าย">กระต่าย</option>
+        <option value="อื่นๆ">อื่นๆ</option>
       </select>
-      <label class="text-xs text-gray-600">สายพันธุ์ (ไม่บังคับ)</label>
-      <input class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="breed" placeholder="เช่น Poodle / Scottish Fold" />
+
+      <label class="text-xs text-gray-600">สายพันธุ์</label>
+      <input class="border rounded-xl p-2" data-role="breed" />
+
       <label class="text-xs text-gray-600">ประเภทบริการ *</label>
-      <select class="border border-[color:var(--po-border)] rounded-xl p-2" data-role="service">
+      <select class="border rounded-xl p-2" data-role="service">
         <option value="">เลือกบริการ</option>
-        <option>อาบน้ำ</option><option>ตัดขน</option><option>อาบน้ำและตัดขน</option><option>บริการเสริมอย่างเดียว</option>
+        <option>อาบน้ำ</option>
+        <option>ตัดขน</option>
+        <option>อาบน้ำและตัดขน</option>
+        <option>บริการเสริมอย่างเดียว</option>
       </select>
-      <label class="text-xs text-gray-600">บริการเสริมเพิ่มเติมที่ต้องการ (ถ้ามี)</label>
-      <textarea class="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[60px]" data-role="addon" placeholder="เช่น ทรีตเมนต์ขน เคลียร์ช่องหู ฯลฯ"></textarea>
+
+      <label class="text-xs text-gray-600">บริการเสริม</label>
+      <textarea class="border rounded-xl p-2 min-h-[60px]" data-role="addon"></textarea>
+
       <label class="text-xs text-gray-600">ข้อควรระวัง</label>
-      <textarea class="border border-[color:var(--po-border)] rounded-xl p-2 min-h-[70px]" data-role="notes" placeholder="แจ้งสิ่งที่ต้องทราบ เช่น ก้าวร้าว โรคประจำตัว ฯลฯ"></textarea>
-    </div>`;
+      <textarea class="border rounded-xl p-2 min-h-[70px]" data-role="notes"></textarea>
+    </div>
+  `;
+
   document.getElementById("petsContainer").appendChild(wrap);
-  pets.push(wrap); updateServiceOptions();
-  /* === บังคับประเภทสัตว์เมื่อเลือกเวลา 12:00 === */
-if (selectedTime === "12:00") {
+  pets.push(wrap);
+
+  // บังคับเวลา 12:00 → สุนัขเท่านั้น
+  if (selectedTime === "12:00") {
     const sel = wrap.querySelector('[data-role="petType"]');
-  // === บังคับสัตว์ที่รองรับเวลา 12:00 เฉพาะสุนัข ===
-if (selectedTime === "12:00") {
-
-    // ล็อกตัวเลือกให้เลือกได้เฉพาะ 'สุนัข'
-    [...sel.options].forEach(opt=>{
-        if (opt.value !== "" && opt.textContent.trim() !== "สุนัข") {
-            opt.disabled = true;
-        }
+    [...sel.options].forEach(opt => {
+      if (opt.value !== "" && opt.value !== "สุนัข") opt.disabled = true;
     });
+    if (sel.value !== "สุนัข") sel.value = "";
+  }
 
-    // เคลียร์ค่าเดิมที่ไม่ใช่สุนัข
-    if (sel.value !== "สุนัข") {
-        sel.value = "";
-    }
+  updateServiceOptions();
 }
 
 document.getElementById("toTerms").addEventListener("click",()=>{
