@@ -168,54 +168,74 @@
   </div>
 
   <script>
-    const form = document.getElementById("bookingForm");
-    const totalEl = document.getElementById("totalPrice");
-    const depositEl = document.getElementById("depositAmount");
-    const durationText = document.getElementById("durationText");
-    const popup = document.getElementById("popup");
-    const addCatBtn = document.getElementById("addCatBtn");
-    const catNameList = document.getElementById("catNameList");
 
-    // default วันที่ปัจจุบัน
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("checkinDate").value = today;
+// ----------------------------------------------------------
+// 1) ELEMENT ที่ต้องใช้งาน
+// ----------------------------------------------------------
+const form = document.getElementById("bookingForm");
+const totalEl = document.getElementById("totalPrice");
+const depositEl = document.getElementById("depositAmount");
+const durationText = document.getElementById("durationText");
+const popup = document.getElementById("popup");
 
-    addCatBtn.addEventListener("click", () => {
+const addCatBtn = document.getElementById("addCatBtn");
+const catNameList = document.getElementById("catNameList");
+
+const roomTypeSelect = document.getElementById("roomType");
+const standardOptionDiv = document.getElementById("standardOption").parentElement;
+
+
+// ----------------------------------------------------------
+// 2) ตั้งค่าเริ่มต้น (Default Setup)
+// ----------------------------------------------------------
+const today = new Date().toISOString().split("T")[0];
+document.getElementById("checkinDate").value = today;
+
+// เรียกให้ตรวจสอบ UI ครั้งแรกตอนเปิดหน้า
+updateRoomDisplay();
+
+
+// ----------------------------------------------------------
+// 3) ฟังก์ชัน: เพิ่มแมว
+// ----------------------------------------------------------
+addCatBtn.addEventListener("click", () => {
+
   const count = catNameList.querySelectorAll(".cat-item").length + 1;
 
-  // กล่องเก็บ input + ปุ่มลบ
   const wrapper = document.createElement("div");
   wrapper.className = "cat-item flex items-center gap-2";
 
-  // ช่องกรอกชื่อแมว
   const input = document.createElement("input");
   input.type = "text";
   input.name = "catName[]";
   input.placeholder = "ชื่อแมวตัวที่ " + count;
   input.className = "flex-1 rounded-lg p-2 mt-1 border border-[var(--po-gold)] focus:ring-2 focus:ring-[var(--po-green)]";
 
-  // ปุ่มลบ ❌
   const removeBtn = document.createElement("button");
   removeBtn.type = "button";
   removeBtn.textContent = "✖";
   removeBtn.className = "text-red-500 text-lg font-bold hover:text-red-700 mt-1";
 
-  // ลบเมื่อคลิก
   removeBtn.addEventListener("click", () => {
     wrapper.remove();
     updateCatPlaceholders();
-    calculateTotal(); // อัปเดตราคารวมใหม่
+    calculateTotal();
+    updateRoomDisplay();
   });
 
-  // รวมเข้าด้วยกัน
   wrapper.appendChild(input);
   wrapper.appendChild(removeBtn);
   catNameList.appendChild(wrapper);
 
   input.scrollIntoView({ behavior: "smooth", block: "center" });
+
+  updateRoomDisplay();
 });
 
-// ฟังก์ชันอัปเดต placeholder ให้เรียงลำดับใหม่หลังลบ
+
+// ----------------------------------------------------------
+// 4) ฟังก์ชัน: อัปเดตหมายเลข placeholder ของชื่อแมว
+// ----------------------------------------------------------
 function updateCatPlaceholders() {
   const cats = catNameList.querySelectorAll("input[name='catName[]']");
   cats.forEach((input, i) => {
@@ -224,9 +244,14 @@ function updateCatPlaceholders() {
 }
 
 
+// ----------------------------------------------------------
+// 5) ฟังก์ชัน: คำนวณราคา
+// ----------------------------------------------------------
 function calculateTotal() {
+
   const room = form.roomType.value;
-  const cats = catNameList.querySelectorAll("input").length;
+  const cats = catNameList.querySelectorAll("input[name='catName[]']").length;
+
   const checkinDateValue = form.checkinDate.value;
   const checkoutDateValue = form.checkoutDate.value;
   const checkinTimeValue = form.checkinTime.value;
@@ -246,104 +271,150 @@ function calculateTotal() {
     return;
   }
 
-  const standardOptionSelect = document.getElementById("standardOption");
-  const standardOption = standardOptionSelect ? standardOptionSelect.value : null;
+  const standardOption = document.getElementById("standardOption")?.value || "same";
 
   let total = 0;
-  let deposit = 0;
-
-  // ✅ ถ้าเวลาน้อยกว่า 12 ชม. ใช้เรตชั่วโมงแทน
   let hourlyRate = 0;
+
   if (diffHours <= 3) hourlyRate = room === "standard" ? 50 : 150;
   else if (diffHours <= 12) hourlyRate = room === "standard" ? 150 : 300;
 
-  const days = hourlyRate ? 1 : Math.ceil(diffHours / 24) || 1; // ถ้ามีเรตชั่วโมงให้คิดเป็น 1 ครั้ง
+  const days = hourlyRate ? 1 : Math.ceil(diffHours / 24) || 1;
 
-  // ---- ห้อง SUITE ----
+  // SUITE ROOM
   if (room === "suite") {
     if (cats === 1) total = (hourlyRate || 500) * days;
     else if (cats === 2) total = (hourlyRate ? hourlyRate * 1.4 : 700) * days;
     else if (cats === 3) total = (hourlyRate ? hourlyRate * 1.8 : 900) * days;
-    else if (cats > 3) return alert("ห้อง Suite รองรับสูงสุด 3 ตัว");
+    else return alert("ห้อง Suite รองรับสูงสุด 3 ตัว");
   }
 
-  // ---- ห้อง STANDARD ----
+  // STANDARD ROOM
   else if (room === "standard") {
     const basePrice = hourlyRate || 250;
 
-    if (cats === 1) {
-      total = basePrice * days;
-    } else if (cats === 2) {
-      total =
-        standardOption === "same"
-          ? (basePrice + (hourlyRate ? 30 : 150)) * days
-          : (basePrice * 2) * days;
-    } else if (cats === 3) {
-      total = ((basePrice + (hourlyRate ? 30 : 150)) + basePrice) * days;
-    } else if (cats > 3) {
-      return alert("ห้อง Standard รองรับสูงสุด 3 ตัวเท่านั้น");
+    if (cats === 1) total = basePrice * days;
+
+    else if (cats === 2) {
+      total = standardOption === "same"
+        ? (basePrice + (hourlyRate ? 30 : 150)) * days
+        : (basePrice * 2) * days;
     }
+
+    else if (cats === 3) {
+      total = ((basePrice + (hourlyRate ? 30 : 150)) + basePrice) * days;
+    }
+
+    else return alert("ห้อง Standard รองรับสูงสุด 3 ตัว");
   }
 
-  deposit = total * 0.5;
-  durationText.textContent = `ระยะเวลาเข้าพัก: ${diffHours.toFixed(1)} ชม. (${cats} ตัว)`;
+  const deposit = total * 0.5;
+
+  // แปลงชั่วโมงเป็น วัน + ชั่วโมง
+const daysStayed = Math.floor(diffHours / 24);
+const hoursStayed = Math.round(diffHours % 24);
+
+let durationString = "";
+if (daysStayed > 0) durationString += `${daysStayed} วัน `;
+if (hoursStayed > 0) durationString += `${hoursStayed} ชั่วโมง`;
+
+// กรณีเช็คอิน-เอาต์เวลาเดียวกันแบบ 24 ชม.พอดี
+if (durationString.trim() === "") durationString = "0 ชั่วโมง";
+
+// แสดงผล
+durationText.textContent = `ระยะเวลาเข้าพัก: ${durationString} (${cats} ตัว)`;
+
+
   totalEl.textContent = total.toLocaleString("th-TH");
   depositEl.textContent = deposit.toLocaleString("th-TH");
 }
 
 
-// ✅ เรียกคำนวณใหม่ทุกครั้งที่มีการกรอกหรือเปลี่ยนค่าในฟอร์ม
+// ----------------------------------------------------------
+// 6) ฟังก์ชัน: แสดง/ซ่อน dropdown "พักรวม/เปิดเพิ่ม"
+// ----------------------------------------------------------
+function updateRoomDisplay() {
+
+  const catCount = document.querySelectorAll("input[name='catName[]']").length;
+  const roomType = roomTypeSelect.value;
+
+  if (catCount < 2) {
+    standardOptionDiv.style.display = "none";
+    document.getElementById("standardOption").value = "same";
+    return;
+  }
+
+  if (roomType !== "standard") {
+    standardOptionDiv.style.display = "none";
+    document.getElementById("standardOption").value = "same";
+    return;
+  }
+
+  standardOptionDiv.style.display = "block";
+}
+
+
+// ----------------------------------------------------------
+// 7) EVENT LISTENERS
+// ----------------------------------------------------------
 form.addEventListener("input", calculateTotal);
 document.getElementById("checkinTime").addEventListener("change", calculateTotal);
 document.getElementById("checkoutTime").addEventListener("change", calculateTotal);
 document.getElementById("standardOption").addEventListener("change", calculateTotal);
 
+roomTypeSelect.addEventListener("change", updateRoomDisplay);
+form.addEventListener("input", updateRoomDisplay);
 
 
-    form.addEventListener("submit", e => {
-      e.preventDefault();
-      const name = form.customerName.value.trim();
-      const phone = form.customerPhone.value.trim();
-      const room = form.roomType.value === "standard" ? "Standard Room" : "Suite Room";
-      const catNames = [...catNameList.querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean);
-      const checkinDate = form.checkinDate.value;
-      const checkoutDate = form.checkoutDate.value;
-      const total = parseInt(totalEl.textContent);
-      const deposit = parseInt(depositEl.textContent);
+// ----------------------------------------------------------
+// 8) ฟอร์ม submit
+// ----------------------------------------------------------
+form.addEventListener("submit", e => {
+  e.preventDefault();
 
-      if (catNames.length === 0) return alert("กรุณากรอกชื่อแมวอย่างน้อย 1 ตัว");
-      if (!/^[0-9]{9,10}$/.test(phone)) return alert("กรุณากรอกเบอร์โทรให้ถูกต้อง");
-      if (!total || !deposit) return alert("กรุณาเลือกวันที่ให้ถูกต้อง");
+  const name = form.customerName.value.trim();
+  const phone = form.customerPhone.value.trim();
+  const room = form.roomType.value === "standard" ? "Standard Room" : "Suite Room";
+  const catNames = [...catNameList.querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean);
 
-      const catsText = catNames.join(", ");
-      const text = encodeURIComponent(`📋 แจ้งโอนมัดจำห้องพัก PO CAT HOTEL\nชื่อผู้จอง: ${name}\nเบอร์: ${phone}\nชื่อแมว: ${catsText}\nห้อง: ${room}\nยอดมัดจำ: ${deposit} บาท`);
-      document.getElementById("lineConfirm").href = `https://line.me/R/oaMessage/@po_grooming/?text=${text}`;
-      document.getElementById("deposit-summary").innerHTML = `ยอดมัดจำ: <b>${deposit} บาท</b>`;
-      popup.classList.remove("hidden");
+  const checkinDate = form.checkinDate.value;
+  const checkoutDate = form.checkoutDate.value;
 
-      document.getElementById("nextPage").onclick = () => {
-        document.getElementById("nextPage").disabled = true;
-        window.location.href = `receipt.html?name=${encodeURIComponent(name)}&phone=${phone}&room=${encodeURIComponent(room)}&cats=${encodeURIComponent(catsText)}&deposit=${deposit}&total=${total}&checkin=${checkinDate}&checkout=${checkoutDate}`;
-      };
-    });
+  const total = parseInt(totalEl.textContent);
+  const deposit = parseInt(depositEl.textContent);
 
-    // ซ่อน/แสดงตัวเลือกเฉพาะเมื่อเลือกห้อง Standard
-const roomTypeSelect = document.getElementById("roomType");
-const standardOptionDiv = document.getElementById("standardOption").parentElement;
+  if (catNames.length === 0) return alert("กรุณากรอกชื่อแมวอย่างน้อย 1 ตัว");
+  if (!/^[0-9]{9,10}$/.test(phone)) return alert("กรุณากรอกเบอร์โทรให้ถูกต้อง");
+  if (!total || !deposit) return alert("กรุณาเลือกวันที่ให้ถูกต้อง");
 
+  const catsText = catNames.join(", ");
 
-function toggleStandardOption() {
-  if (roomTypeSelect.value === "standard") {
-    standardOptionDiv.style.display = "block";
-  } else {
-    standardOptionDiv.style.display = "none";
-  }
-}
+  const text = encodeURIComponent(
+    `📋 แจ้งโอนมัดจำห้องพัก PO CAT HOTEL
+ชื่อผู้จอง: ${name}
+เบอร์: ${phone}
+ชื่อแมว: ${catsText}
+ห้อง: ${room}
+ยอดมัดจำ: ${deposit} บาท`
+  );
 
-// เรียกใช้เมื่อเปิดหน้า + เมื่อมีการเปลี่ยนห้อง
-toggleStandardOption();
-roomTypeSelect.addEventListener("change", toggleStandardOption);
+  document.getElementById("lineConfirm").href =
+    `https://line.me/R/oaMessage/@po_grooming/?text=${text}`;
 
-  </script>
+  document.getElementById("deposit-summary").innerHTML =
+    `ยอดมัดจำ: <b>${deposit} บาท</b>`;
+
+  popup.classList.remove("hidden");
+
+  document.getElementById("nextPage").onclick = () => {
+    document.getElementById("nextPage").disabled = true;
+
+    window.location.href =
+      `receipt.html?name=${encodeURIComponent(name)}&phone=${phone}&room=${encodeURIComponent(room)}&cats=${encodeURIComponent(catsText)}&deposit=${deposit}&total=${total}&checkin=${checkinDate}&checkout=${checkoutDate}`;
+  };
+});
+
+</script>
+
 </body>
 </html>
