@@ -374,23 +374,34 @@ if (startTime === "12:00") {
   });
 }
 
-
   // ===== (B) เวลา 17:00 — ขึ้นกับ 18:00 =====
-  if (startTime === "17:00") {
-    const daySlots = availability[dateStr] || {};
-    const is18Free = ["ว่าง","รอมัดจำ"].includes(daySlots["18:00"]);
-    pets.forEach(wrap=>{
-      const select=wrap.querySelector('[data-role="service"]');
-      if(!select) return;
+if (startTime === "17:00") {
+  const daySlots = availability[dateStr] || {};
+  const is18Free = ["ว่าง","รอมัดจำ"].includes(daySlots["18:00"]);
 
-      if(!is18Free){
-        [...select.options].forEach(opt=>{
-          if (opt.value !== "บริการเสริมอย่างเดียว") opt.disabled = true;
-        });
-        if (select.value !== "บริการเสริมอย่างเดียว") select.value = "";
-      }
+  pets.forEach(wrap=>{
+    const select=wrap.querySelector('[data-role="service"]');
+    if(!select) return;
+
+    // ⭐ Reset disabled ก่อนทุกครั้ง (สำคัญมาก!)
+    [...select.options].forEach(opt=>{
+      opt.disabled = false;
     });
-  }
+
+    if(!is18Free){
+      // ถ้า 18:00 ไม่ว่าง → อนุญาตเฉพาะบริการเสริม
+      [...select.options].forEach(opt=>{
+        if (opt.value !== "บริการเสริมอย่างเดียว") {
+          opt.disabled = true;
+        }
+      });
+
+      if (select.value !== "บริการเสริมอย่างเดียว") {
+        select.value = "";
+      }
+    }
+  });
+}
 
   // ===== (C) เวลา 18:00 — ห้ามอาบน้ำ+ตัดขน =====
   if (startTime === "18:00") {
