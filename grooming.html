@@ -152,26 +152,15 @@
         <div class="mt-4 space-y-3 text-center">
           <p class="text-xs text-gray-600">💰 ตารางราคาโดยประมาณ (ขึ้นอยู่กับขนาดและสภาพขนจริง)</p>
           <div id="priceCat" class="hidden">
-            <img src="./price-cat.png" alt="ราคาอาบน้ำ-ตัดขนแมว" class="w-full rounded-lg border border-[color:var(--po-border)] shadow-sm object-contain">
+            <img src="./price-cat01.png" alt="ราคาอาบน้ำ-ตัดขนแมว" class="w-full rounded-lg border border-[color:var(--po-border)] shadow-sm object-contain">
           </div>
           <div id="priceDog" class="hidden">
-            <img src="./price-dog.png" alt="ราคาอาบน้ำ-ตัดขนสุนัข" class="w-full rounded-lg border border-[color:var(--po-border)] shadow-sm object-contain">
+            <img src="./price-dog01.png" alt="ราคาอาบน้ำ-ตัดขนสุนัข" class="w-full rounded-lg border border-[color:var(--po-border)] shadow-sm object-contain">
           </div>
           <div id="optionImage" class="hidden">
             <img src="./option.png" alt="บริการเสริมเพิ่มเติม" class="w-full rounded-lg border border-[color:var(--po-border)] shadow-sm object-contain">
           </div>
         </div>
-
-        <!-- คำเตือน -->
-        <section class="space-y-3 my-4">
-          <img src="./warning.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="ข้อควรระวังสำคัญ">
-        <section class="space-y-3 my-4">
-          <img src="./price-dog.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="ค่าบริการสุนัข">
-          <section class="space-y-3 my-4">
-          <img src="./price-cat.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="ค่าบริการแมว">
-        <section class="space-y-3 my-4">
-          <img src="./option.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="บริการเสริม">
-        </section>
 
         <div class="mt-4 flex gap-2">
           <button id="addPet" class="px-3 py-2 rounded-xl border border-[color:var(--po-border)] hover:bg-white text-sm">+ เพิ่มตัวที่ 2/3</button>
@@ -182,8 +171,8 @@
       <!-- Step 4 -->
       <div id="formTerms" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
         <section class="space-y-3 mb-4">
-          <img src="./terms-1.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="การจองคิว">
-          <img src="./terms-2.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="การเข้ารับบริการ">
+          <img src="./terms-4.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="การจองคิว">
+          <img src="./terms-5.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="การเข้ารับบริการ">
           <img src="./terms-3.png" class="w-full rounded-lg border border-[color:var(--po-border)] object-contain" alt="ประกาศจากร้าน">
         </section>
         <label class="flex items-center gap-2 text-sm">
@@ -197,7 +186,16 @@
 
       <!-- Step 5 -->
       <div id="formPay" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
-        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]"data-i18n="label.deposit">ชำระมัดจำ 200 บาท ต่อตัว โปรดชำระภายใน 15 นาที </div>
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]"data-i18n="label.deposit">อัปเดตการจองคิว<br>
+  เพื่อความแม่นยำในการจัดคิว ร้านมีการเก็บมัดจำดังนี้:<br><br>
+
+  • อาบน้ำ 200 บาท<br>
+  • อาบน้ำ+ตัดขน 400 บาท<br>
+  • สุนัขพันธุ์ใหญ่ 400 บาท<br><br>
+
+  หักออกจากค่าบริการค่ะ<br>
+  รบกวนส่งสลิปพร้อมข้อมูลการจองทางไลน์ด้วยนะคะ<br>
+          ขอบคุณค่ะ 🐾 </div>
         <img id="qrImage" class="w-full rounded-xl border border-[color:var(--po-border)] shadow max-h-[560px] object-contain" src="./qr.png" alt="QR">
         <button id="goLine" class="w-full mt-3 px-4 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700"data-i18n="label.notifyline">
           แจ้งสลิปทางไลน์ (เปิด LINE OA)
@@ -385,6 +383,34 @@ function updateServiceOptions(){
   }
 
 }
+
+  function updatePriceImages(){
+  const priceCat = document.getElementById("priceCat");
+  const priceDog = document.getElementById("priceDog");
+
+  const firstPet = pets[0];
+  if (!firstPet){
+    priceCat.classList.add("hidden");
+    priceDog.classList.add("hidden");
+    return;
+  }
+
+  const type = firstPet.querySelector('[data-role="petType"]').value;
+
+  if (type === "สุนัข") {
+    priceDog.classList.remove("hidden");
+    priceCat.classList.add("hidden");
+  } 
+  else if (type === "แมว") {
+    priceCat.classList.remove("hidden");
+    priceDog.classList.add("hidden");
+  } 
+  else {
+    priceCat.classList.add("hidden");
+    priceDog.classList.add("hidden");
+  }
+}
+
 
 /* ===== Parsers (เดิม) ===== */
 function parseGviz(text){
@@ -617,10 +643,15 @@ function addPetForm(){
 
   document.getElementById("petsContainer").appendChild(wrap);
   pets.push(wrap);
+  
+  const sel = wrap.querySelector('[data-role="petType"]');
+    sel.addEventListener("change", ()=>{
+  updateServiceOptions(); 
+  updatePriceImages();    
+});
 
   // บังคับเวลา 12:00 → สุนัขเท่านั้น
   if (selectedTime === "12:00") {
-    const sel = wrap.querySelector('[data-role="petType"]');
     [...sel.options].forEach(opt => {
       if (opt.value !== "" && opt.value !== "สุนัข") opt.disabled = true;
     });
