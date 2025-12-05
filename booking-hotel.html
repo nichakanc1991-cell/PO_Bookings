@@ -401,8 +401,9 @@ form.addEventListener("submit", e => {
   const checkinDate = form.checkinDate.value;
   const checkoutDate = form.checkoutDate.value;
 
-  const total = parseInt(totalEl.textContent);
-  const deposit = parseInt(depositEl.textContent);
+  const total = Number(totalEl.textContent.replace(/[^0-9.]/g, ""));
+  const deposit = Number(depositEl.textContent.replace(/[^0-9.]/g, ""));
+
 
   if (catNames.length === 0) return alert("กรุณากรอกชื่อแมวอย่างน้อย 1 ตัว");
   if (!/^[0-9]{9,10}$/.test(phone)) return alert("กรุณากรอกเบอร์โทรให้ถูกต้อง");
