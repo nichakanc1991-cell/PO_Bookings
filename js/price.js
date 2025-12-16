@@ -5,26 +5,26 @@ const prices = {
   cat: {
     short: {
       xs: { bath: 259, clip: 250, sc: 350, cutMin: 250, cutMax: 450 },
-      s:  { bath: 409, clip: 300, sc: 400, cutMin: 300, cutMax: 500 },
-      m:  { bath: 459, clip: 300, sc: 400, cutMin: 350, cutMax: 550 },
-      l:  { bath: 509, clip: 300, sc: 400, cutMin: 400, cutMax: 600 },
-      xl: { bath: 559, clip: 300, sc: 400, cutMin: 450, cutMax: 650 }
+      s:  { bath: 359, clip: 300, sc: 400, cutMin: 300, cutMax: 500 },
+      m:  { bath: 409, clip: 300, sc: 400, cutMin: 350, cutMax: 550 },
+      l:  { bath: 459, clip: 300, sc: 400, cutMin: 400, cutMax: 600 },
+      xl: { bath: 509, clip: 300, sc: 400, cutMin: 450, cutMax: 650 }
     },
 
     medium: {
       xs: { bath: 359, clip: 250, sc: 350, cutMin: 300, cutMax: 500 },
-      s:  { bath: 459, clip: 300, sc: 400, cutMin: 350, cutMax: 550 },
-      m:  { bath: 509, clip: 300, sc: 400, cutMin: 400, cutMax: 600 },
-      l:  { bath: 559, clip: 300, sc: 400, cutMin: 450, cutMax: 650 },
-      xl: { bath: 609, clip: 300, sc: 400, cutMin: 500, cutMax: 700 }
+      s:  { bath: 409, clip: 300, sc: 400, cutMin: 350, cutMax: 550 },
+      m:  { bath: 459, clip: 300, sc: 400, cutMin: 400, cutMax: 600 },
+      l:  { bath: 509, clip: 300, sc: 400, cutMin: 450, cutMax: 650 },
+      xl: { bath: 559, clip: 300, sc: 400, cutMin: 500, cutMax: 700 }
     },
 
     long: {
       xs: { bath: 409, clip: 250, sc: 350, cutMin: 300, cutMax: 500 },
-      s:  { bath: 509, clip: 300, sc: 400, cutMin: 350, cutMax: 550 },
-      m:  { bath: 559, clip: 300, sc: 400, cutMin: 400, cutMax: 600 },
-      l:  { bath: 609, clip: 300, sc: 400, cutMin: 450, cutMax: 650 },
-      xl: { bath: 659, clip: 300, sc: 400, cutMin: 500, cutMax: 700 }
+      s:  { bath: 459, clip: 300, sc: 400, cutMin: 350, cutMax: 550 },
+      m:  { bath: 509, clip: 300, sc: 400, cutMin: 400, cutMax: 600 },
+      l:  { bath: 559, clip: 300, sc: 400, cutMin: 450, cutMax: 650 },
+      xl: { bath: 609, clip: 300, sc: 400, cutMin: 500, cutMax: 700 }
     }
   },
 
