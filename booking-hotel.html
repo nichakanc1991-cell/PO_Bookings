@@ -326,11 +326,13 @@ function calculateTotal() {
 
     if (extraHours > 0 && extraHours <= 12) {
       // กรณีเกินมาไม่เกิน 12 ชม. → คิดเป็นค่าพิเศษแทนการปัดเป็น 1 คืนเต็ม
-      if (room === "standard") {
-        extraFee = 150; // จุดที่เธอบ่นว่าควรเป็น 150 แต่เมื่อก่อนโดน 250
+      // เกิน 1–3 ชม. +50 / เกิน 4–12 ชม. +150
+    if (extraHours <= 3) extraFee = 50;
+    else extraFee = 150;
       } else if (room === "suite") {
-        extraFee = 300; // ตั้งตามเรทไม่เกิน 12 ชม. เดิมของ suite
-      }
+    if (extraHours <= 3) extraFee = 150;
+    else extraFee = 300;
+  }
     } else if (extraHours > 12) {
       // เกิน 12 ชม. → นับเป็นอีก 1 คืนเต็ม
       d += 1;
