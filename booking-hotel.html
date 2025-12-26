@@ -248,7 +248,6 @@ function updateCatPlaceholders() {
 // 5) ฟังก์ชัน: คำนวณราคา
 // ----------------------------------------------------------
 function calculateTotal() {
-
   const room = form.roomType.value;
   const cats = catNameList.querySelectorAll("input[name='catName[]']").length;
 
@@ -258,29 +257,34 @@ function calculateTotal() {
   const checkoutTimeValue = form.checkoutTime.value;
 
   if (!checkinDateValue || !checkoutDateValue) return;
-let fixedCheckinDate = checkinDateValue;
-let fixedCheckoutDate = checkoutDateValue;
 
-let fixedCheckinTime = checkinTimeValue;
-let fixedCheckoutTime = checkoutTimeValue;
+  let fixedCheckinDate = checkinDateValue;
+  let fixedCheckoutDate = checkoutDateValue;
 
-// แก้ปัญหาเวลา 24:00 → ให้เลื่อนไปเป็น 00:00 ของวันถัดไป
-if (fixedCheckoutTime === "24") {
+  let fixedCheckinTime = checkinTimeValue;
+  let fixedCheckoutTime = checkoutTimeValue;
+
+  // แก้ปัญหาเวลา 24:00 → ให้เลื่อนไปเป็น 00:00 ของวันถัดไป
+  if (fixedCheckoutTime === "24") {
     const nextDay = new Date(fixedCheckoutDate);
     nextDay.setDate(nextDay.getDate() + 1);
     fixedCheckoutDate = nextDay.toISOString().split("T")[0];
     fixedCheckoutTime = "00";
-}
+  }
 
-if (fixedCheckinTime === "24") {
+  if (fixedCheckinTime === "24") {
     const nextDay = new Date(fixedCheckinDate);
     nextDay.setDate(nextDay.getDate() + 1);
     fixedCheckinDate = nextDay.toISOString().split("T")[0];
     fixedCheckinTime = "00";
-}
+  }
 
-const checkin = new Date(`${fixedCheckinDate}T${fixedCheckinTime.padStart(2, "0")}:00:00`);
-const checkout = new Date(`${fixedCheckoutDate}T${fixedCheckoutTime.padStart(2, "0")}:00:00`);
+  const checkin = new Date(
+    `${fixedCheckinDate}T${fixedCheckinTime.padStart(2, "0")}:00:00`
+  );
+  const checkout = new Date(
+    `${fixedCheckoutDate}T${fixedCheckoutTime.padStart(2, "0")}:00:00`
+  );
 
   const diffMs = checkout - checkin;
   const diffHours = diffMs / (1000 * 60 * 60);
@@ -292,15 +296,44 @@ const checkout = new Date(`${fixedCheckoutDate}T${fixedCheckoutTime.padStart(2, 
     return;
   }
 
-  const standardOption = document.getElementById("standardOption")?.value || "same";
+  // แยกจำนวนคืนเต็ม และชั่วโมงเกิน
+  const fullDays = Math.floor(diffHours / 24);
+  const extraHours = diffHours - fullDays * 24;
+
+  const standardOption =
+    document.getElementById("standardOption")?.value || "same";
 
   let total = 0;
   let hourlyRate = 0;
+  let days = 1;      // จำนวนวันที่ใช้คูณราคา
+  let extraFee = 0;  // ค่าชั่วโมงเกิน (ไม่เกิน 12 ชม.)
 
-  if (diffHours <= 3) hourlyRate = room === "standard" ? 50 : 150;
-  else if (diffHours <= 12) hourlyRate = room === "standard" ? 150 : 300;
+  // เคสพักสั้น คิดเป็นชั่วโมงเหมือนเดิม
+  if (diffHours <= 3) {
+    hourlyRate = room === "standard" ? 50 : 150;
+    days = 1;
+  } else if (diffHours <= 12) {
+    hourlyRate = room === "standard" ? 150 : 300;
+    days = 1;
+  } else {
+    // เคสพักหลายวัน
+    let d = fullDays;
+    if (d < 1) d = 1; // กันกรณีเลขเพี้ยน
 
-  const days = hourlyRate ? 1 : Math.ceil(diffHours / 24) || 1;
+    if (extraHours > 0 && extraHours <= 12) {
+      // กรณีเกินมาไม่เกิน 12 ชม. → คิดเป็นค่าพิเศษแทนการปัดเป็น 1 คืนเต็ม
+      if (room === "standard") {
+        extraFee = 150; // จุดที่เธอบ่นว่าควรเป็น 150 แต่เมื่อก่อนโดน 250
+      } else if (room === "suite") {
+        extraFee = 300; // ตั้งตามเรทไม่เกิน 12 ชม. เดิมของ suite
+      }
+    } else if (extraHours > 12) {
+      // เกิน 12 ชม. → นับเป็นอีก 1 คืนเต็ม
+      d += 1;
+    }
+
+    days = d;
+  }
 
   // SUITE ROOM
   if (room === "suite") {
@@ -314,42 +347,38 @@ const checkout = new Date(`${fixedCheckoutDate}T${fixedCheckoutTime.padStart(2, 
   else if (room === "standard") {
     const basePrice = hourlyRate || 250;
 
-    if (cats === 1) total = basePrice * days;
-
-    else if (cats === 2) {
-      total = standardOption === "same"
-        ? (basePrice + (hourlyRate ? 30 : 150)) * days
-        : (basePrice * 2) * days;
-    }
-
-    else if (cats === 3) {
-      total = ((basePrice + (hourlyRate ? 30 : 150)) + basePrice) * days;
-    }
-
-    else return alert("ห้อง Standard รองรับสูงสุด 3 ตัว");
+    if (cats === 1) {
+      total = basePrice * days;
+    } else if (cats === 2) {
+      total =
+        standardOption === "same"
+          ? (basePrice + (hourlyRate ? 30 : 150)) * days
+          : basePrice * 2 * days;
+    } else if (cats === 3) {
+      total = (basePrice + (hourlyRate ? 30 : 150) + basePrice) * days;
+    } else return alert("ห้อง Standard รองรับสูงสุด 3 ตัว");
   }
+
+  // บวกค่าชั่วโมงเกิน (กรณีพักหลายวัน + เกินไม่เกิน 12 ชม.)
+  total += extraFee;
 
   const deposit = total * 0.5;
 
-  // แปลงชั่วโมงเป็น วัน + ชั่วโมง
-const daysStayed = Math.floor(diffHours / 24);
-const hoursStayed = Math.round(diffHours % 24);
+  // แปลงชั่วโมงเป็น วัน + ชั่วโมง (ใช้ diffHours เดิม)
+  const daysStayed = Math.floor(diffHours / 24);
+  const hoursStayed = Math.round(diffHours % 24);
 
-let durationString = "";
-if (daysStayed > 0) durationString += `${daysStayed} วัน `;
-if (hoursStayed > 0) durationString += `${hoursStayed} ชั่วโมง`;
+  let durationString = "";
+  if (daysStayed > 0) durationString += `${daysStayed} วัน `;
+  if (hoursStayed > 0) durationString += `${hoursStayed} ชั่วโมง`;
 
-// กรณีเช็คอิน-เอาต์เวลาเดียวกันแบบ 24 ชม.พอดี
-if (durationString.trim() === "") durationString = "0 ชั่วโมง";
+  if (durationString.trim() === "") durationString = "0 ชั่วโมง";
 
-// แสดงผล
-durationText.textContent = `ระยะเวลาเข้าพัก: ${durationString} (${cats} ตัว)`;
-
+  durationText.textContent = `ระยะเวลาเข้าพัก: ${durationString} (${cats} ตัว)`;
 
   totalEl.textContent = total.toLocaleString("th-TH");
   depositEl.textContent = deposit.toLocaleString("th-TH");
 }
-
 
 // ----------------------------------------------------------
 // 6) ฟังก์ชัน: แสดง/ซ่อน dropdown "พักรวม/เปิดเพิ่ม"
