@@ -24,9 +24,11 @@
       <p>เบอร์ติดต่อ: <span id="phone"></span></p>
       <p>ประเภทห้อง: <span id="room"></span></p>
       <p>ชื่อแมว: <span id="cats"></span></p>
-      <p>วันเช็กอิน: <span id="checkin"></span></p>
-      <p>วันเช็กเอาท์: <span id="checkout"></span></p>
+      <p>วันเช็กอิน: <span id="checkin"></span> เวลา <span id="checkinTime"></span> น.</p>
+      <p>วันเช็กเอาท์: <span id="checkout"></span> เวลา <span id="checkoutTime"></span> น.</p>
       <hr class="border-[var(--po-gold)] my-2">
+      <p>ประเภทห้อง: <span id="room"></span> / จำนวนห้อง: <span id="roomCount"></span> ห้อง</p>
+      <p>ระยะเวลาพักทั้งหมด: <span id="duration"></span></p>
       <p>ยอดรวมทั้งหมด: <b><span id="total"></span> บาท</b></p>
       <p>มัดจำ 50% ที่ชำระแล้ว: <b><span id="deposit"></span> บาท</b></p>
       <p>สถานะ: ✅ รอชำระส่วนที่เหลือในวันเข้าพัก</p>
@@ -51,10 +53,18 @@
 
   <script>
     const p = new URLSearchParams(location.search);
-    const get = k => decodeURIComponent(p.get(k) || "-");
-    const name = get("name"), phone = get("phone"), room = get("room"),
-          cats = get("cats"), checkin = get("checkin"), checkout = get("checkout"),
-          deposit = get("deposit"), total = get("total");
+const get = k => decodeURIComponent(p.get(k) || "-");
+
+const name = get("name"),
+      phone = get("phone"),
+      room = get("room"),
+      cats = get("cats"),
+      checkin = get("checkin"),
+      checkout = get("checkout"),
+      checkinTime = get("checkinTime"),
+      checkoutTime = get("checkoutTime"),
+      deposit = get("deposit"),
+      total = get("total");
 
     if (name === "-") {
       alert("กรุณาจองห้องก่อนเข้าดูใบเสร็จ");
@@ -67,6 +77,8 @@
     document.getElementById("cats").innerHTML = cats.split(", ").join("<br>");
     document.getElementById("checkin").textContent = checkin;
     document.getElementById("checkout").textContent = checkout;
+    document.getElementById("checkinTime").textContent = checkinTime;
+    document.getElementById("checkoutTime").textContent = checkoutTime;
     document.getElementById("deposit").textContent = deposit;
     document.getElementById("total").textContent = total;
 
