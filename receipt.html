@@ -22,7 +22,6 @@
     <div class="text-left space-y-1 text-[15px]">
       <p>ชื่อผู้จอง: <span id="name"></span></p>
       <p>เบอร์ติดต่อ: <span id="phone"></span></p>
-      <p>ประเภทห้อง: <span id="room"></span></p>
       <p>ชื่อแมว: <span id="cats"></span></p>
       <p>วันเช็กอิน: <span id="checkin"></span> เวลา <span id="checkinTime"></span> น.</p>
       <p>วันเช็กเอาท์: <span id="checkout"></span> เวลา <span id="checkoutTime"></span> น.</p>
@@ -52,42 +51,77 @@
   </div>
 
   <script>
-    const p = new URLSearchParams(location.search);
-const get = k => decodeURIComponent(p.get(k) || "-");
+  const p = new URLSearchParams(location.search);
+  const get = k => decodeURIComponent(p.get(k) || "-");
 
-const name = get("name"),
-      phone = get("phone"),
-      room = get("room"),
-      cats = get("cats"),
-      checkin = get("checkin"),
-      checkout = get("checkout"),
-      checkinTime = get("checkinTime"),
-      checkoutTime = get("checkoutTime"),
-      deposit = get("deposit"),
-      total = get("total");
+  const name         = get("name"),
+        phone        = get("phone"),
+        room         = get("room"),
+        cats         = get("cats"),
+        checkin      = get("checkin"),
+        checkout     = get("checkout"),
+        checkinTime  = get("checkinTime"),
+        checkoutTime = get("checkoutTime"),
+        roomCount    = get("rooms") || "1",
+        deposit      = get("deposit"),
+        total        = get("total");
 
-    if (name === "-") {
-      alert("กรุณาจองห้องก่อนเข้าดูใบเสร็จ");
-      window.location.href = "booking-hotel-final.html";
+  if (name === "-") {
+    alert("กรุณาจองห้องก่อนเข้าดูใบเสร็จ");
+    window.location.href = "booking-hotel-final.html";
+  }
+
+  document.getElementById("name").textContent        = name;
+  document.getElementById("phone").textContent       = phone;
+  document.getElementById("room").textContent        = room;
+  document.getElementById("cats").innerHTML          = cats.split(", ").join("<br>");
+  document.getElementById("checkin").textContent     = checkin;
+  document.getElementById("checkout").textContent    = checkout;
+  document.getElementById("checkinTime").textContent = checkinTime;
+  document.getElementById("checkoutTime").textContent= checkoutTime;
+  document.getElementById("roomCount").textContent   = roomCount;
+  document.getElementById("deposit").textContent     = deposit;
+  document.getElementById("total").textContent       = total;
+
+  // คำนวณระยะเวลาพัก
+  let durationText = "-";
+  if (checkin !== "-" && checkout !== "-" && checkinTime !== "-" && checkoutTime !== "-") {
+    const start = new Date(`${checkin}T${checkinTime}:00`);
+    const end   = new Date(`${checkout}T${checkoutTime}:00`);
+    if (!isNaN(start) && !isNaN(end) && end > start) {
+      const diffHours = (end - start) / (1000 * 60 * 60);
+      const days  = Math.floor(diffHours / 24);
+      const hours = Math.round(diffHours % 24);
+
+      let parts = [];
+      if (days  > 0) parts.push(`${days} วัน`);
+      if (hours > 0) parts.push(`${hours} ชั่วโมง`);
+      durationText = parts.join(" ");
+      if (!durationText) durationText = "0 ชั่วโมง";
     }
+  }
+  document.getElementById("duration").textContent = durationText;
 
-    document.getElementById("name").textContent = name;
-    document.getElementById("phone").textContent = phone;
-    document.getElementById("room").textContent = room;
-    document.getElementById("cats").innerHTML = cats.split(", ").join("<br>");
-    document.getElementById("checkin").textContent = checkin;
-    document.getElementById("checkout").textContent = checkout;
-    document.getElementById("checkinTime").textContent = checkinTime;
-    document.getElementById("checkoutTime").textContent = checkoutTime;
-    document.getElementById("deposit").textContent = deposit;
-    document.getElementById("total").textContent = total;
+  const today = new Date();
+  document.getElementById("receiptDate").textContent =
+    "วันที่ออกใบเสร็จ: " + today.toLocaleDateString("th-TH",
+      { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const today = new Date();
-    document.getElementById("receiptDate").textContent =
-      "วันที่ออกใบเสร็จ: " + today.toLocaleDateString("th-TH", {year:'numeric',month:'long',day:'numeric'});
+  // ข้อความที่ส่งเข้า LINE
+  const text = encodeURIComponent(
+`📋 แจ้งสลิปและใบเสร็จห้องพัก PO CAT HOTEL
+ชื่อผู้จอง: ${name}
+เบอร์: ${phone}
+ชื่อแมว: ${cats}
+ห้อง: ${room} (${roomCount} ห้อง)
+เช็กอิน: ${checkin} เวลา ${checkinTime} น.
+เช็กเอาท์: ${checkout} เวลา ${checkoutTime} น.
+ระยะเวลาพัก: ${durationText}
+ยอดมัดจำ: ${deposit} บาท`
+  );
 
-    const text = encodeURIComponent(`📋 แจ้งสลิปและใบเสร็จห้องพัก PO CAT HOTEL\nชื่อผู้จอง: ${name}\nเบอร์: ${phone}\nชื่อแมว: ${cats}\nห้อง: ${room}\nยอดมัดจำ: ${deposit} บาท`);
-    document.getElementById("lineSend").href = `https://line.me/R/oaMessage/@po_grooming/?text=${text}`;
-  </script>
+  document.getElementById("lineSend").href =
+    `https://line.me/R/oaMessage/@po_grooming/?text=${text}`;
+</script>
 </body>
 </html>
