@@ -107,6 +107,8 @@
           <label class="block mb-2 font-semibold">วันเช็กอิน</label>
           <input type="date" id="checkinDate" class="w-full rounded-lg p-2 mb-2" required>
           <select id="checkinTime" class="w-full rounded-lg p-2">
+  <option value="12">10:00</option>
+  <option value="13">11:00</option>
   <option value="12">12:00</option>
   <option value="13">13:00</option>
   <option value="14">14:00</option>
@@ -126,6 +128,8 @@
           <label class="block mb-2 font-semibold">วันเช็กเอาท์</label>
           <input type="date" id="checkoutDate" class="w-full rounded-lg p-2 mb-2" required>
           <select id="checkoutTime" class="w-full rounded-lg p-2">
+  <option value="12">10:00</option>
+  <option value="13">11:00</option>
   <option value="12">12:00</option>
   <option value="13">13:00</option>
   <option value="14">14:00</option>
@@ -425,20 +429,35 @@ form.addEventListener("submit", e => {
   const name = form.customerName.value.trim();
   const phone = form.customerPhone.value.trim();
   const room = form.roomType.value === "standard" ? "Standard Room" : "Suite Room";
-  const catNames = [...catNameList.querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean);
+  const catNames = [...catNameList.querySelectorAll("input")]
+    .map(i => i.value.trim())
+    .filter(Boolean);
 
   const checkinDate = form.checkinDate.value;
   const checkoutDate = form.checkoutDate.value;
 
-  const total = Number(totalEl.textContent.replace(/[^0-9.]/g, ""));
-  const deposit = Number(depositEl.textContent.replace(/[^0-9.]/g, ""));
+  const checkinTimeRaw  = form.checkinTime.value;   // "10".."24"
+  const checkoutTimeRaw = form.checkoutTime.value;  // "10".."24"
 
+  // แปลงเป็น "HH:00" ไว้ใช้ใน receipt
+  const checkinTimeText  = checkinTimeRaw.toString().padStart(2, "0")  + ":00";
+  const checkoutTimeText = checkoutTimeRaw.toString().padStart(2, "0") + ":00";
+
+  const total   = Number(totalEl.textContent.replace(/[^0-9.]/g, ""));
+  const deposit = Number(depositEl.textContent.replace(/[^0-9.]/g, ""));
 
   if (catNames.length === 0) return alert("กรุณากรอกชื่อแมวอย่างน้อย 1 ตัว");
   if (!/^[0-9]{9,10}$/.test(phone)) return alert("กรุณากรอกเบอร์โทรให้ถูกต้อง");
   if (!total || !deposit) return alert("กรุณาเลือกวันที่ให้ถูกต้อง");
 
   const catsText = catNames.join(", ");
+
+  // คิดจำนวนห้องคร่าว ๆ
+  const standardOption = document.getElementById("standardOption").value;
+  let rooms = 1;
+  if (form.roomType.value === "standard" && catNames.length >= 2 && standardOption === "separate") {
+    rooms = 2; // ถ้าเลือกเปิดเพิ่มให้เป็น 2 ห้อง
+  }
 
   const text = encodeURIComponent(
     `📋 แจ้งโอนมัดจำห้องพัก PO CAT HOTEL
@@ -461,11 +480,21 @@ form.addEventListener("submit", e => {
     document.getElementById("nextPage").disabled = true;
 
     window.location.href =
-      `receipt.html?name=${encodeURIComponent(name)}&phone=${phone}&room=${encodeURIComponent(room)}&cats=${encodeURIComponent(catsText)}&deposit=${deposit}&total=${total}&checkin=${checkinDate}&checkout=${checkoutDate}`;
+      `receipt.html` +
+      `?name=${encodeURIComponent(name)}` +
+      `&phone=${phone}` +
+      `&room=${encodeURIComponent(room)}` +
+      `&cats=${encodeURIComponent(catsText)}` +
+      `&deposit=${deposit}` +
+      `&total=${total}` +
+      `&checkin=${checkinDate}` +
+      `&checkout=${checkoutDate}` +
+      `&checkinTime=${encodeURIComponent(checkinTimeText)}` +
+      `&checkoutTime=${encodeURIComponent(checkoutTimeText)}` +
+      `&rooms=${rooms}`;
   };
 });
 
 </script>
-
 </body>
 </html>
