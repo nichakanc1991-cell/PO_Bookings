@@ -36,8 +36,9 @@
       <p>ประเภทห้อง: <span id="room"></span> / จำนวนห้อง: <span id="roomCount"></span> ห้อง</p>
       <p>ระยะเวลาพักทั้งหมด: <span id="duration"></span></p>
       <p>ยอดรวมทั้งหมด: <b><span id="total"></span> บาท</b></p>
-      <p>มัดจำ 50% ที่ชำระแล้ว: <b><span id="deposit"></span> บาท</b></p>
-      <p>สถานะ: ✅ รอชำระส่วนที่เหลือในวันเข้าพัก</p>
+      <p id="depositRow">มัดจำ 50% ที่ชำระแล้ว: <b><span id="deposit"></span> บาท</b></p>
+      <p id="statusRow"> สถานะ: ✅ รอชำระส่วนที่เหลือในวันเข้าพัก</p>
+
     </div>
 
     <hr class="border-[var(--po-gold)] my-3">
@@ -61,17 +62,46 @@
   const p = new URLSearchParams(location.search);
   const get = k => decodeURIComponent(p.get(k) || "-");
 
-  const name         = get("name"),
-        phone        = get("phone"),
-        room         = get("room"),
-        cats         = get("cats"),
-        checkin      = get("checkin"),
-        checkout     = get("checkout"),
-        checkinTime  = get("checkinTime"),
-        checkoutTime = get("checkoutTime"),
-        roomCount    = get("rooms") || "1",
-        deposit      = get("deposit"),
-        total        = get("total");
+const name         = get("name"),
+      phone        = get("phone"),
+      room         = get("room"),
+      cats         = get("cats"),
+      checkin      = get("checkin"),
+      checkout     = get("checkout"),
+      checkinTime  = get("checkinTime"),
+      checkoutTime = get("checkoutTime"),
+      roomCount    = p.get("rooms") || "1",
+      deposit      = get("deposit"),
+      total        = get("total"),
+      paidMode     = p.get("paid") || "deposit";   // <-- ตรงนี้
+
+if (name === "-") {
+  alert("กรุณาจองห้องก่อนเข้าดูใบเสร็จ");
+  window.location.href = "booking-hotel-final.html";
+}
+
+document.getElementById("name").textContent        = name;
+document.getElementById("phone").textContent       = phone;
+document.getElementById("room").textContent        = room;
+document.getElementById("cats").innerHTML          = cats.split(", ").join("<br>");
+document.getElementById("checkin").textContent     = checkin;
+document.getElementById("checkout").textContent    = checkout;
+document.getElementById("checkinTime").textContent = checkinTime;
+document.getElementById("checkoutTime").textContent= checkoutTime;
+document.getElementById("roomCount").textContent   = roomCount;
+document.getElementById("deposit").textContent     = deposit;
+document.getElementById("total").textContent       = total;
+
+// ปรับหน้าตาตามโหมดชำระเงิน
+if (paidMode === "full") {
+  const depRow = document.getElementById("depositRow");
+  if (depRow) depRow.style.display = "none";
+
+  const statusRow = document.getElementById("statusRow");
+  if (statusRow) statusRow.textContent = "สถานะ: ✅ ชำระครบแล้ว";
+}
+
+
 
   if (name === "-") {
     alert("กรุณาจองห้องก่อนเข้าดูใบเสร็จ");
