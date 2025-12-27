@@ -248,7 +248,6 @@ function updateCatPlaceholders() {
 }
 
 
-// ----------------------------------------------------------
 // 5) ฟังก์ชัน: คำนวณราคา
 // ----------------------------------------------------------
 function calculateTotal() {
@@ -264,18 +263,16 @@ function calculateTotal() {
 
   let fixedCheckinDate = checkinDateValue;
   let fixedCheckoutDate = checkoutDateValue;
-
   let fixedCheckinTime = checkinTimeValue;
   let fixedCheckoutTime = checkoutTimeValue;
 
-  // แก้ปัญหาเวลา 24:00 → ให้เลื่อนไปเป็น 00:00 ของวันถัดไป
+  // แก้ปัญหาเวลา 24:00 → เลื่อนไปวันถัดไป 00:00
   if (fixedCheckoutTime === "24") {
     const nextDay = new Date(fixedCheckoutDate);
     nextDay.setDate(nextDay.getDate() + 1);
     fixedCheckoutDate = nextDay.toISOString().split("T")[0];
     fixedCheckoutTime = "00";
   }
-
   if (fixedCheckinTime === "24") {
     const nextDay = new Date(fixedCheckinDate);
     nextDay.setDate(nextDay.getDate() + 1);
@@ -300,7 +297,7 @@ function calculateTotal() {
     return;
   }
 
-  // แยกจำนวนคืนเต็ม และชั่วโมงเกิน
+  // แยก “คืนเต็ม” กับ “ชั่วโมงเกิน”
   const fullDays = Math.floor(diffHours / 24);
   const extraHours = diffHours - fullDays * 24;
 
@@ -309,10 +306,10 @@ function calculateTotal() {
 
   let total = 0;
   let hourlyRate = 0;
-  let days = 1;      // จำนวนวันที่ใช้คูณราคา
-  let extraFee = 0;  // ค่าชั่วโมงเกิน (ไม่เกิน 12 ชม.)
+  let days = 1;
+  let extraFee = 0;
 
-  // เคสพักสั้น คิดเป็นชั่วโมงเหมือนเดิม
+  // เคสพักสั้น คิดเป็นชั่วโมง
   if (diffHours <= 3) {
     hourlyRate = room === "standard" ? 50 : 150;
     days = 1;
@@ -322,19 +319,17 @@ function calculateTotal() {
   } else {
     // เคสพักหลายวัน
     let d = fullDays;
-    if (d < 1) d = 1; // กันกรณีเลขเพี้ยน
+    if (d < 1) d = 1;
 
     if (extraHours > 0 && extraHours <= 12) {
-      // กรณีเกินมาไม่เกิน 12 ชม. → คิดเป็นค่าพิเศษแทนการปัดเป็น 1 คืนเต็ม
-      // เกิน 1–3 ชม. +50 / เกิน 4–12 ชม. +150
-    if (extraHours <= 3) extraFee = 50;
-    else extraFee = 150;
+      // เกิน 1–3 ชม. / 4–12 ชม.
+      if (room === "standard") {
+        extraFee = extraHours <= 3 ? 50 : 150;
       } else if (room === "suite") {
-    if (extraHours <= 3) extraFee = 150;
-    else extraFee = 300;
-  }
+        extraFee = extraHours <= 3 ? 150 : 300;
+      }
     } else if (extraHours > 12) {
-      // เกิน 12 ชม. → นับเป็นอีก 1 คืนเต็ม
+      // เกิน 12 ชม. → ปัดเป็นอีกคืน
       d += 1;
     }
 
@@ -370,14 +365,13 @@ function calculateTotal() {
 
   const deposit = total * 0.5;
 
-  // แปลงชั่วโมงเป็น วัน + ชั่วโมง (ใช้ diffHours เดิม)
+  // แสดงเวลาเข้าพักกี่วันกี่ชั่วโมง
   const daysStayed = Math.floor(diffHours / 24);
   const hoursStayed = Math.round(diffHours % 24);
 
   let durationString = "";
   if (daysStayed > 0) durationString += `${daysStayed} วัน `;
   if (hoursStayed > 0) durationString += `${hoursStayed} ชั่วโมง`;
-
   if (durationString.trim() === "") durationString = "0 ชั่วโมง";
 
   durationText.textContent = `ระยะเวลาเข้าพัก: ${durationString} (${cats} ตัว)`;
@@ -385,6 +379,7 @@ function calculateTotal() {
   totalEl.textContent = total.toLocaleString("th-TH");
   depositEl.textContent = deposit.toLocaleString("th-TH");
 }
+
 
 // ----------------------------------------------------------
 // 6) ฟังก์ชัน: แสดง/ซ่อน dropdown "พักรวม/เปิดเพิ่ม"
