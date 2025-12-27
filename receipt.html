@@ -36,8 +36,26 @@
       <p>ประเภทห้อง: <span id="room"></span> / จำนวนห้อง: <span id="roomCount"></span> ห้อง</p>
       <p>ระยะเวลาพักทั้งหมด: <span id="duration"></span></p>
       <p>ยอดรวมทั้งหมด: <b><span id="total"></span> บาท</b></p>
-      <p id="depositRow">มัดจำ 50% ที่ชำระแล้ว: <b><span id="deposit"></span> บาท</b></p>
-      <p id="statusRow"> สถานะ: ✅ รอชำระส่วนที่เหลือในวันเข้าพัก</p>
+
+<p id="depositRow">
+  มัดจำ 50% ที่ชำระแล้ว: 
+  <b><span id="deposit"></span> บาท</b>
+</p>
+
+<p id="remainingRow">
+  ยอดที่ต้องชำระเพิ่ม: 
+  <b>
+    <span id="remaining" contenteditable="true"
+          style="border-bottom:1px dashed rgba(0,0,0,0.3); padding:0 2px;">
+    </span> บาท
+  </b>
+  <span class="text-xs opacity-70">(แก้ไขได้)</span>
+</p>
+
+<p id="statusRow">
+  สถานะ: ✅ รอชำระส่วนที่เหลือในวันเข้าพัก
+</p>
+
 
     </div>
 
