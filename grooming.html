@@ -746,12 +746,25 @@ document.getElementById("goLine").addEventListener("click", async () => {
   if (!name || !phone) return alert("กรุณากรอกชื่อและเบอร์ในขั้นตอนที่ 2");
 
   // รวมข้อมูลน้องๆ
-  const petLines = pets.map(wrap => {
-    const n = wrap.querySelector('[data-role="petName"]').value.trim();
-    const t = wrap.querySelector('[data-role="petType"]').value.trim();
-    const s = wrap.querySelector('[data-role="service"]').value.trim();
-    return `${n || "-"} / ${t || "-"} / ${s || "-"}`;
-  }).filter(Boolean);
+  const petLines = pets.map((wrap, i) => {
+  const name = wrap.querySelector('[data-role="petName"]').value.trim();
+  const type = wrap.querySelector('[data-role="petType"]').value.trim();
+  const breed = wrap.querySelector('[data-role="breed"]').value.trim();
+  const service = wrap.querySelector('[data-role="service"]').value.trim();
+  const addon = wrap.querySelector('[data-role="addon"]').value.trim();
+  const notes = wrap.querySelector('[data-role="notes"]').value.trim();
+
+  return [
+    `🐾 ตัวที่ ${i + 1}`,
+    `- ชื่อ: ${name || "-"}`,
+    `- ประเภท: ${type || "-"}`,
+    `- สายพันธุ์: ${breed || "-"}`,
+    `- บริการ: ${service || "-"}`,
+    addon ? `- บริการเสริม: ${addon}` : null,
+    notes ? `- ข้อควรระวัง: ${notes}` : null,
+  ].filter(Boolean).join("\n");
+});
+
 
   const dateLabel = `${dayjs(selectedDate).format("DD/MM")}/${buddhistYear(dayjs(selectedDate).year())}`;
   const msg = [
