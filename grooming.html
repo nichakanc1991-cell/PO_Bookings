@@ -519,7 +519,11 @@ function getDayStatus(dateStr){
   const daySlots=availability[dateStr]||{};
   let free=0, full=0, pending=0, closed=false;
   for(const t of TIME_SLOTS){
-    const v=(daySlots[t]??"ว่าง");
+    const v = daySlots[t];
+if (!v) {
+  closed = true;
+  break;
+}
     if(v==="ปิด"){closed=true;break;}
     if(v==="เต็ม") full++;
     else if(v==="รอมัดจำ") pending++;
