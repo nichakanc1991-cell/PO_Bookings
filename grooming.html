@@ -806,34 +806,38 @@ document.getElementById("toTerms").addEventListener("click", () => {
   if (pets.length === 0) return alert("กรุณาเพิ่มข้อมูลน้องอย่างน้อย 1 ตัว");
 
   let ok = false;
+
   for (const wrap of pets) {
     const petName = wrap.querySelector('[data-role="petName"]').value.trim();
     const petType = wrap.querySelector('[data-role="petType"]').value.trim();
     const service = wrap.querySelector('[data-role="service"]').value.trim();
 
-    if (!petName && !petType && !service) continue; // ช่องว่างทั้งตัว ข้ามได้
-    if (!petName || !petType || !service)
-      return alert("กรอก ชื่อน้อง / ประเภท / ประเภทบริการ ให้ครบในแต่ละตัว");
+    // แถวนี้ไว้กัน “ฟอร์มว่างทั้งตัว” (เผื่อเพิ่มตัวที่ 2/3 แล้วไม่ได้กรอก)
+    if (!petName && !petType && !service) continue;
 
+    if (!petName || !petType || !service) {
+      return alert("กรอก ชื่อน้อง / ประเภท / ประเภทบริการ ให้ครบในแต่ละตัว");
+    }
     ok = true;
   }
+
   if (!ok) return alert("กรุณากรอกข้อมูลน้องอย่างน้อย 1 ตัว");
 
   const hours = requiredHoursForBooking();
-  if (!isFinite(hours)) {
-    alert("❌ ไม่สามารถเลือก 'อาบน้ำและตัดขน' 2 ตัวในการจองครั้งเดียวได้");
-    return;
-  }
-
   const free = contiguousFreeSlots(selectedDate, selectedTime);
+
   if (free < hours) {
     alert("ช่วงเวลาที่เลือกไม่เพียงพอกับบริการที่เลือก กรุณาเลือกเวลาใหม่");
     return;
   }
 
-  blockRequiredSlots(); // ล็อกช่วงเวลาต่อเนื่องให้เต็ม
+  // กัน availability ยังไม่มี key วันนั้น
+  if (!availability[selectedDate]) availability[selectedDate] = {};
+
+  blockRequiredSlots();
   updateStep(4);
 });
+
 
 document.getElementById("agree").addEventListener("change",e=>{
   document.getElementById("toPayment").disabled=!e.target.checked;
