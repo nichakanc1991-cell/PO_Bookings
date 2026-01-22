@@ -385,6 +385,47 @@ function updateServiceOptions(){
     const select=wrap.querySelector('[data-role="service"]'); if(!select) return;
     [...select.options].forEach(opt=>{
   const label = opt.value.trim();
+      function updateServiceOptions(){
+  const dateStr=selectedDate, startTime=selectedTime;
+  const allowAll=!dateStr||!startTime||ALWAYS_ALLOW_ALL_AT.includes(startTime);
+
+  pets.forEach(wrap=>{
+    const select=wrap.querySelector('[data-role="service"]'); 
+    if(!select) return;
+
+    // ✅ ใส่ตรงนี้เลย (RESET ทุก option ก่อน)
+    [...select.options].forEach(opt=>{
+      opt.disabled = false;
+      opt.title = "";
+    });
+
+    // แล้วค่อยไปทำ logic เดิมของคุณต่อ
+    [...select.options].forEach(opt=>{
+      const label = opt.value.trim();
+      if (!label) return;
+
+      if (
+        label === "อาบน้ำและตัดขน" &&
+        hasFullGroomingSelected() &&
+        select.value !== "อาบน้ำและตัดขน"
+      ) {
+        opt.disabled = true;
+        opt.title = "บริการอาบน้ำและตัดขน ทำได้ครั้งละ 1 ตัวต่อการจอง";
+        return;
+      }
+    });
+
+    const cur=select.value.trim();
+    if(cur && select.querySelector(`option[value="${cur}"]`)?.disabled){
+      select.value="";
+    }
+    select.title = allowAll ? "เลือกบริการได้ทุกชนิด" : "ระบบจำกัดบริการตามเวลาว่างต่อเนื่องของช่วงที่เลือก";
+  });
+
+  // (A)(B)(C) ของคุณค่อยทำต่อเหมือนเดิม
+  ...
+}
+
   if (!label) return;
 
   // กติกา 4: ❌ full grooming ได้แค่ 1 ตัว
