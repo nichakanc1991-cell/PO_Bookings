@@ -145,7 +145,7 @@
 
       <!-- Step 3 -->
       <div id="formPets" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
-        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">รายละเอียดน้อง (สูงสุด 3 ตัว)</div>
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">รายละเอียดน้อง (สูงสุด 2 ตัว)</div>
         <div id="petsContainer" class="space-y-4"></div>
 
         <!-- ราคาตามประเภทสัตว์ -->
@@ -357,11 +357,7 @@ function contiguousFreeSlots(dateStr, startTime){
   return n;
 }
 function canBookService(serviceName, dateStr, startTime){
-const requiredHours = SERVICE_DURATION[serviceName] || 0;
-const startHour = parseInt(startTime.split(":")[0]);
-const endHour = startHour + requiredHours;
 
-if (endHour > 20) return false;
 
   const requiredHours = requiredHoursForBooking();
 
@@ -373,109 +369,69 @@ if (endHour > 20) return false;
 }
 
 function updateServiceOptions(){
-  const dateStr=selectedDate, startTime=selectedTime;
-  const allowAll=!dateStr||!startTime||ALWAYS_ALLOW_ALL_AT.includes(startTime);
-  pets.forEach(wrap=>{
-    const select=wrap.querySelector('[data-role="service"]'); if(!select) return;
-    [...select.options].forEach(opt=>{
-  const label = opt.value.trim();
- 
-
-  // (A)(B)(C) ของคุณค่อยทำต่อเหมือนเดิม
-}
-
-  if (!label) return;
-
-  // กติกา 4: ❌ full grooming ได้แค่ 1 ตัว
-  if (
-    label === "อาบน้ำและตัดขน" &&
-    hasFullGroomingSelected() &&
-    select.value !== "อาบน้ำและตัดขน"
-  ) {
-    opt.disabled = true;
-    opt.title = "บริการอาบน้ำและตัดขน ทำได้ครั้งละ 1 ตัวต่อการจอง";
-    return;
-  }
-
- 
-});
-
-    const cur=select.value.trim();
-    if(cur && select.querySelector(`option[value="${cur}"]`)?.disabled){ select.value=""; }
-    select.title = allowAll ? "เลือกบริการได้ทุกชนิด" : "ระบบจำกัดบริการตามเวลาว่างต่อเนื่องของช่วงที่เลือก";
-  });
-  
-    // ===== (A) เวลา 12:00 — ขึ้นกับ 14:00 =====
-if (startTime === "12:00") {
-  const daySlots = availability[dateStr] || {};
-  const is14Free = ["ว่าง","รอมัดจำ"].includes(daySlots["14:00"]);
+  const dateStr = selectedDate;
+  const startTime = selectedTime;
 
   pets.forEach(wrap=>{
-    const select=wrap.querySelector('[data-role="service"]');
+    const select = wrap.querySelector('[data-role="service"]');
     if(!select) return;
 
-    // ล้าง disabled เดิมทั้งหมดก่อน
     [...select.options].forEach(opt=>{
       opt.disabled = false;
     });
 
-    if (!is14Free) {
-      // ปิด "อาบน้ำและตัดขน" อย่างเดียว
-      [...select.options].forEach(opt=>{
-        if (opt.value === "อาบน้ำและตัดขน") {
-          opt.disabled = true;
-        }
-      });
-
-      if (select.value === "อาบน้ำและตัดขน") {
-        select.value = "";
-      }
-    }
-
-  });
-}
-
-  // ===== (B) เวลา 17:00 — ขึ้นกับ 18:00 =====
-if (startTime === "17:00") {
-  const daySlots = availability[dateStr] || {};
-  const is18Free = ["ว่าง","รอมัดจำ"].includes(daySlots["18:00"]);
-
-  pets.forEach(wrap=>{
-    const select=wrap.querySelector('[data-role="service"]');
-    if(!select) return;
-
-    // ⭐ Reset disabled ก่อนทุกครั้ง (สำคัญมาก!)
-    [...select.options].forEach(opt=>{
-      opt.disabled = false;
-    });
-
-    if(!is18Free){
-      // ถ้า 18:00 ไม่ว่าง → อนุญาตเฉพาะบริการเสริม
-      [...select.options].forEach(opt=>{
-        if (opt.value !== "บริการเสริมอย่างเดียว") {
-          opt.disabled = true;
-        }
-      });
-
-      if (select.value !== "บริการเสริมอย่างเดียว") {
-        select.value = "";
-      }
+    const cur = select.value.trim();
+    if(cur && select.querySelector(`option[value="${cur}"]`)?.disabled){
+      select.value = "";
     }
   });
-}
 
-  // ===== (C) เวลา 18:00 — ห้ามอาบน้ำ+ตัดขน =====
-  if (startTime === "18:00") {
+  if(!dateStr || !startTime) return;
+
+  // ===== เวลา 18:00 ห้าม 3 ชม. =====
+  if(startTime === "18:00"){
     pets.forEach(wrap=>{
       const select = wrap.querySelector('[data-role="service"]');
-      if(!select) return;
-
       [...select.options].forEach(opt=>{
-        if (opt.value === "อาบน้ำและตัดขน") opt.disabled = true;
+        if(opt.value === "อาบน้ำและตัดขน"){
+          opt.disabled = true;
+        }
       });
-
-      if (select.value === "อาบน้ำและตัดขน") select.value = "";
     });
+  }
+
+  // ===== เวลา 17:00 ถ้า 18:00 ไม่ว่าง เหลือแค่ 1 ชม. =====
+  if(startTime === "17:00"){
+    const daySlots = availability[dateStr] || {};
+    const is18Free = ["ว่าง","รอมัดจำ"].includes(daySlots["18:00"]);
+
+    if(!is18Free){
+      pets.forEach(wrap=>{
+        const select = wrap.querySelector('[data-role="service"]');
+        [...select.options].forEach(opt=>{
+          if(opt.value !== "บริการเสริมอย่างเดียว"){
+            opt.disabled = true;
+          }
+        });
+      });
+    }
+  }
+
+  // ===== เวลา 12:00 ถ้า 14:00 ไม่ว่าง ห้าม 3 ชม. =====
+  if(startTime === "12:00"){
+    const daySlots = availability[dateStr] || {};
+    const is14Free = ["ว่าง","รอมัดจำ"].includes(daySlots["14:00"]);
+
+    if(!is14Free){
+      pets.forEach(wrap=>{
+        const select = wrap.querySelector('[data-role="service"]');
+        [...select.options].forEach(opt=>{
+          if(opt.value === "อาบน้ำและตัดขน"){
+            opt.disabled = true;
+          }
+        });
+      });
+    }
   }
 }
   function updatePriceImages(){
