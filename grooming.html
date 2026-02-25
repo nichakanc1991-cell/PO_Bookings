@@ -120,7 +120,7 @@
             <span class="w-6 h-6 flex items-center justify-center rounded-full border">2</span> กรอกชื่อ & เบอร์
           </li>
           <li id="step3" class="flex items-start gap-2 text-gray-600">
-            <span class="w-6 h-6 flex items-center justify-center rounded-full border">3</span> รายละเอียดน้อง (สูงสุด 3 ตัว)
+            <span class="w-6 h-6 flex items-center justify-center rounded-full border">3</span> รายละเอียดน้อง (สูงสุด 2 ตัว)
           </li>
           <li id="step4" class="flex items-start gap-2 text-gray-600">
             <span class="w-6 h-6 flex items-center justify-center rounded-full border">4</span> ยืนยันเงื่อนไข
@@ -163,7 +163,9 @@
         </div>
 
         <div class="mt-4 flex gap-2">
-          <button id="addPet" class="hidden">+ เพิ่มตัวที่ 2/3</button>
+          <button id="addPet" class="px-3 py-2 rounded-xl border border-gray-300 hover:bg-gray-50">
+  + เพิ่มตัวที่ 2
+</button>
           <button id="toTerms" class="flex-1 px-3 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
         </div>
       </div>
@@ -308,7 +310,6 @@ const SERVICE_DURATION = {
   "ตัดขน": 2,
   "อาบน้ำและตัดขน": 3,
 };
-const ALWAYS_ALLOW_ALL_AT = ["18:00"];
 
   function analyzeBookingServices() {
   let washOnly = 0;
@@ -324,30 +325,19 @@ const ALWAYS_ALLOW_ALL_AT = ["18:00"];
 }
 // ===== คำนวณจำนวนชั่วโมงที่ต้องใช้จริงต่อ 1 การจอง =====
 function requiredHoursForBooking() {
-  const { washOnly, fullGroom } = analyzeBookingServices();
+  let totalHours = 0;
 
-  // กติกา 4: ❌ ห้ามอาบน้ำและตัดขน 2 ตัว
-  if (fullGroom >= 2) return Infinity;
-
-  // กติกา 2: อาบน้ำ 1 + อาบน้ำตัดขน 1
-  if (washOnly === 1 && fullGroom === 1) return 4;
-
-  // กติกา 1: อาบน้ำอย่างเดียว 2 ตัว
-  if (washOnly === 2 && fullGroom === 0) return 3;
-
-  // กติกา 3: อาบน้ำอย่างเดียว 3 ตัว
-  if (washOnly === 3 && fullGroom === 0) return 4;
-
-  // fallback เผื่อกรณีอื่น
-  return washOnly * 2 + fullGroom * 3;
-}
-  function hasFullGroomingSelected() {
-  let count = 0;
   pets.forEach(wrap => {
-    const service = wrap.querySelector('[data-role="service"]')?.value?.trim();
-    if (service === "อาบน้ำและตัดขน") count++;
+    const service = wrap
+      .querySelector('[data-role="service"]')
+      ?.value?.trim();
+
+    if (SERVICE_DURATION[service]) {
+      totalHours += SERVICE_DURATION[service];
+    }
   });
-  return count >= 1;
+
+  return totalHours;
 }
 
 
@@ -367,7 +357,11 @@ function contiguousFreeSlots(dateStr, startTime){
   return n;
 }
 function canBookService(serviceName, dateStr, startTime){
-  if (ALWAYS_ALLOW_ALL_AT.includes(startTime)) return true;
+const requiredHours = SERVICE_DURATION[serviceName] || 0;
+const startHour = parseInt(startTime.split(":")[0]);
+const endHour = startHour + requiredHours;
+
+if (endHour > 20) return false;
 
   const requiredHours = requiredHoursForBooking();
 
@@ -385,42 +379,7 @@ function updateServiceOptions(){
     const select=wrap.querySelector('[data-role="service"]'); if(!select) return;
     [...select.options].forEach(opt=>{
   const label = opt.value.trim();
-      function updateServiceOptions(){
-  const dateStr=selectedDate, startTime=selectedTime;
-  const allowAll=!dateStr||!startTime||ALWAYS_ALLOW_ALL_AT.includes(startTime);
-
-  pets.forEach(wrap=>{
-    const select=wrap.querySelector('[data-role="service"]'); 
-    if(!select) return;
-
-    // ✅ ใส่ตรงนี้เลย (RESET ทุก option ก่อน)
-    [...select.options].forEach(opt=>{
-      opt.disabled = false;
-      opt.title = "";
-    });
-
-    // แล้วค่อยไปทำ logic เดิมของคุณต่อ
-    [...select.options].forEach(opt=>{
-      const label = opt.value.trim();
-      if (!label) return;
-
-      if (
-        label === "อาบน้ำและตัดขน" &&
-        hasFullGroomingSelected() &&
-        select.value !== "อาบน้ำและตัดขน"
-      ) {
-        opt.disabled = true;
-        opt.title = "บริการอาบน้ำและตัดขน ทำได้ครั้งละ 1 ตัวต่อการจอง";
-        return;
-      }
-    });
-
-    const cur=select.value.trim();
-    if(cur && select.querySelector(`option[value="${cur}"]`)?.disabled){
-      select.value="";
-    }
-    select.title = allowAll ? "เลือกบริการได้ทุกชนิด" : "ระบบจำกัดบริการตามเวลาว่างต่อเนื่องของช่วงที่เลือก";
-  });
+ 
 
   // (A)(B)(C) ของคุณค่อยทำต่อเหมือนเดิม
 }
@@ -734,17 +693,22 @@ document.getElementById("toPets").addEventListener("click",()=>{
   if(!selectedDate||!selectedTime) return alert("กรุณาเลือกวันและเวลาหน้าแรก");
   if(!name||!phone) return alert("กรุณากรอกชื่อและเบอร์โทร");
   if(pets.length===0) addPetForm();
+  document.getElementById("addPet").classList.remove("hidden");
   updateStep(3);
   updateServiceOptions();
 });
 document.getElementById("addPet").addEventListener("click",()=>{
-  if(pets.length>=3) return alert("เพิ่มได้สูงสุด 3 ตัว");
+  if(pets.length>=2) return alert("เพิ่มได้สูงสุด 2 ตัว");
   addPetForm();
 });
 function addPetForm(){
   const idx = pets.length + 1;
   const wrap = document.createElement("div");
   wrap.className = "p-3 border border-[color:var(--po-border)] rounded-xl";
+
+  if (pets.length >= 2) {
+  document.getElementById("addPet").classList.add("hidden");
+}
 
   wrap.innerHTML = `
     <div class="text-sm font-medium mb-2 text-[var(--po-forest)]">น้องตัวที่ ${idx}</div>
