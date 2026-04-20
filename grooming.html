@@ -104,7 +104,6 @@
           เลือกเวลา <span id="chosenDateLabel" class="font-semibold"></span>
         </div>
         <div id="timeGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
-        
       </div>
     </section>
 
@@ -121,7 +120,7 @@
             <span class="w-6 h-6 flex items-center justify-center rounded-full border">2</span> กรอกชื่อ & เบอร์
           </li>
           <li id="step3" class="flex items-start gap-2 text-gray-600">
-            <span class="w-6 h-6 flex items-center justify-center rounded-full border">3</span> รายละเอียดน้อง (1 ตัวต่อคิว)
+            <span class="w-6 h-6 flex items-center justify-center rounded-full border">3</span> รายละเอียดน้อง (สูงสุด 2 ตัว)
           </li>
           <li id="step4" class="flex items-start gap-2 text-gray-600">
             <span class="w-6 h-6 flex items-center justify-center rounded-full border">4</span> ยืนยันเงื่อนไข
@@ -146,7 +145,7 @@
 
       <!-- Step 3 -->
       <div id="formPets" class="rounded-2xl border border-[color:var(--po-border)] shadow-sm p-4 bg-white/90 backdrop-blur hidden">
-        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">รายละเอียดน้อง (จองคิวได้ 1 ตัว ต่อคิวเท่านั้น)</div>
+        <div class="text-sm font-semibold mb-2 text-[var(--po-forest)]">รายละเอียดน้อง (สูงสุด 2 ตัว)</div>
         <div id="petsContainer" class="space-y-4"></div>
 
         <!-- ราคาตามประเภทสัตว์ -->
@@ -164,8 +163,8 @@
         </div>
 
         <div class="mt-4 flex gap-2">
-          <button id="addPet" class="hidden">
- 
+          <button id="addPet" class="px-3 py-2 rounded-xl border border-gray-300 hover:bg-gray-50">
+  + เพิ่มตัวที่ 2
 </button>
           <button id="toTerms" class="flex-1 px-3 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">ถัดไป</button>
         </div>
@@ -200,9 +199,9 @@
   รบกวนส่งสลิปพร้อมข้อมูลการจองทางไลน์ด้วยนะคะ<br>
           ขอบคุณค่ะ 🐾 </div>
         <img id="qrImage" class="w-full rounded-xl border border-[color:var(--po-border)] shadow max-h-[560px] object-contain" src="./qrnew.png" alt="QR">
-        <button id="goLine" onclick="submitBooking()" class="w-full mt-3 px-4 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700" data-i18n="label.notifyline">
-  แจ้งสลิปและข้อมูลการจองทางไลน์ (เปิด LINE OA)
-</button>
+        <button id="goLine" class="w-full mt-3 px-4 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700"data-i18n="label.notifyline">
+          แจ้งสลิปและข้อมูลการจองทางไลน์ (เปิด LINE OA)
+        </button>
       </div>
     </section>
   </div>
