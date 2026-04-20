@@ -6,7 +6,7 @@
   <title>PO Grooming — ระบบจองคิว</title>
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com?ver=3.4.1"></script>
-  <script src="js/i18n.js"></script>
+  
 
 
   <!-- Day.js -->
@@ -307,9 +307,12 @@ function renderCalendar(){
     btn.textContent=d.date();
 
     btn.onclick=()=>{
-      selectedDate=dateStr;
-      showTimes();
-    };
+  selectedDate = dateStr;
+
+  document.getElementById("timeBox").classList.remove("hidden");
+
+  showTimes();
+};
 
     grid.appendChild(btn);
     d=d.add(1,"day");
@@ -431,11 +434,18 @@ document.getElementById("toPets").addEventListener("click",()=>{
 
   
 /* ===== INIT ===== */
-(async function(){
-  await fetchSheet();
-  renderCalendar();
-})();
+document.addEventListener("DOMContentLoaded", async function(){
 
+  try {
+    await fetchSheet();
+  } catch(e){
+    console.error("โหลดชีตไม่สำเร็จ", e);
+  }
+
+  console.log("INIT RUN"); // 👈 debug
+
+  renderCalendar();
+});
 
 
 
