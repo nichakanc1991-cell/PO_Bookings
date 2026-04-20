@@ -304,10 +304,20 @@ function renderCalendar(){
     const dateStr=d.format("YYYY-MM-DD");
 
     const btn=document.createElement("button");
+    btn.className = "p-2 h-10 border rounded-lg text-sm bg-white hover:bg-green-100";
     btn.textContent=d.date();
 
     btn.onclick=()=>{
   selectedDate = dateStr;
+      document.querySelectorAll('#calendarGrid button')
+    .forEach(b => b.classList.remove('bg-green-200'));
+
+  btn.classList.add('bg-green-200');
+
+  document.getElementById("timeBox").classList.remove("hidden");
+
+  showTimes();
+};
 
   document.getElementById("timeBox").classList.remove("hidden");
 
