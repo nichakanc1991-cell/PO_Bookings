@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PO Grooming — ระบบจองคิว</title>
+  <title>Lunessa Pet Boutique | ตารางคิว</title>
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com?ver=3.4.1"></script>
   <script src="js/i18n.js"></script>
@@ -22,14 +22,13 @@
   <style>
     /* โทนสีหลัก */
     :root{
-      --po-deep:#0b3d36;      /* เขียวเข้มบนสุด */
-      --po-forest:#1c322d;    /* เขียวป่าข้อความเข้ม */
-      --po-olive:#324f44;     /* เขียวมะกอกปุ่มหลัก */
-      --po-olive-dark:#2a3e38;
-      --po-card:#f6f9f7;      /* การ์ดโทนอ่อน */
-      --po-border:#dbe4df;    /* เส้นขอบนุ่ม */
-      --po-cream:#f8f4e7;     /* ครีมไล่พื้นหลังล่าง */
-    }
+  --po-deep:#F7F2EA;
+  --po-forest:#556B5D;
+  --po-olive:#7D9077;
+  --po-card:#FFFFFF;
+  --po-border:#DDD6C7;
+  --po-cream:#FAF7F2;
+}
     .slot-active{background:#e6efe9;border-color:#93c5b1;color:#1f3933}
     
   #monthTitle { color: #fff !important; }
@@ -38,27 +37,69 @@
   </style>
 </head>
 
-<body class="min-h-screen bg-gradient-to-b from-[var(--po-deep)] to-[var(--po-cream)]">
+<body class="min-h-screen bg-[#FAF7F2]">
 <main class="max-w-6xl mx-auto p-4 md:p-6">
 
   <!-- Header -->
-  <header class="mb-4 md:mb-6 flex items-center justify-between gap-3 bg-white/65 backdrop-blur-md rounded-2xl px-5 py-3 shadow-md border border-[color:var(--po-border)]/70">
-    <h1 class="text-2xl md:text-3xl font-extrabold text-[var(--po-forest)] tracking-wide drop-shadow-sm">
-  🐾 PO Grooming — <span class="text-[var(--po-olive)] font-semibold" data-i18n="title.booking">ระบบจองคิว</span>
-</h1>
-    <div class="flex items-center gap-2 text-xs">
-      <span id="syncBadge" class="px-2 py-1 rounded bg-gray-100 text-gray-600">ยังไม่โหลด</span>
-      <button id="btnReload" class="px-2 py-1 rounded border border-[color:var(--po-border)] hover:bg-white/60">รีเฟรชข้อมูล</button>
-      <a class="text-indigo-700 hover:underline font-medium" target="_blank"
-         href="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT_nMM6G7qgCf7-m7vkFZjiWaGmE/edit?gid=0#gid=0">เปิด Google Sheets</a>
-    </div>
-  <div class="flex items-center gap-2 text-sm">
-     <button onclick="setLang('th')" class="px-2 py-1 rounded hover:bg-white/60">ไทย</button>|
-     <button onclick="setLang('en')" class="px-2 py-1 rounded hover:bg-white/60">English</button>|
-     <button onclick="setLang('zh')" class="px-2 py-1 rounded hover:bg-white/60">中文</button>
-  </div>
+  <header class="text-center mb-8">
 
-  </header>
+  <img
+    src="logo.jpg"
+    alt="Lunessa Pet Boutique"
+    class="w-56 md:w-80 mx-auto mb-4">
+
+  <h1 class="text-3xl md:text-5xl font-light tracking-wider text-[#556B5D]">
+    Lunessa Pet Boutique
+  </h1>
+
+  <p class="mt-2 text-[#9A7B66] tracking-wide">
+    Gentle Touch, Forever Care
+  </p>
+
+</header>
+
+  <section
+ class="bg-white/90 rounded-3xl shadow-lg border border-[#DDD6C7]
+ p-6 md:p-10 mb-8">
+
+ <div class="text-center">
+
+   <h2 class="text-3xl font-semibold text-[#556B5D] mb-4">
+     ⚠️ ประกาศ
+   </h2>
+
+   <p class="text-lg text-gray-700">
+     ระบบจองคิวออนไลน์ของ
+   </p>
+
+   <p class="text-2xl font-semibold text-[#556B5D]">
+     PO Grooming
+   </p>
+
+   <p class="mt-3 text-xl text-[#9A7B66]">
+     ได้ปิดให้บริการแล้ว
+   </p>
+
+   <p class="mt-5 text-gray-600 leading-relaxed">
+     หากต้องการจองคิวอาบน้ำ ตัดขน
+     หรือสอบถามรายละเอียดเพิ่มเติม
+     กรุณาติดต่อผ่าน LINE Official Account
+   </p>
+
+   <a
+     href="https://lin.ee/q6yF9o6"
+     target="_blank"
+     class="inline-block mt-6 px-8 py-4 rounded-2xl
+            bg-[#7D9077] text-white text-lg
+            hover:opacity-90 transition">
+
+      💬 เพิ่มเพื่อนใน LINE
+
+   </a>
+
+ </div>
+
+</section>
 
   <div class="grid md:grid-cols-[3fr_2fr] gap-6">
     <!-- LEFT -->
