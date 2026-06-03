@@ -31,14 +31,19 @@
 }
     .slot-active{background:#e6efe9;border-color:#93c5b1;color:#1f3933}
     
-  #monthTitle { color: #fff !important; }
-  .calendar-header div { color: #fff !important; }
+  #monthTitle {
+  color: #556B5D !important;
+}
+
+.calendar-header div {
+  color: #7D9077 !important;
+}
     
   </style>
 </head>
 
 <body class="min-h-screen bg-[#FAF7F2]">
-<main class="max-w-6xl mx-auto p-4 md:p-6">
+<main class="max-w-4xl mx-auto p-4 md:p-6">
 
   <!-- Header -->
   <header class="text-center mb-8">
@@ -182,8 +187,8 @@ const SHEET_GVIZ_JSON="https://docs.google.com/spreadsheets/d/1xhS3Yl5BpTkTSjEKT
 const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1tTADklx6sJ4rLaiflR2VR4brc8WR38FsEp_M2Bf8hM0V9pBNmOrMJurEqAEfzOgNKbFc-_WuyaXF/pub?gid=0&single=true&output=csv";
 const LINE_OA_ID="@po_grooming";
 
-const START_DATE=dayjs.tz("2026-04-01");
-const END_DATE=dayjs.tz("2026-05-31");
+const START_DATE=dayjs.tz("2026-05-01");
+const END_DATE=dayjs.tz("2026-06-30");
 const TIME_SLOTS=["12:00","13:00","14:00","15:00","16:00","17:00"];
 
 /* ===== STATE (เดิม) ===== */
@@ -410,13 +415,16 @@ function showTimes(){
     btn.textContent = t;
     btn.disabled = taken || isPending;
     btn.className =
-      "py-3 rounded-xl border border-[color:var(--po-border)] text-sm font-medium " +
-      (taken 
-        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-        : isPending
-        ? "bg-yellow-100 text-yellow-700 cursor-wait"
-        : "bg-white hover:bg-[var(--po-card)]"
-      );
+`
+p-4 rounded-2xl border
+text-center
+font-medium
+transition
+${taken
+ ? "bg-gray-100 text-gray-400"
+ : "bg-[#FAF7F2] hover:bg-[#F1ECE4] text-[#556B5D]"
+}
+`;
 
     btn.addEventListener("click", () => {
 
