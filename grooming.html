@@ -175,7 +175,8 @@
 
 </div>
 
-    
+</section> 
+    </div>
 
   <footer class="text-center text-xs text-gray-200/90 mt-8">© 2025 PO Grooming</footer>
 </main>
@@ -360,6 +361,12 @@ async function fetchSheet(){
 
     console.log(availability);
 
+alert(
+  "โหลดข้อมูลได้ " +
+  Object.keys(availability).length +
+  " วัน"
+);
+    
   }catch(err){
 
     console.error(err);
@@ -380,10 +387,10 @@ function getDayStatus(dateStr){
   const values = Object.values(daySlots);
 
   const freeCount =
-    values.filter(v => v === "ว่าง").length;
+    values.filter(v => v === "FREE").length;
 
   const fullCount =
-    values.filter(v => v === "เต็ม").length;
+    values.filter(v => v === "FULL").length;
 
   if(freeCount === 0) return "red";
 
@@ -432,8 +439,8 @@ function showTimes(){
   const daySlots = availability[selectedDate] || {};
 
   TIME_SLOTS.forEach(t => {
-    const v = daySlots[t] ?? "ว่าง";
-    const taken = (v === "เต็ม");
+    const v = daySlots[t] ?? "FREE";
+    const taken = (v === "FULL");
     const isPending = false;
 
     const btn = document.createElement("button");
@@ -476,7 +483,7 @@ ${taken
 /* Nav & boot (เดิม) */
 document.getElementById("prevMonth").addEventListener("click",()=>{const prev=visibleMonth.subtract(1,"month"); if(prev.isBefore(START_DATE,"month"))return; visibleMonth=prev; renderCalendar();});
 document.getElementById("nextMonth").addEventListener("click",()=>{const next=visibleMonth.add(1,"month"); if(next.isAfter(END_DATE,"month"))return; visibleMonth=next; renderCalendar();});
-document.getElementById("btnReload").addEventListener("click",async()=>{await fetchSheet(); renderCalendar(); if(selectedDate) showTimes();});
+
 
 (async function init() {
   await fetchSheet(); 
